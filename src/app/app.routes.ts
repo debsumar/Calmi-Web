@@ -10,9 +10,13 @@ export const appRoutes: Routes = [
         path: 'home',
         loadComponent: () => import('@/features/home/pages/home/home.component').then((m) => m.HomeComponent),
       },
+      {
+        path: 'sounds',
+        loadComponent: () => import('@/features/sounds/pages/sounds/sounds.component').then((m) => m.SoundsComponent),
+      },
+      { path: 'notfound', loadComponent: () => import('@/pages/notfound/notfound.component').then((m) => m.NotFoundComponent) },
     ],
   },
   { path: 'auth', loadChildren: () => import('@/pages/auth/auth.routes').then((m) => m.authRoutes) },
-  { path: 'notfound', loadComponent: () => import('@/pages/notfound/notfound.component').then((m) => m.NotFoundComponent) },
   { path: '**', redirectTo: '/notfound' },
 ];

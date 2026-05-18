@@ -1,64 +1,247 @@
 <!-- Hero Section -->
-<section class="relative w-full overflow-hidden bg-[#9b8abf] min-h-[450px] flex items-center justify-center">
-  <!-- Decorative illustrations (placeholder shapes) -->
-  <div class="absolute inset-0 pointer-events-none">
-    <!-- Left decorations -->
-    <div class="absolute top-4 left-4 w-20 h-20 bg-[#f5d76e] rounded-full opacity-80"></div>
-    <div class="absolute top-16 left-20 w-16 h-16 bg-white rounded-full opacity-90"></div>
-    <div class="absolute top-28 left-8 w-24 h-24 bg-[#e87c3f] rounded-[30%] opacity-90"></div>
-    <div class="absolute bottom-12 left-4 w-20 h-20 bg-[#7ecec5] rounded-[40%] opacity-80"></div>
-    <div class="absolute top-40 left-28 w-12 h-12 bg-[#f4a7b9] rounded-full opacity-80"></div>
-    <!-- Right decorations -->
-    <div class="absolute top-4 right-4 w-16 h-16 bg-[#f5f0dc] rounded-[20%] rotate-12 opacity-90"></div>
-    <div class="absolute top-20 right-16 w-14 h-14 bg-[#f5d76e] rounded-[20%] -rotate-6 opacity-80"></div>
-    <div class="absolute bottom-16 right-4 w-20 h-20 bg-[#f4a7b9] rounded-full opacity-80"></div>
-    <div class="absolute bottom-8 right-24 w-16 h-16 bg-[#4a8c5c] rounded-[30%] opacity-80"></div>
-    <div class="absolute bottom-32 right-12 w-10 h-10 bg-[#2d2d4e] rotate-45 opacity-70"></div>
-  </div>
+<section class="relative w-full overflow-hidden bg-[#9b8abf] min-h-[500px] flex items-center justify-center">
+  <img src="assets/Illustration_2.png" alt="" class="absolute left-0 top-0 h-full w-auto object-cover object-left pointer-events-none z-0">
+  <img src="assets/Illustration_1.png" alt="" class="absolute right-0 top-0 h-full w-auto object-cover object-right pointer-events-none z-0">
 
-  <!-- Hero Content -->
-  <div class="relative z-10 text-center px-4 max-w-2xl">
+  <div class="relative z-10 text-center px-4 max-w-2xl py-16">
     <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
       Calm your mind in<br>minutes.
     </h1>
-    <p class="text-white/90 text-lg mb-2">
-      Feeling anxious, stuck, or can't sleep?
-    </p>
-    <p class="text-white/90 text-lg mb-6">
-      Start a guided calm session instantly.
-    </p>
+    <p class="text-white/90 text-lg mb-2">Feeling anxious, stuck, or can't sleep?</p>
+    <p class="text-white/90 text-lg mb-6">Start a guided calm session instantly.</p>
     <div class="flex items-center justify-center gap-6 text-white/70 text-xs mb-8">
       <span>• No login required</span>
       <span>• Takes less than 2 minutes</span>
       <span>• Works instantly</span>
     </div>
-    <button class="bg-white text-[#7c6fa0] font-semibold px-8 py-4 rounded-full text-lg hover:shadow-lg transition-shadow flex items-center gap-3 mx-auto">
-      Calm Me Now
-      <span class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-[#7c6fa0]">
-        <i class="pi pi-arrow-right text-sm"></i>
-      </span>
-    </button>
+    <app-primary-button label="Calm Me Now" icon="arrow-right" variant="outline" class="flex justify-center" />
   </div>
 </section>
 
 <!-- What are you feeling section -->
 <section class="py-16 px-4">
-  <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">
+  <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-12">
     What are you<br>feeling right now?
   </h2>
 
   <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
     @for (card of moodCards(); track card.title) {
-      <div class="bg-white rounded-2xl p-8 flex flex-col items-center text-center shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
-        <div class="w-16 h-16 bg-[#e8e4f0] rounded-full flex items-center justify-center mb-6">
-          <span class="text-2xl">{{ card.icon }}</span>
+      <app-card class="cursor-pointer hover:shadow-lg transition-shadow h-[280px]">
+        <div class="h-full flex flex-col items-center text-center justify-between">
+          <div class="w-16 h-16 bg-[#e8e4f0] dark:bg-[#3a2a5e] rounded-full flex items-center justify-center mb-6">
+            <lucide-icon [name]="card.icon" [size]="28" class="text-brand"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">{{ card.title }}</h3>
+          <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">{{ card.description }}</p>
+          <button class="w-10 h-10 min-w-10 min-h-10 flex items-center justify-center rounded-full border-2 border-brand text-brand hover:bg-brand hover:text-white transition-colors shrink-0">
+            <lucide-icon name="arrow-right" [size]="16"></lucide-icon>
+          </button>
         </div>
-        <h3 class="text-xl font-bold text-gray-900 mb-3">{{ card.title }}</h3>
-        <p class="text-gray-500 text-sm mb-6">{{ card.description }}</p>
-        <button class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-[#7c6fa0] text-[#7c6fa0] hover:bg-[#7c6fa0] hover:text-white transition-colors">
-          <i class="pi pi-arrow-right text-sm"></i>
-        </button>
-      </div>
+      </app-card>
     }
   </div>
 </section>
+
+<!-- You don't need an app section -->
+<section class="py-20 px-8 max-w-6xl mx-auto">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+    <div>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-6">
+        You don't need an app.<br>You need a moment.
+      </h2>
+      <p class="text-gray-600 dark:text-gray-300 text-lg mb-2">No login. No pressure.</p>
+      <p class="text-gray-600 dark:text-gray-300 text-lg mb-12">Just press play and breathe.</p>
+
+      <div class="grid grid-cols-2 gap-8">
+        <div>
+          <lucide-icon name="headphones" [size]="24" class="text-brand mb-2"></lucide-icon>
+          <h4 class="font-bold text-gray-900 dark:text-white mb-1">Guided Audios</h4>
+          <p class="text-gray-500 dark:text-gray-400 text-sm">Short sessions that help instantly.</p>
+        </div>
+        <div>
+          <lucide-icon name="cloud" [size]="24" class="text-brand mb-2"></lucide-icon>
+          <h4 class="font-bold text-gray-900 dark:text-white mb-1">Soothing Sounds</h4>
+          <p class="text-gray-500 dark:text-gray-400 text-sm">Ambient sounds to relax and sleep.</p>
+        </div>
+        <div>
+          <lucide-icon name="heart" [size]="24" class="text-brand mb-2"></lucide-icon>
+          <h4 class="font-bold text-gray-900 dark:text-white mb-1">Feel Better</h4>
+          <p class="text-gray-500 dark:text-gray-400 text-sm">Designed to help you feel lighter.</p>
+        </div>
+        <div>
+          <lucide-icon name="zap" [size]="24" class="text-brand mb-2"></lucide-icon>
+          <h4 class="font-bold text-gray-900 dark:text-white mb-1">Instant Relief</h4>
+          <p class="text-gray-500 dark:text-gray-400 text-sm">Calm your mind in minutes.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-b from-brand to-[#2d2550] rounded-2xl p-8 text-white flex flex-col items-center">
+      <h3 class="text-2xl font-bold mb-1">One-Minute Reset</h3>
+      <p class="text-white/70 mb-12">Chibs Okereke</p>
+      <button class="w-24 h-24 rounded-full border-2 border-white/30 flex items-center justify-center mb-12 hover:bg-white/10 transition-colors">
+        <lucide-icon name="play" [size]="36" class="text-white ml-1"></lucide-icon>
+      </button>
+      <div class="w-full">
+        <div class="w-full h-1 bg-white/20 rounded-full relative">
+          <div class="absolute left-0 top-0 h-1 w-1/6 bg-white/60 rounded-full"></div>
+          <div class="absolute left-[16%] top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full"></div>
+        </div>
+        <div class="flex justify-between mt-2 text-xs text-white/60">
+          <span>00:10</span>
+          <span>01:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Soothing sounds section -->
+<section class="py-20 px-8 max-w-6xl mx-auto">
+  <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
+    Soothing sounds for every moment.
+  </h2>
+  <div class="flex justify-end mb-6">
+    <a href="/sounds" class="text-brand font-medium hover:underline">View All</a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-[#8ba4c8]">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+      <div class="absolute bottom-4 left-4 text-white">
+        <p class="font-bold">Rain</p>
+        <p class="text-sm text-white/80">45:00</p>
+      </div>
+    </div>
+    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-[#1a1a3e]">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+      <div class="absolute bottom-4 left-4 text-white">
+        <p class="font-bold">Night Ambience</p>
+        <p class="text-sm text-white/80">60:00</p>
+      </div>
+    </div>
+    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-[#2a5080]">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+      <div class="absolute bottom-4 left-4 text-white">
+        <p class="font-bold">Ocean Waves</p>
+        <p class="text-sm text-white/80">30:00</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Unlock more / Pricing CTA -->
+<section class="py-16 px-8 max-w-5xl mx-auto">
+  <app-card>
+    <div class="flex flex-col md:flex-row items-center gap-8">
+      <div class="flex-1 border-r-0 md:border-r border-gray-200 dark:border-[#3a3a50] pr-0 md:pr-8">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Unlock more of Calmi</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Unlock all guided sessions, sleep sounds and new content every week.</p>
+      </div>
+      <div class="flex-1 border-r-0 md:border-r border-gray-200 dark:border-[#3a3a50] pr-0 md:pr-8">
+        <ul class="space-y-3">
+        <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
+          <lucide-icon name="check-circle" [size]="18" class="text-brand"></lucide-icon>
+          Unlock access to all sessions
+        </li>
+        <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
+          <lucide-icon name="check-circle" [size]="18" class="text-brand"></lucide-icon>
+          Premium sound library
+        </li>
+        <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
+          <lucide-icon name="check-circle" [size]="18" class="text-brand"></lucide-icon>
+          New content every week
+        </li>
+        <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
+          <lucide-icon name="check-circle" [size]="18" class="text-brand"></lucide-icon>
+          Cancel anytime
+        </li>
+      </ul>
+    </div>
+    <div class="text-center">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Just</p>
+      <p class="text-4xl font-bold text-gray-900 dark:text-white">₹99 <span class="text-base font-normal text-gray-500 dark:text-gray-400">/ month</span></p>
+      <app-primary-button label="Get Full Access" />
+      <p class="mt-3 text-xs text-gray-400 flex items-center justify-center gap-1">
+        <lucide-icon name="lock" [size]="12"></lucide-icon>
+        Secure payment. Cancel anytime.
+      </p>
+    </div>
+    </div>
+  </app-card>
+</section>
+
+<!-- Community Section -->
+<section class="py-16 px-8 max-w-5xl mx-auto">
+  <app-card>
+    <div class="flex flex-col md:flex-row items-start gap-8">
+      <!-- Left -->
+      <div class="flex-1">
+        <p class="text-brand text-sm font-semibold uppercase tracking-wide mb-4">Community</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
+          You're Not Alone<br>on This Journey
+        </h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-8">
+          Connect with others, share experiences, and find encouragement in a safe, supportive space.
+        </p>
+        <app-primary-button label="Join The Community" />
+      </div>
+      <!-- Right illustration -->
+      <div class="flex-1">
+        <img src="assets/Illustration_1.png" alt="Community" class="w-full h-auto rounded-xl object-cover">
+      </div>
+    </div>
+
+    <!-- Wellness Coaching -->
+    <div class="mt-10 flex flex-col md:flex-row items-start gap-8">
+      <div class="flex-1">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Wellness Coaching</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-4">
+          Personalized guidance to help you build healthier habits, manage stress, and achieve balance in all areas of your life.
+        </p>
+        <p class="text-gray-600 dark:text-gray-300">
+          Our wellness coaches will support you in creating sustainable routines for mental, emotional, and physical well-being.
+        </p>
+      </div>
+      <div class="flex-1 flex items-center justify-center">
+        <p class="text-brand text-xl md:text-2xl font-bold uppercase tracking-wide">Coming Soon. Stay Tuned.</p>
+      </div>
+    </div>
+  </app-card>
+</section>
+
+<!-- Footer -->
+<footer class="py-16 px-8 max-w-5xl mx-auto">
+  <div class="flex flex-col md:flex-row gap-8">
+    <!-- Left - Links card -->
+    <app-card class="flex-1">
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Calmi</h2>
+      <div class="grid grid-cols-3 gap-y-4 mb-12">
+        <a href="/about" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">About</a>
+        <a href="https://instagram.com" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Instagram</a>
+        <a href="/terms" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Terms Of Use</a>
+        <a href="/sessions" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Sessions</a>
+        <a href="https://twitter.com" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Twitter</a>
+        <a href="/privacy" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Privacy Policy</a>
+        <a href="/sounds" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Sounds</a>
+        <span></span><span></span>
+        <a href="/pricing" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Pricing</a>
+        <span></span><span></span>
+        <a href="/contact" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Contact</a>
+      </div>
+      <p class="text-gray-400 text-xs mt-auto">© 2026 Calmi All Rights Reserved.</p>
+    </app-card>
+
+    <!-- Right - CTA card -->
+    <div class="flex-1 bg-brand rounded-2xl p-10 flex flex-col justify-between relative overflow-hidden">
+      <div class="relative z-10">
+        <h3 class="text-3xl font-bold text-white leading-tight mb-8">
+          Still feeling<br>overwhelmed?<br><span class="font-normal">Try another session.</span>
+        </h3>
+      </div>
+      <button class="relative z-10 bg-white text-gray-900 font-semibold px-8 py-4 rounded-full text-center hover:shadow-lg transition-shadow w-full">
+        Calm Me Again
+      </button>
+    </div>
+  </div>
+</footer>

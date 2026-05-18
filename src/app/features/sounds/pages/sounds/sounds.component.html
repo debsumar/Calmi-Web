@@ -1,0 +1,69 @@
+<!-- Hero Section -->
+<section class="relative w-full overflow-hidden bg-brand-dark min-h-[320px] flex items-center rounded-b-2xl">
+  <div class="relative z-10 px-8 md:px-16 py-12 max-w-xl">
+    <h1 class="text-3xl md:text-4xl font-bold text-white leading-tight mb-4">
+      Sounds for when you need to slow down
+    </h1>
+    <p class="text-white/80 text-base mb-6">
+      Immerse yourself in soothing sounds that help you relax, focus or sleep better.
+    </p>
+    <div class="relative">
+      <lucide-icon name="search" [size]="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/50"></lucide-icon>
+      <input type="text" placeholder="Search sounds..."
+             class="w-full bg-white/10 border border-white/20 rounded-full py-3 pl-11 pr-4 text-white placeholder-white/50 focus:outline-none focus:border-white/40">
+    </div>
+  </div>
+  <!-- Right side night illustration placeholder -->
+  <div class="hidden md:block absolute right-0 top-0 h-full w-1/2 opacity-60">
+    <img src="assets/Illustration_2.png" alt="" class="h-full w-full object-cover object-center pointer-events-none">
+  </div>
+</section>
+
+<!-- Browse by Vibe -->
+<section class="py-12 px-8 max-w-6xl mx-auto">
+  <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8">Browse by Vibe</h2>
+  <div class="flex gap-4 overflow-x-auto pb-2">
+    @for (vibe of vibes(); track vibe.label) {
+      <button class="flex flex-col items-center gap-2 min-w-[100px]"
+              [class]="vibe.active ? 'opacity-100' : 'opacity-70 hover:opacity-100'">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center transition-colors"
+             [class]="vibe.active ? 'bg-brand-dark text-white' : 'bg-gray-200 dark:bg-[#3a3a50] text-gray-700 dark:text-gray-300'">
+          <lucide-icon [name]="vibe.icon" [size]="24"></lucide-icon>
+        </div>
+        <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ vibe.label }}</span>
+      </button>
+    }
+  </div>
+</section>
+
+<!-- Featured Sounds -->
+<section class="py-12 px-8 max-w-6xl mx-auto">
+  <div class="flex items-center justify-between mb-8">
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Featured Sounds</h2>
+    <a href="/sounds" class="text-brand text-sm font-medium flex items-center gap-1 hover:underline">
+      View All <lucide-icon name="arrow-right" [size]="14"></lucide-icon>
+    </a>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    @for (sound of featuredSounds(); track sound.title) {
+      <div class="relative rounded-2xl overflow-hidden aspect-[4/3] group cursor-pointer">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
+        <div [class]="'absolute inset-0 ' + sound.bg"></div>
+        <!-- Heart icon -->
+        <button class="absolute top-4 left-4 z-20 text-white/80 hover:text-white">
+          <lucide-icon name="heart" [size]="18"></lucide-icon>
+        </button>
+        <!-- Play button -->
+        <button class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center group-hover:bg-black/80 transition-colors">
+          <lucide-icon name="play" [size]="22" class="text-white ml-0.5"></lucide-icon>
+        </button>
+        <!-- Info -->
+        <div class="absolute bottom-4 left-4 z-20 text-white">
+          <p class="font-bold text-base">{{ sound.title }}</p>
+          <p class="text-white/70 text-sm">{{ sound.description }}</p>
+          <p class="text-white/50 text-xs mt-1">{{ sound.duration }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</section>

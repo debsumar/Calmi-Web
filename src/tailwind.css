@@ -4,6 +4,8 @@
 @variant dark (&:where([class*="app-dark"], [class*="app-dark"] *));
 
 @theme {
+  --color-brand: #967BB6;
+  --color-brand-dark: #4E0E99;
   --breakpoint-sm: 576px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 992px;
