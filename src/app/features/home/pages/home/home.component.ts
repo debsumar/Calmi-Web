@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { PrimaryButtonComponent } from '@/shared/components/primary-button/primary-button.component';
 import { CardComponent } from '@/shared/components/card/card.component';
@@ -12,7 +13,7 @@ interface MoodCard {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [LucideAngularModule, PrimaryButtonComponent, CardComponent],
+  imports: [LucideAngularModule, PrimaryButtonComponent, CardComponent, RouterLink],
   templateUrl: './home.component.html',
 })
 export class HomeComponent {

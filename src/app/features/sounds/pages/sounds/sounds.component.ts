@@ -20,11 +20,18 @@ export class SoundsComponent {
   ]);
 
   featuredSounds = signal([
-    { title: 'Rain on Window', description: 'Gentle rain to calm your mind', duration: '45:00', image: 'rain' },
-    { title: 'Ocean Waves', description: 'Waves to relax and let go', duration: '60:00', image: 'ocean-waves' },
-    { title: 'Night Ambience', description: 'Feel the quiet of the night', duration: '55:00', image: 'night-ambience' },
-    { title: 'Deep Forest', description: 'Immersive birds and leaves rustling', duration: '1:00:00', image: 'forest' },
-    { title: 'Forest Stream', description: 'Calm water flowing through the woods', duration: '40:00', image: 'forest' },
-    { title: 'Campfire in the Woods', description: 'Crackling fire under the forest canopy', duration: '50:00', image: 'forest' },
+    { title: 'Rain on Window', description: 'Gentle rain to calm your mind', duration: '45:00', image: 'assets/sound-images/rain-window.avif' },
+    { title: 'Ocean Waves', description: 'Waves to relax and let go', duration: '60:00', image: 'assets/sound-images/ocean-waves.avif' },
+    { title: 'Night Ambience', description: 'Feel the quiet of the night', duration: '55:00', image: 'assets/sound-images/night-ambience.avif' },
+    { title: 'Bamboo Forest', description: 'Immersive birds and leaves rustling', duration: '1:00:00', image: 'assets/sound-images/bamboo-forest.avif' },
+    { title: 'Heavy Rain', description: 'Deep rain to drown out noise', duration: '40:00', image: 'assets/sound-images/heavy-rain.avif' },
+    { title: 'Fireplace', description: 'Crackling fire for cozy evenings', duration: '50:00', image: 'assets/sound-images/fireplace.avif' },
+  ]);
+
+  allSounds = signal([
+    { title: 'Night Ambience', category: 'Ambient', categoryColor: 'bg-purple-600/30 text-purple-300', description: 'Crickets, breeze and calm night', duration: '60:00', image: 'assets/sound-images/night-ambience.avif' },
+    { title: 'Heavy Rain', category: 'Rain', categoryColor: 'bg-purple-600/30 text-purple-300', description: 'Deep rain for deep sleep', duration: '45:00', image: 'assets/sound-images/heavy-rain.avif' },
+    { title: 'Calming Ocean', category: 'Ocean', categoryColor: 'bg-purple-600/30 text-purple-300', description: 'Gentle waves and horizon', duration: '30:00', image: 'assets/sound-images/ocean-waves.avif' },
+    { title: 'Cozy Fireplace', category: 'Nature', categoryColor: 'bg-purple-600/30 text-purple-300', description: 'Crackling fire to relax', duration: '15:00', image: 'assets/sound-images/fireplace.avif' },
   ]);
 }
