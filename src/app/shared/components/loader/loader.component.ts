@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { LoaderService } from '../../services/loader.service';
+import { LoaderService } from '@/core/services/loader.service';
 import { ProgressSpinner } from 'primeng/progressspinner';
 
 @Component({

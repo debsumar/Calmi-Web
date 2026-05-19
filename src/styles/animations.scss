@@ -30,3 +30,33 @@
   from { opacity: 0; transform: scale(0.95); }
   to   { opacity: 1; transform: scale(1); }
 }
+
+// ─── Equalizer Bars Animation ─────────────────
+.equalizer {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+  width: 20px;
+}
+
+.equalizer span {
+  width: 3px;
+  background: white;
+  border-radius: 1px;
+  animation: eqBounce 0.8s ease-in-out infinite alternate;
+}
+
+.equalizer span:nth-child(1) { height: 40%; animation-delay: 0s; }
+.equalizer span:nth-child(2) { height: 70%; animation-delay: 0.2s; }
+.equalizer span:nth-child(3) { height: 50%; animation-delay: 0.4s; }
+.equalizer span:nth-child(4) { height: 80%; animation-delay: 0.1s; }
+
+.equalizer.paused span {
+  animation-play-state: paused;
+}
+
+@keyframes eqBounce {
+  0% { transform: scaleY(0.3); }
+  100% { transform: scaleY(1); }
+}
