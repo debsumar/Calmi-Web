@@ -1,90 +1,181 @@
 # Project Steering — Calmi-Web
 
+## Overview
+
+Calmi-Web is a wellness/meditation web app built with Angular 21. It provides guided calm sessions, soothing sounds, and wellness coaching.
+
 ## Tech Stack
 
-- **Framework**: Angular 21 (standalone components, zoneless change detection)
-- **UI Library**: PrimeNG 21 with PrimeUI Tailwind integration
-- **Styling**: Tailwind CSS 4 (utility-first, no separate .scss unless needed for animations/PrimeNG overrides)
-- **State**: Angular Signals for all reactive state
-- **Forms**: Signal Forms (`@angular/forms/signals`) for all new forms
-- **Routing**: Lazy-loaded standalone components via `loadComponent`
-- **Build**: Angular CLI 21
+| Layer | Technology |
+|-------|-----------|
+| Framework | Angular 21 (standalone, zoneless) |
+| UI Library | PrimeNG 21 (Aura preset) |
+| Styling | Tailwind CSS 4 + tailwindcss-primeui |
+| Icons | Lucide Angular (globally registered) |
+| State | Angular Signals |
+| Routing | Lazy-loaded standalone components |
+| Build | Angular CLI 21, port 2000 |
 
-## Architecture Rules
-
-### Folder Structure (Feature Modules)
-
-```
-features/<feature-name>/
-├── <feature-name>.routes.ts
-├── services/
-│   └── <feature-name>.service.ts
-├── pages/
-│   └── <page-name>/
-│       ├── <page-name>.component.ts
-│       ├── <page-name>.component.html
-│       └── <page-name>.component.scss  ← only if needed
-├── components/
-│   └── <component-name>/
-│       ├── <component-name>.component.ts
-│       ├── <component-name>.component.html
-│       └── <component-name>.component.scss  ← only if needed
-└── models/
-```
-
-### Component Rules
-
-- **Always** use `standalone: true` components
-- **Always** use `templateUrl` and `styleUrl` (separate files) for page-level components (>30 lines of template)
-- **Always** use `inject()` function over constructor injection
-- Small components can use inline templates
-
-### Zoneless Change Detection
-
-This project uses `provideZonelessChangeDetection()`. Key rules:
-
-1. Use signals (`signal()`, `computed()`, `linkedSignal()`) for all reactive state
-2. Never rely on Zone.js — it does not exist in this app
-3. Prefer `resource()` or `rxResource()` for async data fetching
-
-### Styling
-
-- Use Tailwind utility classes directly in templates
-- Only create `.scss` files when you need `:host` styles or PrimeNG overrides
-- Use PrimeUI semantic tokens: `text-primary`, `bg-primary`, `border-surface-200`, etc.
-
-### Naming Conventions
-
-- Feature folders: kebab-case
-- Components: kebab-case files, PascalCase classes
-- Services: kebab-case files, PascalCase classes
-
-### Signals & Reactivity
-
-- All component state uses `signal()`
-- Derived state uses `computed()`
-- Side effects use `effect()` sparingly
-- Services return `Observable<T>`, components subscribe and push into signals
-
-### Routing
-
-- All routes use `loadComponent` for lazy loading
-- Route files named `<feature>.routes.ts`
-
-## Code Flow: API Call → Signal → Template
+## Folder Structure
 
 ```
-Component.ngOnInit()
-  → Service.method()
-    → HttpClient
-  ← Observable<T>
-  ← .subscribe({ next: data => signal.set(data) })
-→ Signal notifies Angular (zoneless)
-  → Template re-renders via signal getter: `items()`
+src/app/
+├── app.config.ts          # Providers: zoneless, router, PrimeNG, Lucide icons
+├── app.routes.ts          # Top-level routes (layout shell + auth)
+├── app.component.ts       # Root component (just router-outlet)
+│
+├── core/                  # Singleton services, guards, interceptors
+│   ├── services/
+│   │   ├── theme.service.ts    # Light/dark/auto theming
+│   │   └── api.service.ts      # Base HTTP service
+│   ├── guards/
+│   │   └── auth.guard.ts
+│   ├── handlers/
+│   │   └── global-error-handler.ts
+│   └── interceptors/
+│       ├── jwt.interceptor.ts
+│       └── loader.interceptor.ts
+│
+├── layout/                # App shell (used once, wraps all pages)
+│   └── components/
+│       ├── app.layout.ts       # Shell: topbar + router-outlet
+│       └── app.topbar.ts       # Sticky navbar with theme toggle
+│
+├── shared/                # Reusable UI across features
+│   ├── components/
+│   │   ├── card/               # Generic card with shadow + dark mode
+│   │   ├── primary-button/     # Brand button (solid/outline, optional icon)
+│   │   ├── loader/
+│   │   ├── empty-state/
+│   │   └── error-state/
+│   ├── directives/
+│   │   └── drag-scroll.directive.ts
+│   ├── services/
+│   │   └── loader.service.ts
+│   └── types/
+│       └── api.types.ts
+│
+├── features/              # Feature modules (lazy-loaded)
+│   ├── home/pages/home/        # Landing page
+│   ├── sounds/pages/sounds/    # Sounds browser
+│   ├── about/pages/about/      # About Us
+│   ├── pricing/pages/pricing/  # Pricing plans
+│   └── onboarding/             # Onboarding wizard
+│       ├── components/
+│       └── services/
+│
+└── pages/                 # Standalone pages (outside features)
+    ├── notfound/               # 404 "Still working on it" page
+    └── auth/
+        ├── auth.routes.ts
+        └── login/
 ```
+
+## Routing
+
+All feature pages are children of `AppLayout` (which provides the sticky topbar):
+
+```
+/home        → HomeComponent
+/sounds      → SoundsComponent
+/about       → AboutComponent
+/pricing     → PricingComponent
+/notfound    → NotFoundComponent
+/auth/login  → LoginComponent (no layout)
+/**          → redirects to /notfound
+```
+
+## Theming
+
+### Dual System
+
+| What | Handles |
+|------|---------|
+| PrimeNG (`updatePreset`) | Styles `p-*` components (p-button, p-dialog, etc.) |
+| Tailwind (`@theme` + `dark:` variant) | Styles custom HTML/components |
+
+### Brand Colors (defined in `src/tailwind.css`)
+
+```css
+--color-brand: #967BB6;      /* Primary purple */
+--color-brand-dark: #4E0E99; /* Dark mode / hover variant */
+```
+
+Use `bg-brand`, `text-brand`, `border-brand`, `hover:bg-brand-dark` in templates.
+
+### Dark Mode
+
+- Toggle cycles: light → dark → auto (system preference)
+- PrimeNG: `.app-dark` class on `<html>` triggers dark tokens
+- Tailwind: `@variant dark` mapped to `.app-dark` selector
+- Persistence: `localStorage('calmi-theme')`
+- Transition: View Transitions API for smooth switch
+
+### Dark Mode Colors
+
+| Element | Light | Dark |
+|---------|-------|------|
+| Page background | `#f5f3f0` | `#1a1a2e` |
+| Card background | `white` | `#2a2a40` |
+| Card border | `gray-100` | `#3a3a50` |
+| Headings | `gray-900` | `white` |
+| Body text | `gray-600` | `gray-300` |
+| Muted text | `gray-500` | `gray-400` |
+
+## Shared Components
+
+### `<app-card>`
+
+Generic card wrapper. No forced layout — content projection via `<ng-content />`.
+
+```html
+<app-card class="h-[280px]">
+  <div class="flex flex-col items-center">...</div>
+</app-card>
+```
+
+Shadow: `0 4px 4px 0 rgba(0,0,0,0.25)` (matches Figma spec).
+
+### `<app-primary-button>`
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| label | string | 'Button' | Button text |
+| icon | string \| null | null | Lucide icon name (hidden if null) |
+| variant | 'solid' \| 'outline' | 'solid' | solid=purple bg, outline=white bg |
+
+```html
+<app-primary-button label="Calm Me Now" icon="arrow-right" variant="outline" />
+<app-primary-button label="Get Full Access" />
+```
+
+## Component Rules
+
+1. **Always** `standalone: true`
+2. **Always** `inject()` for DI — never constructor injection
+3. **Always** signals for state (`signal()`, `computed()`)
+4. **Always** `templateUrl` for page components (>30 lines)
+5. Inline templates OK for small shared components
+6. Use Lucide icons via `<lucide-icon name="x" [size]="n" />`
+7. Register new icons in `app.config.ts` LUCIDE_ICONS provider
+
+## Assets
+
+- Format: AVIF (converted from PNG for 90%+ compression)
+- Location: `public/assets/`
+- Naming: PascalCase for illustrations, kebab-case for others
+- Favicon: `public/favicon.ico` (multi-size ICO from logo)
+
+## Styling Guidelines
+
+1. Use Tailwind utility classes directly — no custom CSS unless necessary
+2. Use `dark:` prefix for dark mode variants on custom elements
+3. PrimeNG components get themed automatically via `updatePreset()`
+4. Avoid `bg-primary`/`text-primary` from tailwindcss-primeui (timing issues) — use `bg-brand`/`text-brand` instead
+5. Only use `.scss` for `:host` styles or complex animations
 
 ## References
 
 - [DI Fundamentals](references/di-fundamentals.md)
 - [Signals Overview](references/signals-overview.md)
-- [Tailwind CSS](references/tailwind-css.md)
+- [Tailwind CSS v4](references/tailwind-css.md)
