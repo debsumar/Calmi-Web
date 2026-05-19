@@ -4,11 +4,10 @@ import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-notfound',
-  standalone: true,
   imports: [RouterLink, LucideAngularModule],
   host: { class: 'flex flex-1' },
   template: `
-    <div class="flex-1 min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center bg-[#f5f3f0] dark:bg-[#1a1a2e] px-6 py-12 text-center relative overflow-hidden transition-colors duration-300">
+    <div class="flex-1 min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center bg-[#f5f3f0] dark:bg-[#090514] px-6 py-12 text-center relative overflow-hidden transition-colors duration-300">
       
       <!-- Back Button -->
       <a routerLink="/home" class="absolute top-6 right-8 text-gray-400 hover:text-brand dark:hover:text-white transition-colors duration-300 z-10">
@@ -21,7 +20,7 @@ import { LucideAngularModule } from 'lucide-angular';
         <svg class="absolute top-4 left-10 w-6 h-6 text-brand/60 dark:text-brand/60 animate-sparkle" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
         </svg>
-        <svg class="absolute bottom-16 left-6 w-4 h-4 text-brand-dark/50 dark:text-white/40 animate-sparkle-delayed" viewBox="0 0 24 24" fill="currentColor">
+        <svg class="absolute bottom-16 left-6 w-4 h-4 text-brand-dark/50 dark:text-gray-100/40 animate-sparkle-delayed" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
         </svg>
         <svg class="absolute top-12 right-12 w-8 h-8 text-[#f5b731] animate-sparkle" viewBox="0 0 24 24" fill="currentColor">
@@ -62,7 +61,7 @@ import { LucideAngularModule } from 'lucide-angular';
 
       <!-- Text Content -->
       <div class="max-w-md animate-fade-in-up">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight mb-4 tracking-tight">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 leading-tight mb-4 tracking-tight">
           Under Construction
         </h1>
         <p class="text-gray-500 dark:text-gray-400 text-lg mb-8 leading-relaxed font-medium">

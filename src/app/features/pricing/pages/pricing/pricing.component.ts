@@ -1,6 +1,6 @@
 import { Component, signal, computed, inject } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { CardComponent } from '@/shared/components/card/card.component';
+import { CardComponent } from '@/shared/components/cards/card.component';
 import { PrimaryButtonComponent } from '@/shared/components/primary-button/primary-button.component';
 import { OnboardingService } from '@/features/onboarding/services/onboarding.service';
 
@@ -18,7 +18,6 @@ interface PricingPlan {
 
 @Component({
   selector: 'app-pricing',
-  standalone: true,
   imports: [LucideAngularModule, PrimaryButtonComponent],
   templateUrl: './pricing.component.html',
   styles: [`

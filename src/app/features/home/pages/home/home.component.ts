@@ -2,7 +2,9 @@ import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { PrimaryButtonComponent } from '@/shared/components/primary-button/primary-button.component';
-import { CardComponent } from '@/shared/components/card/card.component';
+import { CardComponent } from '@/shared/components/cards/card.component';
+import { SoundCardComponent } from '@/shared/components/cards/sound-card.component';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 
 interface MoodCard {
   icon: string;
@@ -12,8 +14,7 @@ interface MoodCard {
 
 @Component({
   selector: 'app-home',
-  standalone: true,
-  imports: [LucideAngularModule, PrimaryButtonComponent, CardComponent, RouterLink],
+  imports: [LucideAngularModule, PrimaryButtonComponent, CardComponent, RouterLink, SoundCardComponent, AnimateOnScrollDirective],
   templateUrl: './home.component.html',
 })
 export class HomeComponent {

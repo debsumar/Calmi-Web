@@ -3,7 +3,6 @@ import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-primary-button',
-  standalone: true,
   imports: [LucideAngularModule],
   template: `
     @if (variant() === 'outline') {

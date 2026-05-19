@@ -1,14 +1,14 @@
-import { Component, signal, inject, computed } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { ThemeService } from '../../core/services/theme.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-topbar',
-  standalone: true,
   imports: [RouterLink, RouterLinkActive, LucideAngularModule],
   template: `
-    <header class="h-16 flex items-center justify-between px-8 bg-white dark:bg-[#1a1a2e]">
+    <header class="h-16 flex items-center justify-between px-8 bg-white dark:bg-[#090514]">
       <a routerLink="/" class="flex items-center">
         <img src="assets/logo.avif" alt="Calmi" class="h-10">
       </a>
@@ -25,12 +25,12 @@ import { ThemeService } from '../../core/services/theme.service';
                 class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
                 [title]="'Theme: ' + themeService.mode()">
           @switch (themeService.mode()) {
-            @case ('light') { <lucide-icon name="moon" [size]="22" class="text-gray-900 dark:text-white"></lucide-icon> }
-            @case ('dark') { <lucide-icon name="sun" [size]="22" class="text-gray-900 dark:text-white"></lucide-icon> }
-            @case ('auto') { <lucide-icon name="monitor" [size]="22" class="text-gray-900 dark:text-white"></lucide-icon> }
+            @case ('light') { <lucide-icon name="moon" [size]="22" class="text-gray-900 dark:text-gray-100"></lucide-icon> }
+            @case ('dark') { <lucide-icon name="sun" [size]="22" class="text-gray-900 dark:text-gray-100"></lucide-icon> }
+            @case ('auto') { <lucide-icon name="monitor" [size]="22" class="text-gray-900 dark:text-gray-100"></lucide-icon> }
           }
         </button>
-        <button class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900">
+        <button (click)="authService.openLogin()" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900">
           <lucide-icon name="user" [size]="18"></lucide-icon>
         </button>
       </div>
@@ -39,6 +39,7 @@ import { ThemeService } from '../../core/services/theme.service';
 })
 export class AppTopbar {
   themeService = inject(ThemeService);
+  authService = inject(AuthService);
 
   navLinks = signal([
     { path: '/home', label: 'Home' },

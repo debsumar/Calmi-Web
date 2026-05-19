@@ -1,11 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { DragScrollDirective } from '@/shared/directives/drag-scroll.directive';
+import { SoundCardComponent } from '@/shared/components/cards/sound-card.component';
 
 @Component({
   selector: 'app-sounds',
-  standalone: true,
-  imports: [LucideAngularModule, DragScrollDirective],
+  imports: [LucideAngularModule, DragScrollDirective, SoundCardComponent],
   templateUrl: './sounds.component.html',
 })
 export class SoundsComponent {
@@ -26,6 +26,9 @@ export class SoundsComponent {
     { title: 'Bamboo Forest', description: 'Immersive birds and leaves rustling', duration: '1:00:00', image: 'assets/sound-images/bamboo-forest.avif' },
     { title: 'Heavy Rain', description: 'Deep rain to drown out noise', duration: '40:00', image: 'assets/sound-images/heavy-rain.avif' },
     { title: 'Fireplace', description: 'Crackling fire for cozy evenings', duration: '50:00', image: 'assets/sound-images/fireplace.avif' },
+    { title: 'Calming Ocean', description: 'Peaceful ocean for deep focus', duration: '1:00:00', image: 'assets/sound-images/caliming-ocean.avif' },
+    { title: 'Deep Forest', description: 'Dense forest with ambient wildlife', duration: '45:00', image: 'assets/sound-images/forest.avif' },
+    { title: 'Steady Rain', description: 'Consistent rain for sleep', duration: '30:00', image: 'assets/sound-images/rain.avif' },
   ]);
 
   allSounds = signal([

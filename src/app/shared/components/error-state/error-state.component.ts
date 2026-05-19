@@ -3,7 +3,6 @@ import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-error-state',
-  standalone: true,
   imports: [ButtonModule],
   template: `
     <div class="flex flex-col items-center justify-center p-8 text-center">

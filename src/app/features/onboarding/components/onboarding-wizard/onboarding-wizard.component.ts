@@ -4,7 +4,6 @@ import { OnboardingService } from '../../services/onboarding.service';
 
 @Component({
   selector: 'app-onboarding-wizard',
-  standalone: true,
   imports: [LucideAngularModule],
   templateUrl: './onboarding-wizard.component.html',
   styles: [`

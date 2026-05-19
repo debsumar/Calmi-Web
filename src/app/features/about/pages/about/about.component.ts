@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { CardComponent } from '@/shared/components/card/card.component';
+import { CardComponent } from '@/shared/components/cards/card.component';
 
 @Component({
   selector: 'app-about',
-  standalone: true,
   imports: [LucideAngularModule, CardComponent],
   templateUrl: './about.component.html',
   styles: [`

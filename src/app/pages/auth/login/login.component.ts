@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
   template: `
     <div class="flex items-center justify-center min-h-screen">
       <div class="p-8 border border-surface-200 rounded-xl bg-surface-0 w-full max-w-md">

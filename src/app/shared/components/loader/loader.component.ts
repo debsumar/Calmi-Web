@@ -4,7 +4,6 @@ import { ProgressSpinner } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-loader',
-  standalone: true,
   imports: [ProgressSpinner],
   template: `
     @if (loader.loading()) {

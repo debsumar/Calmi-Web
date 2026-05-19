@@ -4,34 +4,34 @@
   <img src="assets/Illustration_1.avif" alt="" class="absolute right-0 top-0 h-full w-auto object-cover object-right pointer-events-none z-0">
 
   <div class="relative z-10 text-center px-4 max-w-2xl py-16">
-    <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
+    <h1 appAnimateOnScroll class="text-4xl md:text-5xl font-bold text-white leading-tight mb-6" style="--index:0">
       Calm your mind in<br>minutes.
     </h1>
-    <p class="text-white/90 text-lg mb-2">Feeling anxious, stuck, or can't sleep?</p>
-    <p class="text-white/90 text-lg mb-6">Start a guided calm session instantly.</p>
-    <div class="flex items-center justify-center gap-6 text-white/70 text-xs mb-8">
+    <p appAnimateOnScroll class="text-white/90 text-lg mb-2" style="--index:1">Feeling anxious, stuck, or can't sleep?</p>
+    <p appAnimateOnScroll class="text-white/90 text-lg mb-6" style="--index:2">Start a guided calm session instantly.</p>
+    <div appAnimateOnScroll class="flex items-center justify-center gap-6 text-white/70 text-xs mb-8" style="--index:3">
       <span>• No login required</span>
       <span>• Takes less than 2 minutes</span>
       <span>• Works instantly</span>
     </div>
-    <app-primary-button label="Calm Me Now" icon="arrow-right" variant="outline" class="flex justify-center" />
+    <app-primary-button label="Calm Me Now" icon="arrow-right" variant="outline" appAnimateOnScroll class="flex justify-center" style="--index:4" />
   </div>
 </section>
 
 <!-- What are you feeling section -->
 <section class="py-16 px-4">
-  <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-12">
+  <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-gray-100 mb-12" style="--index:0">
     What are you<br>feeling right now?
   </h2>
 
   <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-    @for (card of moodCards(); track card.title) {
-      <app-card class="cursor-pointer hover:-translate-y-2 transition-transform duration-300 group">
+    @for (card of moodCards(); track card.title; let i = $index) {
+      <app-card appAnimateOnScroll class="cursor-pointer hover:-translate-y-2 transition-transform duration-300 group" [style.--index]="i">
         <div class="flex flex-col h-full items-start">
           <div class="w-14 h-14 rounded-2xl bg-brand/10 dark:bg-white/10 text-brand dark:text-brand-light flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
             <lucide-icon [name]="card.icon" [size]="28"></lucide-icon>
           </div>
-          <h3 class="text-2xl font-bold mb-3 text-gray-900 dark:text-white">{{ card.title }}</h3>
+          <h3 class="text-2xl font-bold mb-3 text-gray-900 dark:text-gray-100">{{ card.title }}</h3>
           <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-6 flex-1">
             {{ card.description }}
           </p>
@@ -49,7 +49,7 @@
 <section class="py-20 px-8 max-w-6xl mx-auto">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
     <div>
-      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-6">
+      <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-6" style="--index:0">
         You don't need an app.<br>You need a moment.
       </h2>
       <p class="text-gray-600 dark:text-gray-300 text-lg mb-2">No login. No pressure.</p>
@@ -58,22 +58,22 @@
       <div class="grid grid-cols-2 gap-8">
         <div>
           <lucide-icon name="headphones" [size]="24" class="text-brand mb-2"></lucide-icon>
-          <h4 class="font-bold text-gray-900 dark:text-white mb-1">Guided Audios</h4>
+          <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-1">Guided Audios</h4>
           <p class="text-gray-500 dark:text-gray-400 text-sm">Short sessions that help instantly.</p>
         </div>
         <div>
           <lucide-icon name="cloud" [size]="24" class="text-brand mb-2"></lucide-icon>
-          <h4 class="font-bold text-gray-900 dark:text-white mb-1">Soothing Sounds</h4>
+          <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-1">Soothing Sounds</h4>
           <p class="text-gray-500 dark:text-gray-400 text-sm">Ambient sounds to relax and sleep.</p>
         </div>
         <div>
           <lucide-icon name="heart" [size]="24" class="text-brand mb-2"></lucide-icon>
-          <h4 class="font-bold text-gray-900 dark:text-white mb-1">Feel Better</h4>
+          <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-1">Feel Better</h4>
           <p class="text-gray-500 dark:text-gray-400 text-sm">Designed to help you feel lighter.</p>
         </div>
         <div>
           <lucide-icon name="zap" [size]="24" class="text-brand mb-2"></lucide-icon>
-          <h4 class="font-bold text-gray-900 dark:text-white mb-1">Instant Relief</h4>
+          <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-1">Instant Relief</h4>
           <p class="text-gray-500 dark:text-gray-400 text-sm">Calm your mind in minutes.</p>
         </div>
       </div>
@@ -101,7 +101,7 @@
 
 <!-- Soothing sounds section -->
 <section class="py-20 px-8 max-w-6xl mx-auto">
-  <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
+  <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-gray-100 mb-4" style="--index:0">
     Soothing sounds for every moment.
   </h2>
   <div class="flex justify-end mb-6">
@@ -109,30 +109,9 @@
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200 dark:bg-gray-800">
-      <img src="/assets/sound-images/rain.avif" alt="Rain" class="absolute inset-0 w-full h-full object-cover">
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10"></div>
-      <div class="absolute bottom-4 left-4 text-white z-20">
-        <p class="font-bold">Rain</p>
-        <p class="text-sm text-white/80">45:00</p>
-      </div>
-    </div>
-    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200 dark:bg-gray-800">
-      <img src="/assets/sound-images/night-ambience.avif" alt="Night Ambience" class="absolute inset-0 w-full h-full object-cover">
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10"></div>
-      <div class="absolute bottom-4 left-4 text-white z-20">
-        <p class="font-bold">Night Ambience</p>
-        <p class="text-sm text-white/80">60:00</p>
-      </div>
-    </div>
-    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200 dark:bg-gray-800">
-      <img src="/assets/sound-images/ocean-waves.avif" alt="Ocean Waves" class="absolute inset-0 w-full h-full object-cover">
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10"></div>
-      <div class="absolute bottom-4 left-4 text-white z-20">
-        <p class="font-bold">Ocean Waves</p>
-        <p class="text-sm text-white/80">30:00</p>
-      </div>
-    </div>
+    <app-sound-card class="stagger-enter" style="--index:1" title="Rain on Window" image="assets/sound-images/rain-window.avif" duration="45:00" />
+    <app-sound-card class="stagger-enter" style="--index:2" title="Night Ambience" image="assets/sound-images/night-ambience.avif" duration="55:00" />
+    <app-sound-card class="stagger-enter" style="--index:3" title="Ocean Waves" image="assets/sound-images/ocean-waves.avif" duration="60:00" />
   </div>
 </section>
 
@@ -141,7 +120,7 @@
   <app-card>
     <div class="flex flex-col md:flex-row items-center gap-8">
       <div class="flex-1 border-r-0 md:border-r border-gray-200 dark:border-[#3a3a50] pr-0 md:pr-8">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Unlock more of Calmi</h3>
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Unlock more of Calmi</h3>
         <p class="text-gray-500 dark:text-gray-400 text-sm">Unlock all guided sessions, sleep sounds and new content every week.</p>
       </div>
       <div class="flex-1 border-r-0 md:border-r border-gray-200 dark:border-[#3a3a50] pr-0 md:pr-8">
@@ -166,7 +145,7 @@
     </div>
     <div class="text-center">
       <p class="text-sm text-gray-500 dark:text-gray-400">Just</p>
-      <p class="text-4xl font-bold text-gray-900 dark:text-white">₹99 <span class="text-base font-normal text-gray-500 dark:text-gray-400">/ month</span></p>
+      <p class="text-4xl font-bold text-gray-900 dark:text-gray-100">₹99 <span class="text-base font-normal text-gray-500 dark:text-gray-400">/ month</span></p>
       <app-primary-button label="Get Full Access" />
       <p class="mt-3 text-xs text-gray-400 flex items-center justify-center gap-1">
         <lucide-icon name="lock" [size]="12"></lucide-icon>
@@ -184,7 +163,7 @@
       <!-- Left -->
       <div class="flex-1">
         <p class="text-brand text-sm font-semibold uppercase tracking-wide mb-4">Community</p>
-        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
+        <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-4" style="--index:1">
           You're Not Alone<br>on This Journey
         </h2>
         <p class="text-gray-600 dark:text-gray-300 mb-8">
@@ -201,7 +180,7 @@
     <!-- Wellness Coaching -->
     <div class="mt-10 flex flex-col md:flex-row items-center gap-8">
       <div class="flex-1">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Wellness Coaching</h3>
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Wellness Coaching</h3>
         <p class="text-gray-600 dark:text-gray-300 mb-4">
           Personalized guidance to help you build healthier habits, manage stress, and achieve balance in all areas of your life.
         </p>
@@ -221,7 +200,7 @@
   <div class="flex flex-col md:flex-row gap-8">
     <!-- Left - Links card -->
     <app-card class="flex-1">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Calmi</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8">Calmi</h2>
       <div class="grid grid-cols-3 gap-y-4 mb-12">
         <a href="/about" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">About</a>
         <a href="https://instagram.com" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Instagram</a>

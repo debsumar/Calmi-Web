@@ -13,7 +13,7 @@ import { loaderInterceptor } from './core/interceptors/loader.interceptor';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
-    provideRouter(appRoutes, withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' })),
+    provideRouter(appRoutes, withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' })),
     provideHttpClient(withFetch(), withInterceptors([jwtInterceptor, loaderInterceptor])),
     provideAnimationsAsync(),
     providePrimeNG({

@@ -1,5 +1,5 @@
 <!-- Hero Section -->
-<section class="relative w-full overflow-hidden bg-[#451493] min-h-[360px] flex rounded-b-3xl md:rounded-none">
+<section class="relative w-full overflow-hidden bg-brand-dark min-h-[360px] flex rounded-b-3xl md:rounded-none">
   <div class="flex-1 relative z-10 px-8 md:px-16 py-16 flex flex-col justify-center">
     <div class="max-w-xl">
       <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
@@ -23,11 +23,11 @@
 
 <!-- Browse by Vibe -->
 <section class="py-16 px-8 max-w-6xl mx-auto">
-  <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Browse by Vibe</h2>
+  <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8">Browse by Vibe</h2>
   <div class="flex gap-4 md:gap-6 overflow-x-auto pb-4 scrollbar-hide">
     @for (vibe of vibes(); track vibe.label) {
       <button class="flex flex-col items-center justify-center gap-3 min-w-[120px] h-[120px] rounded-full transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md"
-              [class]="vibe.active ? 'bg-[#451493] text-white' : 'bg-white dark:bg-[#3a3a3c] text-gray-800 dark:text-white'">
+              [class]="vibe.active ? 'bg-brand-dark text-white' : 'bg-white dark:bg-[#2a2a40] text-gray-800 dark:text-gray-100'">
         <lucide-icon [name]="vibe.icon" [size]="28" [class]="vibe.active ? 'text-white' : 'text-gray-600 dark:text-gray-300'"></lucide-icon>
         <span class="text-sm font-semibold">{{ vibe.label }}</span>
       </button>
@@ -38,7 +38,7 @@
 <!-- Featured Sounds -->
 <section id="featured" class="py-12 px-8 max-w-6xl mx-auto overflow-hidden">
   <div class="flex items-center justify-between mb-8">
-    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Featured Sounds</h2>
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Featured Sounds</h2>
     <div class="flex items-center gap-4">
       <div class="hidden md:flex gap-2">
         <button (click)="carousel.scrollBy({left: -320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -57,26 +57,13 @@
   <div class="relative -mx-8 px-8">
     <div #carousel appDragScroll class="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       @for (sound of featuredSounds(); track sound.title) {
-        <div class="relative shrink-0 w-[85vw] md:w-[320px] rounded-2xl overflow-hidden aspect-[4/3] group cursor-pointer snap-start shadow-sm hover:shadow-md transition-shadow">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
-          <div class="absolute inset-0 bg-gray-200 dark:bg-gray-800">
-            <img [src]="'/assets/sound-images/' + sound.image + '.avif'" [alt]="sound.title" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
-          </div>
-          <!-- Heart icon -->
-          <button class="absolute top-4 left-4 z-20 text-white/80 hover:text-white">
-            <lucide-icon name="heart" [size]="18"></lucide-icon>
-          </button>
-          <!-- Play button -->
-          <button class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center group-hover:bg-black/80 transition-colors">
-            <lucide-icon name="play" [size]="22" class="text-white ml-0.5"></lucide-icon>
-          </button>
-          <!-- Info -->
-          <div class="absolute bottom-4 left-4 z-20 text-white pointer-events-none">
-            <p class="font-bold text-base">{{ sound.title }}</p>
-            <p class="text-white/70 text-sm">{{ sound.description }}</p>
-            <p class="text-white/50 text-xs mt-1">{{ sound.duration }}</p>
-          </div>
-        </div>
+        <app-sound-card
+          class="shrink-0 w-[85vw] md:w-[320px] snap-start"
+          [title]="sound.title"
+          [image]="sound.image"
+          [duration]="sound.duration"
+          [description]="sound.description"
+          [showControls]="true" />
       }
     </div>
   </div>
@@ -85,15 +72,15 @@
 <!-- All Sounds Section -->
 <section class="max-w-6xl mx-auto px-4 md:px-8 mb-32">
   <div class="flex items-center justify-between mb-8">
-    <h2 class="text-2xl font-bricolage font-bold text-gray-900 dark:text-white">All Sounds</h2>
+    <h2 class="text-2xl font-bricolage font-bold text-gray-900 dark:text-gray-100">All Sounds</h2>
     <div class="flex items-center gap-3">
       <!-- Duration Dropdown -->
-      <button class="px-4 py-2 bg-gray-100 dark:bg-[#160d26] rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#201335] transition-colors border border-transparent dark:border-white/5">
+      <button class="px-4 py-2 bg-gray-100 dark:bg-[#1a1a2e] rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#2a2a40] transition-colors border border-transparent dark:border-white/5">
         Duration
         <lucide-icon name="chevron-down" [size]="14"></lucide-icon>
       </button>
       <!-- Most Popular Dropdown -->
-      <button class="px-4 py-2 bg-gray-100 dark:bg-[#160d26] rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#201335] transition-colors border border-transparent dark:border-white/5">
+      <button class="px-4 py-2 bg-gray-100 dark:bg-[#1a1a2e] rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#2a2a40] transition-colors border border-transparent dark:border-white/5">
         Most Popular
         <lucide-icon name="chevron-down" [size]="14"></lucide-icon>
       </button>
@@ -102,7 +89,7 @@
 
   <div class="space-y-4">
     @for (sound of allSounds(); track sound.title) {
-      <div class="flex items-center p-3 rounded-2xl bg-white dark:bg-[#120822] border border-gray-100 dark:border-white/5 hover:border-brand/30 dark:hover:border-brand/30 transition-colors group cursor-pointer shadow-sm hover:shadow">
+      <div class="flex items-center p-3 rounded-2xl bg-white dark:bg-[#2a2a40] border border-gray-100 dark:border-white/5 hover:border-brand/30 dark:hover:border-brand/30 transition-colors group cursor-pointer shadow-sm hover:shadow">
         <!-- Thumbnail -->
         <div class="relative w-32 md:w-44 aspect-video rounded-xl overflow-hidden shrink-0">
           <img [src]="sound.image" [alt]="sound.title" class="w-full h-full object-cover">
@@ -116,7 +103,7 @@
         <!-- Details -->
         <div class="flex-1 min-w-0 pl-4 pr-4">
           <div class="flex items-center gap-3 mb-1">
-            <h3 class="font-bold text-base md:text-lg text-gray-900 dark:text-white truncate">{{ sound.title }}</h3>
+            <h3 class="font-bold text-base md:text-lg text-gray-900 dark:text-gray-100 truncate">{{ sound.title }}</h3>
             <span class="text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-full {{ sound.categoryColor }}">
               {{ sound.category }}
             </span>
@@ -147,14 +134,14 @@
 </section>
 
 <!-- Now Playing Player Bar -->
-<div class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#111122]/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 p-4 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] transform translate-y-0 transition-transform">
+<div class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#120822]/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 p-4 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] transform translate-y-0 transition-transform">
   <div class="max-w-6xl mx-auto flex items-center justify-between">
     <div class="flex items-center gap-4">
       <div class="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-800 overflow-hidden shrink-0">
         <img src="/assets/sound-images/rain.avif" class="w-full h-full object-cover">
       </div>
       <div class="hidden sm:block">
-        <h4 class="font-bold text-gray-900 dark:text-white text-sm">Rain on Window</h4>
+        <h4 class="font-bold text-gray-900 dark:text-gray-100 text-sm">Rain on Window</h4>
         <p class="text-xs text-gray-500">Currently playing</p>
       </div>
     </div>

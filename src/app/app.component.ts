@@ -5,7 +5,6 @@ import { OnboardingService } from './features/onboarding/services/onboarding.ser
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [RouterOutlet, OnboardingWizardComponent],
   template: `
     <router-outlet />

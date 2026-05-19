@@ -1,57 +1,84 @@
-import { Directive, ElementRef, HostListener, Renderer2, OnInit, OnDestroy } from '@angular/core';
+import { Directive, ElementRef, inject, signal, DestroyRef, afterNextRender } from '@angular/core';
 
 @Directive({
   selector: '[appDragScroll]',
-  standalone: true
 })
-export class DragScrollDirective implements OnInit, OnDestroy {
-  private isDown = false;
-  private startX: number = 0;
-  private scrollLeft: number = 0;
-  private slider!: HTMLElement;
+export class DragScrollDirective {
+  private el = inject(ElementRef<HTMLElement>);
+  private destroyRef = inject(DestroyRef);
 
-  constructor(private el: ElementRef, private renderer: Renderer2) {
-    this.slider = this.el.nativeElement;
+  private isDown = signal(false);
+  private startX = 0;
+  private scrollLeft = 0;
+
+  constructor() {
+    afterNextRender(() => this.setup());
   }
 
-  ngOnInit() {
-    this.renderer.setStyle(this.slider, 'cursor', 'grab');
-  }
+  private setup(): void {
+    const slider = this.el.nativeElement;
+    slider.style.cursor = 'grab';
 
-  ngOnDestroy() {
-    this.renderer.removeStyle(this.slider, 'cursor');
-  }
+    const onDown = (x: number) => {
+      this.isDown.set(true);
+      slider.style.cursor = 'grabbing';
+      slider.style.scrollSnapType = 'none';
+      this.startX = x - slider.offsetLeft;
+      this.scrollLeft = slider.scrollLeft;
+    };
 
-  @HostListener('mousedown', ['$event'])
-  onMouseDown(e: MouseEvent) {
-    this.isDown = true;
-    this.renderer.setStyle(this.slider, 'cursor', 'grabbing');
-    this.renderer.setStyle(this.slider, 'scroll-snap-type', 'none'); // Disable snap while dragging
-    this.startX = e.pageX - this.slider.offsetLeft;
-    this.scrollLeft = this.slider.scrollLeft;
-  }
+    const onMove = (e: MouseEvent | TouchEvent, x: number) => {
+      if (!this.isDown()) return;
+      e.preventDefault();
+      const walk = (x - slider.offsetLeft - this.startX) * 2;
+      const newScroll = this.scrollLeft - walk;
 
-  @HostListener('mouseleave')
-  onMouseLeave() {
-    if (!this.isDown) return;
-    this.isDown = false;
-    this.renderer.setStyle(this.slider, 'cursor', 'grab');
-    this.renderer.setStyle(this.slider, 'scroll-snap-type', 'x mandatory'); // Re-enable snap
-  }
+      // Bouncy overscroll
+      const maxScroll = slider.scrollWidth - slider.clientWidth;
+      if (newScroll < 0) {
+        slider.scrollLeft = 0;
+        slider.style.transform = `translateX(${Math.min(-newScroll * 0.3, 40)}px)`;
+      } else if (newScroll > maxScroll) {
+        slider.scrollLeft = maxScroll;
+        slider.style.transform = `translateX(${Math.max(-(newScroll - maxScroll) * 0.3, -40)}px)`;
+      } else {
+        slider.style.transform = '';
+        slider.scrollLeft = newScroll;
+      }
+    };
 
-  @HostListener('mouseup')
-  onMouseUp() {
-    this.isDown = false;
-    this.renderer.setStyle(this.slider, 'cursor', 'grab');
-    this.renderer.setStyle(this.slider, 'scroll-snap-type', 'x mandatory'); // Re-enable snap
-  }
+    const onUp = () => {
+      if (!this.isDown()) return;
+      this.isDown.set(false);
+      slider.style.cursor = 'grab';
+      slider.style.scrollSnapType = 'x mandatory';
+      // Spring back
+      if (slider.style.transform) {
+        slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        slider.style.transform = '';
+        setTimeout(() => { slider.style.transition = ''; }, 300);
+      }
+    };
 
-  @HostListener('mousemove', ['$event'])
-  onMouseMove(e: MouseEvent) {
-    if (!this.isDown) return;
-    e.preventDefault();
-    const x = e.pageX - this.slider.offsetLeft;
-    const walk = (x - this.startX) * 2; // Scroll speed multiplier
-    this.slider.scrollLeft = this.scrollLeft - walk;
+    // Mouse events
+    slider.addEventListener('mousedown', (e: MouseEvent) => onDown(e.pageX));
+    slider.addEventListener('mousemove', (e: MouseEvent) => onMove(e, e.pageX));
+    slider.addEventListener('mouseup', onUp);
+    slider.addEventListener('mouseleave', onUp);
+
+    // Touch events
+    slider.addEventListener('touchstart', (e: TouchEvent) => onDown(e.touches[0].pageX), { passive: true });
+    slider.addEventListener('touchmove', (e: TouchEvent) => onMove(e, e.touches[0].pageX), { passive: false });
+    slider.addEventListener('touchend', onUp);
+
+    this.destroyRef.onDestroy(() => {
+      slider.removeEventListener('mousedown', onDown as any);
+      slider.removeEventListener('mousemove', onMove as any);
+      slider.removeEventListener('mouseup', onUp);
+      slider.removeEventListener('mouseleave', onUp);
+      slider.removeEventListener('touchstart', onDown as any);
+      slider.removeEventListener('touchmove', onMove as any);
+      slider.removeEventListener('touchend', onUp);
+    });
   }
 }
