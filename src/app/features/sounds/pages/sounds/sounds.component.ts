@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
+import { DragScrollDirective } from '@/shared/directives/drag-scroll.directive';
 
 @Component({
   selector: 'app-sounds',
   standalone: true,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, DragScrollDirective],
   templateUrl: './sounds.component.html',
 })
 export class SoundsComponent {
@@ -19,8 +20,8 @@ export class SoundsComponent {
   ]);
 
   featuredSounds = signal([
-    { title: 'Rain on Window', description: 'Gentle rain to calm your mind', duration: '45:00', bg: 'bg-[#4a6070]' },
-    { title: 'Ocean Waves', description: 'Waves to relax and let go', duration: '60:00', bg: 'bg-[#1a3050]' },
-    { title: 'Forest Ambience', description: 'Feel the quiet of the forest', duration: '55:00', bg: 'bg-[#2a4030]' },
+    { title: 'Rain on Window', description: 'Gentle rain to calm your mind', duration: '45:00', image: 'rain' },
+    { title: 'Ocean Waves', description: 'Waves to relax and let go', duration: '60:00', image: 'ocean-waves' },
+    { title: 'Night Ambience', description: 'Feel the quiet of the night', duration: '55:00', image: 'night-ambience' },
   ]);
 }

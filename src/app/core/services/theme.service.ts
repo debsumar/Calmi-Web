@@ -33,7 +33,8 @@ const PRIMARY_PALETTE_DARK = {
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  mode = signal<ThemeMode>((localStorage.getItem('calmi-theme') as ThemeMode) || 'light');
+  private readonly _mode = signal<ThemeMode>((localStorage.getItem('calmi-theme') as ThemeMode) || 'light');
+  readonly mode = this._mode.asReadonly();
 
   darkTheme = computed(() => {
     const m = this.mode();
@@ -64,7 +65,7 @@ export class ThemeService {
 
   toggle(): void {
     const next: ThemeMode = this.mode() === 'light' ? 'dark' : this.mode() === 'dark' ? 'auto' : 'light';
-    this.mode.set(next);
+    this._mode.set(next);
   }
 
   private applyDarkMode(isDark: boolean): void {

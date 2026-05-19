@@ -2,13 +2,14 @@ import { Injectable, signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class LoaderService {
-  loading = signal(false);
+  private readonly _loading = signal(false);
+  readonly loading = this._loading.asReadonly();
 
   show(): void {
-    this.loading.set(true);
+    this._loading.set(true);
   }
 
   hide(): void {
-    this.loading.set(false);
+    this._loading.set(false);
   }
 }

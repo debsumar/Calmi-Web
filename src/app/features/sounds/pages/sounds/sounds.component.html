@@ -15,7 +15,7 @@
   </div>
   <!-- Right side night illustration placeholder -->
   <div class="hidden md:block absolute right-0 top-0 h-full w-1/2 opacity-60">
-    <img src="assets/Illustration_2.png" alt="" class="h-full w-full object-cover object-center pointer-events-none">
+    <img src="assets/Illustration_2.avif" alt="" class="h-full w-full object-cover object-center pointer-events-none">
   </div>
 </section>
 
@@ -37,33 +37,48 @@
 </section>
 
 <!-- Featured Sounds -->
-<section class="py-12 px-8 max-w-6xl mx-auto">
+<section class="py-12 px-8 max-w-6xl mx-auto overflow-hidden">
   <div class="flex items-center justify-between mb-8">
     <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Featured Sounds</h2>
-    <a href="/sounds" class="text-brand text-sm font-medium flex items-center gap-1 hover:underline">
-      View All <lucide-icon name="arrow-right" [size]="14"></lucide-icon>
-    </a>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    @for (sound of featuredSounds(); track sound.title) {
-      <div class="relative rounded-2xl overflow-hidden aspect-[4/3] group cursor-pointer">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
-        <div [class]="'absolute inset-0 ' + sound.bg"></div>
-        <!-- Heart icon -->
-        <button class="absolute top-4 left-4 z-20 text-white/80 hover:text-white">
-          <lucide-icon name="heart" [size]="18"></lucide-icon>
+    <div class="flex items-center gap-4">
+      <div class="hidden md:flex gap-2">
+        <button (click)="carousel.scrollBy({left: -320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <lucide-icon name="chevron-left" [size]="20"></lucide-icon>
         </button>
-        <!-- Play button -->
-        <button class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center group-hover:bg-black/80 transition-colors">
-          <lucide-icon name="play" [size]="22" class="text-white ml-0.5"></lucide-icon>
+        <button (click)="carousel.scrollBy({left: 320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <lucide-icon name="chevron-right" [size]="20"></lucide-icon>
         </button>
-        <!-- Info -->
-        <div class="absolute bottom-4 left-4 z-20 text-white">
-          <p class="font-bold text-base">{{ sound.title }}</p>
-          <p class="text-white/70 text-sm">{{ sound.description }}</p>
-          <p class="text-white/50 text-xs mt-1">{{ sound.duration }}</p>
-        </div>
       </div>
-    }
+      <a href="/sounds" class="text-brand text-sm font-medium flex items-center gap-1 hover:underline">
+        View All <lucide-icon name="arrow-right" [size]="14"></lucide-icon>
+      </a>
+    </div>
+  </div>
+  
+  <div class="relative -mx-8 px-8">
+    <div #carousel appDragScroll class="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      @for (sound of featuredSounds(); track sound.title) {
+        <div class="relative shrink-0 w-[85vw] md:w-[320px] rounded-2xl overflow-hidden aspect-[4/3] group cursor-pointer snap-start shadow-sm hover:shadow-md transition-shadow">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
+          <div class="absolute inset-0 bg-gray-200 dark:bg-gray-800">
+            <img [src]="'/assets/sound-images/' + sound.image + '.avif'" [alt]="sound.title" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
+          </div>
+          <!-- Heart icon -->
+          <button class="absolute top-4 left-4 z-20 text-white/80 hover:text-white">
+            <lucide-icon name="heart" [size]="18"></lucide-icon>
+          </button>
+          <!-- Play button -->
+          <button class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center group-hover:bg-black/80 transition-colors">
+            <lucide-icon name="play" [size]="22" class="text-white ml-0.5"></lucide-icon>
+          </button>
+          <!-- Info -->
+          <div class="absolute bottom-4 left-4 z-20 text-white pointer-events-none">
+            <p class="font-bold text-base">{{ sound.title }}</p>
+            <p class="text-white/70 text-sm">{{ sound.description }}</p>
+            <p class="text-white/50 text-xs mt-1">{{ sound.duration }}</p>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 </section>

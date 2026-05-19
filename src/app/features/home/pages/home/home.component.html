@@ -1,7 +1,7 @@
 <!-- Hero Section -->
 <section class="relative w-full overflow-hidden bg-[#9b8abf] min-h-[500px] flex items-center justify-center">
-  <img src="assets/Illustration_2.png" alt="" class="absolute left-0 top-0 h-full w-auto object-cover object-left pointer-events-none z-0">
-  <img src="assets/Illustration_1.png" alt="" class="absolute right-0 top-0 h-full w-auto object-cover object-right pointer-events-none z-0">
+  <img src="assets/Illustration_2.avif" alt="" class="absolute left-0 top-0 h-full w-auto object-cover object-left pointer-events-none z-0">
+  <img src="assets/Illustration_1.avif" alt="" class="absolute right-0 top-0 h-full w-auto object-cover object-right pointer-events-none z-0">
 
   <div class="relative z-10 text-center px-4 max-w-2xl py-16">
     <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
@@ -26,16 +26,19 @@
 
   <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
     @for (card of moodCards(); track card.title) {
-      <app-card class="cursor-pointer hover:shadow-lg transition-shadow h-[280px]">
-        <div class="h-full flex flex-col items-center text-center justify-between">
-          <div class="w-16 h-16 bg-[#e8e4f0] dark:bg-[#3a2a5e] rounded-full flex items-center justify-center mb-6">
-            <lucide-icon [name]="card.icon" [size]="28" class="text-brand"></lucide-icon>
+      <app-card class="cursor-pointer hover:-translate-y-2 transition-transform duration-300 group">
+        <div class="flex flex-col h-full items-start">
+          <div class="w-14 h-14 rounded-2xl bg-brand/10 dark:bg-white/10 text-brand dark:text-brand-light flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <lucide-icon [name]="card.icon" [size]="28"></lucide-icon>
           </div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">{{ card.title }}</h3>
-          <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">{{ card.description }}</p>
-          <button class="w-10 h-10 min-w-10 min-h-10 flex items-center justify-center rounded-full border-2 border-brand text-brand hover:bg-brand hover:text-white transition-colors shrink-0">
-            <lucide-icon name="arrow-right" [size]="16"></lucide-icon>
-          </button>
+          <h3 class="text-2xl font-bold mb-3 text-gray-900 dark:text-white">{{ card.title }}</h3>
+          <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-6 flex-1">
+            {{ card.description }}
+          </p>
+          <div class="mt-auto flex items-center gap-2 text-brand font-semibold group-hover:translate-x-2 transition-transform duration-300">
+            <span>Start Session</span>
+            <lucide-icon name="arrow-right" [size]="18"></lucide-icon>
+          </div>
         </div>
       </app-card>
     }
@@ -106,23 +109,26 @@
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-[#8ba4c8]">
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-      <div class="absolute bottom-4 left-4 text-white">
+    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200 dark:bg-gray-800">
+      <img src="/assets/sound-images/rain.avif" alt="Rain" class="absolute inset-0 w-full h-full object-cover">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10"></div>
+      <div class="absolute bottom-4 left-4 text-white z-20">
         <p class="font-bold">Rain</p>
         <p class="text-sm text-white/80">45:00</p>
       </div>
     </div>
-    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-[#1a1a3e]">
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-      <div class="absolute bottom-4 left-4 text-white">
+    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200 dark:bg-gray-800">
+      <img src="/assets/sound-images/night-ambience.avif" alt="Night Ambience" class="absolute inset-0 w-full h-full object-cover">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10"></div>
+      <div class="absolute bottom-4 left-4 text-white z-20">
         <p class="font-bold">Night Ambience</p>
         <p class="text-sm text-white/80">60:00</p>
       </div>
     </div>
-    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-[#2a5080]">
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-      <div class="absolute bottom-4 left-4 text-white">
+    <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200 dark:bg-gray-800">
+      <img src="/assets/sound-images/ocean-waves.avif" alt="Ocean Waves" class="absolute inset-0 w-full h-full object-cover">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10"></div>
+      <div class="absolute bottom-4 left-4 text-white z-20">
         <p class="font-bold">Ocean Waves</p>
         <p class="text-sm text-white/80">30:00</p>
       </div>
@@ -188,7 +194,7 @@
       </div>
       <!-- Right illustration -->
       <div class="flex-1 flex items-end justify-end overflow-hidden max-h-[280px]">
-        <img src="assets/Illustration_11.png" alt="Community" class="max-h-[280px] w-auto object-contain object-right-bottom">
+        <img src="assets/Illustration_11.avif" alt="Community" class="max-h-[280px] w-auto object-contain object-right-bottom">
       </div>
     </div>
 

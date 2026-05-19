@@ -14,6 +14,14 @@ export const appRoutes: Routes = [
         path: 'sounds',
         loadComponent: () => import('@/features/sounds/pages/sounds/sounds.component').then((m) => m.SoundsComponent),
       },
+      {
+        path: 'about',
+        loadComponent: () => import('@/features/about/pages/about/about.component').then((m) => m.AboutComponent),
+      },
+      {
+        path: 'pricing',
+        loadComponent: () => import('@/features/pricing/pages/pricing/pricing.component').then((m) => m.PricingComponent),
+      },
       { path: 'notfound', loadComponent: () => import('@/pages/notfound/notfound.component').then((m) => m.NotFoundComponent) },
     ],
   },

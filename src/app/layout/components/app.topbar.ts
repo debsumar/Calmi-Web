@@ -8,9 +8,9 @@ import { ThemeService } from '../../core/services/theme.service';
   standalone: true,
   imports: [RouterLink, RouterLinkActive, LucideAngularModule],
   template: `
-    <header class="h-16 flex items-center justify-between px-8 bg-white dark:bg-[#1a1a2e] sticky top-0 z-50">
+    <header class="h-16 flex items-center justify-between px-8 bg-white dark:bg-[#1a1a2e]">
       <a routerLink="/" class="flex items-center">
-        <img src="assets/logo.png" alt="Calmi" class="h-10">
+        <img src="assets/logo.avif" alt="Calmi" class="h-10">
       </a>
       <nav class="flex items-center gap-8">
         @for (link of navLinks(); track link.path) {

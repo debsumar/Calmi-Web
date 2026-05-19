@@ -1,0 +1,103 @@
+<div class="fixed inset-0 z-[100] flex flex-col bg-white/95 dark:bg-[#1a1a2e]/95 backdrop-blur-xl transition-all duration-500 overflow-hidden text-gray-900 dark:text-white">
+  
+  <!-- Abstract Orbs -->
+  <div class="absolute top-0 left-0 w-full h-full pointer-events-none opacity-50 dark:opacity-20 z-0 flex items-center justify-center overflow-hidden">
+    <div class="w-[40rem] h-[40rem] bg-brand/20 rounded-full blur-[100px] absolute -top-40 -left-40 animate-pulse-soft"></div>
+    <div class="w-[30rem] h-[30rem] bg-[#e8724a]/10 rounded-full blur-[80px] absolute bottom-10 -right-20 animate-pulse-soft" style="animation-delay: 1.5s;"></div>
+  </div>
+
+  <!-- Top Bar: Progress and Close -->
+  <div class="relative z-10 w-full px-6 py-8 flex items-center justify-between">
+    <button (click)="onboardingService.close()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+      <lucide-icon name="x" [size]="24"></lucide-icon>
+    </button>
+    <div class="flex-1 max-w-sm mx-8">
+      <div class="h-1.5 w-full bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+        <div class="h-full bg-brand rounded-full transition-all duration-700 ease-out" 
+             [style.width]="onboardingService.progress() + '%'"></div>
+      </div>
+    </div>
+    <div class="w-10"></div> <!-- Placeholder for centering -->
+  </div>
+
+  <!-- Content Area -->
+  <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 scrollbar-hide overflow-y-auto">
+    
+    <!-- Step 1: Goal -->
+    @if (onboardingService.currentStep() === 1) {
+      <div class="w-full max-w-2xl animate-slide-up flex flex-col items-center">
+        <h2 class="text-3xl md:text-5xl font-bold mb-4 text-center">What brings you to Calmi?</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-lg mb-12 text-center">We'll personalize your experience based on your main goal.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          @for (goal of goals; track goal.id) {
+            <button (click)="selectGoal(goal.id)" class="flex items-center gap-6 p-6 rounded-3xl bg-white dark:bg-[#2a2a40] border-2 border-transparent hover:border-brand/40 dark:hover:border-brand/50 shadow-lg shadow-gray-200/50 dark:shadow-none hover:-translate-y-1 hover:shadow-xl transition-all duration-300 text-left group">
+              <div class="w-14 h-14 rounded-2xl bg-brand/10 dark:bg-white/5 text-brand dark:text-brand-light flex items-center justify-center group-hover:scale-110 transition-transform">
+                <lucide-icon [name]="goal.icon" [size]="28"></lucide-icon>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold mb-1">{{ goal.title }}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ goal.desc }}</p>
+              </div>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Step 2: Sounds -->
+    @if (onboardingService.currentStep() === 2) {
+      <div class="w-full max-w-3xl animate-slide-up flex flex-col items-center">
+        <h2 class="text-3xl md:text-5xl font-bold mb-4 text-center">What sounds soothe you?</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-lg mb-12 text-center">Pick a starting vibe. You can always change this later.</p>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
+          @for (sound of sounds; track sound.id) {
+            <button (click)="selectSound(sound.id)" class="flex flex-col items-center justify-center gap-4 p-8 rounded-3xl bg-white dark:bg-[#2a2a40] border-2 border-transparent hover:border-brand/40 dark:hover:border-brand/50 shadow-lg shadow-gray-200/50 dark:shadow-none hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group">
+              <div class="w-16 h-16 rounded-full bg-brand/10 dark:bg-white/5 text-brand dark:text-brand-light flex items-center justify-center group-hover:scale-110 transition-transform">
+                <lucide-icon [name]="sound.icon" [size]="32"></lucide-icon>
+              </div>
+              <h3 class="text-lg font-bold text-center">{{ sound.title }}</h3>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Step 3: Commitment -->
+    @if (onboardingService.currentStep() === 3) {
+      <div class="w-full max-w-2xl animate-slide-up flex flex-col items-center">
+        <h2 class="text-3xl md:text-5xl font-bold mb-4 text-center">How much time do you have?</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-lg mb-12 text-center">Even a few minutes a day can make a big difference.</p>
+        
+        <div class="flex flex-col gap-4 w-full">
+          @for (duration of durations; track duration.id) {
+            <button (click)="selectDuration(duration.id)" class="flex items-center justify-between p-6 rounded-3xl bg-white dark:bg-[#2a2a40] border-2 border-transparent hover:border-brand/40 dark:hover:border-brand/50 shadow-lg shadow-gray-200/50 dark:shadow-none hover:-translate-y-1 hover:shadow-xl transition-all duration-300 text-left group">
+              <div>
+                <h3 class="text-2xl font-bold mb-1">{{ duration.title }}</h3>
+                <p class="text-base text-gray-500 dark:text-gray-400">{{ duration.desc }}</p>
+              </div>
+              <lucide-icon name="arrow-right" [size]="24" class="text-gray-300 dark:text-gray-600 group-hover:text-brand group-hover:translate-x-2 transition-all"></lucide-icon>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Step 4: Success / Loading -->
+    @if (onboardingService.currentStep() === 4) {
+      <div class="w-full max-w-lg animate-slide-up flex flex-col items-center text-center">
+        <div class="relative w-32 h-32 flex items-center justify-center mb-8">
+          <div class="absolute inset-0 bg-brand/20 rounded-full animate-ping" style="animation-duration: 2s;"></div>
+          <div class="absolute inset-2 bg-brand/40 rounded-full animate-ping" style="animation-duration: 2s; animation-delay: 0.5s;"></div>
+          <div class="relative w-20 h-20 bg-brand text-white rounded-full flex items-center justify-center shadow-2xl shadow-brand/50">
+            <lucide-icon name="sparkles" [size]="40"></lucide-icon>
+          </div>
+        </div>
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Curating your sanctuary...</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-lg">Setting up your space for perfect relaxation.</p>
+      </div>
+    }
+
+  </div>
+</div>

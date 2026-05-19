@@ -8,7 +8,7 @@ import { AppTopbar } from './app.topbar';
   imports: [RouterOutlet, AppTopbar],
   template: `
     <div class="min-h-screen flex flex-col bg-[#f5f3f0] dark:bg-[#1a1a2e]">
-      <app-topbar />
+      <app-topbar class="sticky top-0 z-50 w-full" />
       <main class="flex-1">
         <router-outlet />
       </main>

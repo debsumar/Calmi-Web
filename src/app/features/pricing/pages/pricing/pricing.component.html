@@ -1,0 +1,91 @@
+<div class="min-h-[calc(100vh-4rem)] flex flex-col bg-[#f5f3f0] dark:bg-[#1a1a2e] text-gray-900 dark:text-white transition-colors duration-300">
+  
+  <!-- Header Section -->
+  <section class="pt-24 pb-16 px-6 text-center animate-fade-in-up opacity-0">
+    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-white/10 backdrop-blur-sm border border-brand/20 dark:border-white/10 text-brand dark:text-brand-light text-sm font-semibold mb-6">
+      <lucide-icon name="heart" [size]="16"></lucide-icon>
+      <span>Invest in yourself</span>
+    </div>
+    
+    <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
+      Simple pricing for a <span class="text-brand dark:text-brand-light">calmer mind.</span>
+    </h1>
+    
+    <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-10">
+      Choose the plan that fits your journey. No hidden fees, cancel anytime.
+    </p>
+
+    <!-- Billing Toggle -->
+    <div class="flex items-center justify-center gap-4 text-base font-medium">
+      <span [class.text-brand]="!annualBilling()" [class.dark:text-brand-light]="!annualBilling()" class="transition-colors">Monthly</span>
+      
+      <button (click)="toggleBilling()" class="relative w-16 h-8 rounded-full bg-gray-300 dark:bg-gray-700 transition-colors duration-300 focus:outline-none" [class.bg-brand]="annualBilling()" [class.dark:bg-brand]="annualBilling()">
+        <div class="absolute top-1 left-1 bg-white w-6 h-6 rounded-full transition-transform duration-300 shadow-sm" [class.translate-x-8]="annualBilling()"></div>
+      </button>
+
+      <div class="flex items-center gap-2">
+        <span [class.text-brand]="annualBilling()" [class.dark:text-brand-light]="annualBilling()" class="transition-colors">Annually</span>
+        <span class="text-xs font-bold px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full animate-bounce">Save 35%</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Cards -->
+  <section class="pb-24 px-6 max-w-7xl mx-auto w-full relative z-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+      @for (plan of plans(); track plan.name; let i = $index) {
+        <div class="flex flex-col h-full opacity-0 animate-fade-in-up" [class.delay-100]="i === 0" [class.delay-200]="i === 1" [class.delay-300]="i === 2">
+          
+          <div class="flex flex-col h-full bg-white dark:bg-[#2a2a40] rounded-3xl p-8 relative transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+               [class.border-2]="plan.highlight"
+               [class.border-brand]="plan.highlight"
+               [class.shadow-xl]="plan.highlight"
+               [class.shadow-md]="!plan.highlight"
+               [class.dark:shadow-black/50]="!plan.highlight">
+            
+            @if (plan.highlight) {
+              <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand text-white text-xs font-bold uppercase tracking-wider py-1 px-4 rounded-full shadow-md">
+                Most Popular
+              </div>
+            }
+
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white" [class.bg-gray-800]="!plan.highlight" [class.bg-brand]="plan.highlight">
+                <lucide-icon [name]="plan.icon" [size]="24"></lucide-icon>
+              </div>
+              <h3 class="text-2xl font-bold">{{ plan.name }}</h3>
+            </div>
+
+            <div class="mb-4">
+              <span class="text-5xl font-extrabold">{{ plan.price }}</span>
+              <span class="text-gray-500 dark:text-gray-400 ml-2">/ {{ plan.period }}</span>
+            </div>
+            
+            <p class="text-gray-600 dark:text-gray-400 mb-8 pb-8 border-b border-gray-200 dark:border-white/10">
+              {{ plan.description }}
+            </p>
+
+            <ul class="flex flex-col gap-4 mb-8 flex-1">
+              @for (feature of plan.features; track feature) {
+                <li class="flex items-start gap-3">
+                  <lucide-icon name="check-circle" [size]="20" class="text-brand shrink-0 mt-0.5"></lucide-icon>
+                  <span class="text-gray-700 dark:text-gray-300 leading-snug">{{ feature }}</span>
+                </li>
+              }
+            </ul>
+
+            <div class="mt-auto pt-4">
+              <app-primary-button 
+                class="w-full block"
+                (clicked)="getStarted()"
+                [label]="plan.buttonText" 
+                [variant]="plan.buttonVariant">
+              </app-primary-button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+</div>

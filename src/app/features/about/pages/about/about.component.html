@@ -1,0 +1,71 @@
+<div class="min-h-[calc(100vh-4rem)] flex flex-col bg-[#f5f3f0] dark:bg-[#1a1a2e] text-gray-900 dark:text-white transition-colors duration-300">
+  
+  <!-- Hero Section -->
+  <section class="relative pt-24 pb-32 px-6 overflow-hidden flex flex-col items-center text-center">
+    <!-- Abstract Background shapes -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-full pointer-events-none opacity-40 dark:opacity-20 z-0 flex justify-center">
+      <div class="w-96 h-96 bg-brand/30 rounded-full blur-3xl absolute -top-10 -left-20"></div>
+      <div class="w-80 h-80 bg-[#e8724a]/20 rounded-full blur-3xl absolute top-20 right-0"></div>
+    </div>
+
+    <div class="relative z-10 max-w-3xl mx-auto animate-fade-in-up opacity-0">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-white/10 backdrop-blur-sm border border-brand/20 dark:border-white/10 text-brand dark:text-brand-light text-sm font-semibold mb-8">
+        <lucide-icon name="leaf" [size]="16"></lucide-icon>
+        <span>Our Story</span>
+      </div>
+      
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight text-gray-900 dark:text-white">
+        Find Your <span class="text-brand dark:text-brand-light">Center.</span>
+      </h1>
+      
+      <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
+        In a world of constant noise and endless notifications, we built Calmi to be your digital sanctuary. A place to breathe, reflect, and just be.
+      </p>
+    </div>
+  </section>
+
+  <!-- Image Break / Visual Section -->
+  <section class="relative -mt-12 px-6 z-20 animate-fade-in-up delay-100 opacity-0">
+    <div class="max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl shadow-brand/10 dark:shadow-black/50 aspect-[21/9] bg-white dark:bg-[#2a2a40] relative">
+      <img src="assets/Illustration_3.avif" alt="Calmi Landscape" class="absolute inset-0 w-full h-full object-cover opacity-90 dark:opacity-70 mix-blend-multiply dark:mix-blend-screen">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+    </div>
+  </section>
+
+  <!-- Values Section -->
+  <section class="py-24 px-6 relative z-10">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-16 animate-fade-in-up delay-200 opacity-0">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">Our Core Values</h2>
+        <p class="text-gray-600 dark:text-gray-400">The principles that guide everything we create.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        @for (value of values; track value.title) {
+          <app-card class="animate-fade-in-up delay-300 opacity-0 hover:-translate-y-2 transition-transform duration-300 group">
+            <div class="flex flex-col h-full items-start">
+              <div class="w-14 h-14 rounded-2xl bg-brand/10 dark:bg-white/10 text-brand dark:text-brand-light flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <lucide-icon [name]="value.icon" [size]="28"></lucide-icon>
+              </div>
+              <h3 class="text-2xl font-bold mb-3 text-gray-900 dark:text-white">{{ value.title }}</h3>
+              <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+                {{ value.description }}
+              </p>
+            </div>
+          </app-card>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer CTA -->
+  <section class="py-20 px-6 bg-white dark:bg-[#111122]">
+    <div class="max-w-4xl mx-auto text-center animate-fade-in-up delay-300 opacity-0">
+      <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Ready to start your journey?</h2>
+      <a href="/sounds" class="inline-flex items-center gap-2 px-8 py-4 bg-brand hover:bg-[#7c6499] text-white font-semibold rounded-full shadow-lg transition-all duration-300 group">
+        <span>Listen to Sounds</span>
+        <lucide-icon name="headphones" [size]="20" class="group-hover:scale-110 transition-transform"></lucide-icon>
+      </a>
+    </div>
+  </section>
+</div>
