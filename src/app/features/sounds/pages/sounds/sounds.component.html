@@ -1,36 +1,35 @@
 <!-- Hero Section -->
-<section class="relative w-full overflow-hidden bg-brand-dark min-h-[320px] flex items-center rounded-b-2xl">
-  <div class="relative z-10 px-8 md:px-16 py-12 max-w-xl">
-    <h1 class="text-3xl md:text-4xl font-bold text-white leading-tight mb-4">
-      Sounds for when you need to slow down
-    </h1>
-    <p class="text-white/80 text-base mb-6">
-      Immerse yourself in soothing sounds that help you relax, focus or sleep better.
-    </p>
-    <div class="relative">
-      <lucide-icon name="search" [size]="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/50"></lucide-icon>
-      <input type="text" placeholder="Search sounds..."
-             class="w-full bg-white/10 border border-white/20 rounded-full py-3 pl-11 pr-4 text-white placeholder-white/50 focus:outline-none focus:border-white/40">
+<section class="relative w-full overflow-hidden bg-[#451493] min-h-[360px] flex rounded-b-3xl md:rounded-none">
+  <div class="flex-1 relative z-10 px-8 md:px-16 py-16 flex flex-col justify-center">
+    <div class="max-w-xl">
+      <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+        Sounds for when you<br>need to slow down
+      </h1>
+      <p class="text-white/90 text-lg mb-8">
+        Immerse yourself in soothing sounds that help you relax, focus or sleep better.
+      </p>
+      <div class="relative w-full">
+        <lucide-icon name="search" [size]="20" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/50"></lucide-icon>
+        <input type="text" placeholder="Search sounds..."
+               class="w-full bg-transparent border border-white/30 rounded-full py-4 pl-12 pr-4 text-white placeholder-white/50 focus:outline-none focus:border-white focus:bg-white/5 transition-all">
+      </div>
     </div>
   </div>
-  <!-- Right side night illustration placeholder -->
-  <div class="hidden md:block absolute right-0 top-0 h-full w-1/2 opacity-60">
-    <img src="assets/Illustration_2.avif" alt="" class="h-full w-full object-cover object-center pointer-events-none">
+  <!-- Right side moon/stars illustration -->
+  <div class="hidden md:block relative w-[45%] shrink-0">
+    <img src="assets/sound-hero.png" alt="Moon and Stars Illustration" class="absolute inset-0 w-full h-full object-cover object-left-top pointer-events-none">
   </div>
 </section>
 
 <!-- Browse by Vibe -->
-<section class="py-12 px-8 max-w-6xl mx-auto">
-  <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8">Browse by Vibe</h2>
-  <div class="flex gap-4 overflow-x-auto pb-2">
+<section class="py-16 px-8 max-w-6xl mx-auto">
+  <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Browse by Vibe</h2>
+  <div class="flex gap-4 md:gap-6 overflow-x-auto pb-4 scrollbar-hide">
     @for (vibe of vibes(); track vibe.label) {
-      <button class="flex flex-col items-center gap-2 min-w-[100px]"
-              [class]="vibe.active ? 'opacity-100' : 'opacity-70 hover:opacity-100'">
-        <div class="w-16 h-16 rounded-full flex items-center justify-center transition-colors"
-             [class]="vibe.active ? 'bg-brand-dark text-white' : 'bg-gray-200 dark:bg-[#3a3a50] text-gray-700 dark:text-gray-300'">
-          <lucide-icon [name]="vibe.icon" [size]="24"></lucide-icon>
-        </div>
-        <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ vibe.label }}</span>
+      <button class="flex flex-col items-center justify-center gap-3 min-w-[120px] h-[120px] rounded-full transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md"
+              [class]="vibe.active ? 'bg-[#451493] text-white' : 'bg-white dark:bg-[#3a3a3c] text-gray-800 dark:text-white'">
+        <lucide-icon [name]="vibe.icon" [size]="28" [class]="vibe.active ? 'text-white' : 'text-gray-600 dark:text-gray-300'"></lucide-icon>
+        <span class="text-sm font-semibold">{{ vibe.label }}</span>
       </button>
     }
   </div>
