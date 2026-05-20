@@ -3,6 +3,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { CardComponent } from '@/shared/components/cards/card.component';
 import { PrimaryButtonComponent } from '@/shared/components/primary-button/primary-button.component';
 import { OnboardingService } from '@/features/onboarding/services/onboarding.service';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 
 interface PricingPlan {
   name: string;
@@ -18,20 +19,8 @@ interface PricingPlan {
 
 @Component({
   selector: 'app-pricing',
-  imports: [LucideAngularModule, PrimaryButtonComponent],
+  imports: [LucideAngularModule, PrimaryButtonComponent, AnimateOnScrollDirective],
   templateUrl: './pricing.component.html',
-  styles: [`
-    @keyframes fadeInUp {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .animate-fade-in-up {
-      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    .delay-100 { animation-delay: 100ms; }
-    .delay-200 { animation-delay: 200ms; }
-    .delay-300 { animation-delay: 300ms; }
-  `]
 })
 export class PricingComponent {
   onboardingService = inject(OnboardingService);

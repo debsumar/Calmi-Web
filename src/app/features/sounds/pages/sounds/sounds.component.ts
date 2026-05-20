@@ -16,6 +16,7 @@ export class SoundsComponent {
 
   showLeftShadow = signal(false);
   showRightShadow = signal(true);
+  activeSlide = signal(0);
 
   constructor() {
     afterNextRender(() => {
@@ -51,6 +52,8 @@ export class SoundsComponent {
     } else {
       this.showRightShadow.set(false);
     }
+    const cardWidth = 260 + 24; // card width + gap
+    this.activeSlide.set(Math.round(scrollLeft / cardWidth));
   }
   vibes = signal([
     { icon: 'waves', label: 'All Sounds', active: true },

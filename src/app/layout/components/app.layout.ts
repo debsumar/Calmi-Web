@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AppTopbar } from './app.topbar';
 import { LoginDialogComponent } from '@/shared/components/login-dialog/login-dialog.component';
+import { ScrollPositionService } from '@/core/services/scroll-position.service';
 
 @Component({
   selector: 'app-layout',
@@ -16,4 +17,6 @@ import { LoginDialogComponent } from '@/shared/components/login-dialog/login-dia
     <app-login-dialog />
   `,
 })
-export class AppLayout {}
+export class AppLayout {
+  private readonly _ = inject(ScrollPositionService);
+}

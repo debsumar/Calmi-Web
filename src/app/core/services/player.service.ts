@@ -86,7 +86,6 @@ export class PlayerService {
 
   toggleRepeat(): void {
     this.repeat.update(v => !v);
-    if (this.audioEl) this.audioEl.loop = this.repeat();
   }
 
   toggleShuffle(): void {
@@ -97,7 +96,8 @@ export class PlayerService {
     const time = (percent / 100) * this.totalSeconds();
     this.elapsed.set(Math.floor(time));
     if (this.audioEl) {
-      this.audioEl.currentTime = time;
+      const actualDuration = this.audioEl.duration || 1;
+      this.audioEl.currentTime = time % actualDuration;
     }
   }
 
@@ -107,23 +107,19 @@ export class PlayerService {
       this.audioEl = null;
     }
     this.stopTimer();
+
+    // Always use track metadata duration as the display duration
+    const track = this.nowPlaying();
+    if (track) this.totalSeconds.set(this.parseDuration(track.duration));
+
     if (src) {
       this.audioEl = new Audio(src);
-      this.audioEl.loop = this.repeat();
+      this.audioEl.loop = true; // Always loop — we control stop via display duration
       this.audioEl.volume = this.volume();
       this.audioEl.playbackRate = this.speed();
-      this.audioEl.addEventListener('loadedmetadata', () => {
-        this.totalSeconds.set(Math.floor(this.audioEl!.duration));
-        this.startTimer();
-      });
-      this.audioEl.addEventListener('ended', () => {
-        if (!this.repeat()) this.skipForward();
-      });
-      this.audioEl.play().catch(() => {});
+      this.audioEl.play().catch(() => { });
+      this.startTimer();
     } else {
-      // No audio file — use duration from data
-      const track = this.nowPlaying();
-      if (track) this.totalSeconds.set(this.parseDuration(track.duration));
       this.startTimer();
     }
   }

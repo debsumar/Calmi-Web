@@ -1,5 +1,5 @@
 <!-- Hero Section -->
-<section class="relative w-full overflow-hidden bg-[#9b8abf] min-h-[400px] md:min-h-[500px] flex items-center justify-center">
+<section class="relative w-full overflow-hidden bg-[#9b8abf] dark:bg-gradient-to-b dark:from-[#1b0d36] dark:to-[#0c0517] min-h-[400px] md:min-h-[500px] flex items-center justify-center">
   <img src="assets/Illustration_2.avif" alt="" class="absolute left-0 top-0 h-full w-auto object-cover object-left pointer-events-none z-0 hidden sm:block opacity-80">
   <img src="assets/Illustration_1.avif" alt="" class="absolute right-0 top-0 h-full w-auto object-cover object-right pointer-events-none z-0 hidden sm:block opacity-80">
 
@@ -21,7 +21,11 @@
 <!-- What are you feeling section -->
 <section class="py-16 px-4">
   <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-gray-100 mb-12" style="--index:0">
-    What are you<br>feeling right now?
+    @if (authService.currentUser()) {
+      How are you feeling today,<br>{{ getUserFirstName() }}?
+    } @else {
+      What are you<br>feeling right now?
+    }
   </h2>
 
   <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -79,7 +83,7 @@
       </div>
     </div>
 
-    <div class="bg-gradient-to-b from-brand to-[#2d2550] rounded-2xl p-8 text-white flex flex-col items-center">
+    <div class="bg-gradient-to-b from-[#9b8abf] to-[#7c6499] dark:from-brand dark:to-[#2d2550] rounded-2xl p-8 text-white flex flex-col items-center">
       <h3 class="text-2xl font-bold mb-1">One-Minute Reset</h3>
       <p class="text-white/70 mb-12">Chibs Okereke</p>
       <button class="w-24 h-24 rounded-full border-2 border-white/30 flex items-center justify-center mb-12 hover:bg-white/10 transition-colors">
@@ -218,7 +222,7 @@
     </app-card>
 
     <!-- Right - CTA card -->
-    <div class="flex-1 bg-brand rounded-2xl p-10 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex-1 bg-[#9b8abf] dark:bg-brand rounded-2xl p-10 flex flex-col justify-between relative overflow-hidden">
       <div class="relative z-10">
         <h3 class="text-3xl font-bold text-white leading-tight mb-8">
           Still feeling<br>overwhelmed?<br><span class="font-normal">Try another session.</span>

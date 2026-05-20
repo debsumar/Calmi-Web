@@ -16,13 +16,13 @@ import { LucideAngularModule } from 'lucide-angular';
           <lucide-icon name="heart" [size]="18" [class]="liked() ? 'fill-red-500' : ''"></lucide-icon>
         </button>
         @if (isActive()) {
-          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center">
+          <div (click)="togglePause($event)" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center cursor-pointer">
             <div class="equalizer" [class.paused]="isPaused()">
               <span></span><span></span><span></span><span></span>
             </div>
           </div>
         } @else {
-          <button class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center group-hover:bg-black/80 transition-colors">
+          <button class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:bg-black/80 transition-all duration-300 scale-75 group-hover:scale-100">
             <lucide-icon name="play" [size]="22" class="text-white ml-0.5"></lucide-icon>
           </button>
         }
@@ -54,11 +54,17 @@ export class SoundCardComponent {
   isActive = input(false);
   isPaused = input(false);
   played = output();
+  paused = output();
 
   liked = signal(false);
 
   toggleLike(event: Event): void {
     event.stopPropagation();
     this.liked.update(v => !v);
+  }
+
+  togglePause(event: Event): void {
+    event.stopPropagation();
+    this.paused.emit();
   }
 }

@@ -1,6 +1,5 @@
-/* Global styles - PrimeNG overrides, animations, custom styles */
-@import "primeicons/primeicons.css";
-@import './styles/animations';
+@use './styles/animations';
+@use 'primeicons/primeicons.css';
 
 html {
   scroll-behavior: smooth;
