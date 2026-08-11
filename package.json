@@ -3,11 +3,18 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "set-license": "node scripts/set-license.mjs",
+    "prestart": "npm run set-license",
     "start": "ng serve",
+    "prestart:prod": "npm run set-license",
     "start:prod": "ng serve --configuration production",
+    "prebuild": "npm run set-license",
     "build": "ng build",
+    "prebuild:dev": "npm run set-license",
     "build:dev": "ng build --configuration development",
+    "prewatch": "npm run set-license",
     "watch": "ng build --watch --configuration development",
+    "pretest": "npm run set-license",
     "test": "ng test"
   },
   "private": true,

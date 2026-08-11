@@ -15,7 +15,7 @@ import {
   LucideMenu, LucideRepeat, LucideShuffle, LucideLogOut,
 } from '@lucide/angular';
 import Aura from '@primeuix/themes/aura';
-import { environment } from '../environments/environment';
+import { primeLicenseKey } from '../environments/license';
 import { appRoutes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { loaderInterceptor } from './core/interceptors/loader.interceptor';
@@ -27,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch(), withInterceptors([jwtInterceptor, loaderInterceptor])),
     provideAnimationsAsync(),
     providePrimeNG({
-      license: environment.primeLicenseKey,
+      license: primeLicenseKey,
       theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } },
     }),
     provideLucideIcons(

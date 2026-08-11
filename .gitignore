@@ -44,3 +44,6 @@ __screenshots__/
 Thumbs.db
 .vercel
 .env*.local
+
+# Generated license key (see scripts/set-license.mjs)
+/src/environments/license.ts
