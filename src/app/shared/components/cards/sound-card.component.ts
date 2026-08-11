@@ -1,10 +1,11 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 
 @Component({
   selector: 'app-sound-card',
   imports: [LucideDynamicIcon],
   host: { class: 'block' },
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div (click)="played.emit()" [class]="'relative rounded-2xl overflow-hidden group cursor-pointer bg-gray-200 dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow ' + (size() === 'lg' ? 'aspect-[3/4]' : size() === 'sm' ? 'aspect-[16/9]' : 'aspect-[4/3]') + (isActive() ? ' ring-2 ring-brand/60' : '')">
       <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>

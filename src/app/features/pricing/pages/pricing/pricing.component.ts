@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { CardComponent } from '@/shared/components/cards/card.component';
 import { PrimaryButtonComponent } from '@/shared/components/primary-button/primary-button.component';
@@ -20,6 +20,7 @@ interface PricingPlan {
 @Component({
   selector: 'app-pricing',
   imports: [LucideDynamicIcon, PrimaryButtonComponent, AnimateOnScrollDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './pricing.component.html',
 })
 export class PricingComponent {

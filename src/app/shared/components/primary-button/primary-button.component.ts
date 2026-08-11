@@ -1,9 +1,10 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 
 @Component({
   selector: 'app-primary-button',
   imports: [LucideDynamicIcon],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (variant() === 'outline') {
       <button (click)="clicked.emit()"

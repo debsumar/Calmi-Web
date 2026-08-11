@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
 import { AuthService } from '@/core/services/auth.service';
 
 @Component({
   selector: 'app-login-dialog',
   imports: [DialogModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './login-dialog.component.html',
 })
 export class LoginDialogComponent {

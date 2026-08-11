@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { CardComponent } from '@/shared/components/cards/card.component';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
@@ -6,6 +6,7 @@ import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.
 @Component({
   selector: 'app-about',
   imports: [LucideDynamicIcon, CardComponent, AnimateOnScrollDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './about.component.html',
 })
 export class AboutComponent {

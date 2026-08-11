@@ -1,9 +1,10 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-error-state',
   imports: [ButtonModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="flex flex-col items-center justify-center p-8 text-center">
       <i class="pi pi-exclamation-triangle text-4xl text-red-500 mb-4"></i>

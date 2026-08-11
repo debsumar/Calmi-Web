@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { ThemeService } from '../../core/services/theme.service';
@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-topbar',
   imports: [RouterLink, RouterLinkActive, LucideDynamicIcon],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <header class="h-16 flex items-center justify-between px-4 md:px-8 bg-white/80 dark:bg-[#090514]/80 backdrop-blur-md border-b border-gray-100 dark:border-white/5">
       <a routerLink="/" class="flex items-center">

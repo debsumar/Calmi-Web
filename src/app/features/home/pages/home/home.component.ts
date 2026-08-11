@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { PrimaryButtonComponent } from '@/shared/components/primary-button/primary-button.component';
@@ -17,6 +17,7 @@ interface MoodCard {
 @Component({
   selector: 'app-home',
   imports: [LucideDynamicIcon, PrimaryButtonComponent, CardComponent, RouterLink, SoundCardComponent, AnimateOnScrollDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './home.component.html',
 })
 export class HomeComponent {

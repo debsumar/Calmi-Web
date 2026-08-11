@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 
@@ -79,6 +79,7 @@ import { LucideDynamicIcon } from '@lucide/angular';
 
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     @keyframes float {
       0%, 100% { transform: translateY(0) rotate(0deg); }

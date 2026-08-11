@@ -1,7 +1,8 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-empty-state',
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="flex flex-col items-center justify-center p-8 text-center">
       <i [class]="icon() + ' text-4xl text-surface-400 mb-4'"></i>
