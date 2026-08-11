@@ -2,19 +2,19 @@
 
 ## Overview
 
-Calmi-Web is a wellness/meditation web app built with Angular 21. It provides guided calm sessions, soothing sounds, and wellness coaching.
+Calmi-Web is a wellness/meditation web app built with Angular 22. It provides guided calm sessions, soothing sounds, and wellness coaching.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Angular 21 (standalone, zoneless) |
-| UI Library | PrimeNG 21 (Aura preset) |
+| Framework | Angular 22 (standalone, zoneless) |
+| UI Library | PrimeNG 22 (Aura preset, PrimeUI license required) |
 | Styling | Tailwind CSS 4 + tailwindcss-primeui |
-| Icons | Lucide Angular (globally registered) |
+| Icons | @lucide/angular (globally registered dynamic icons) |
 | State | Angular Signals |
 | Routing | Lazy-loaded standalone components |
-| Build | Angular CLI 21, port 2000 |
+| Build | Angular CLI 22, TypeScript 6, port 2000 |
 
 ## Folder Structure
 
@@ -156,8 +156,18 @@ Shadow: `0 4px 4px 0 rgba(0,0,0,0.25)` (matches Figma spec).
 3. **Always** signals for state (`signal()`, `computed()`)
 4. **Always** `templateUrl` for page components (>30 lines)
 5. Inline templates OK for small shared components
-6. Use Lucide icons via `<lucide-icon name="x" [size]="n" />`
-7. Register new icons in `app.config.ts` LUCIDE_ICONS provider
+6. Use Lucide icons via `<svg [lucideIcon]="'x'" [size]="n"></svg>`; dynamic names require registration in `provideLucideIcons(...)`
+7. Register new dynamic icons in `app.config.ts` `provideLucideIcons(...)` provider
+8. Angular 22 defaults to `ChangeDetectionStrategy.OnPush`. Existing components carry an explicit `ChangeDetectionStrategy.Eager` from the v22 migration to preserve prior behavior. Prefer OnPush for new components; only use `Eager` when a component genuinely needs it.
+
+## PrimeUI License
+
+PrimeNG 22 requires a license key (free Community tier or Commercial). Without one, a red "Invalid PrimeUI License" banner appears in the running app.
+
+- The key is **never committed**. `scripts/set-license.mjs` generates the gitignored `src/environments/license.ts` and `app.config.ts` passes it to `providePrimeNG({ license })`.
+- Source the key from `PRIMEUI_LICENSE_KEY` — an env var in CI/deploy, or `.env.local` for local dev (see `.env.example`).
+- Generation runs automatically via the `prebuild` / `prestart` npm hooks, so `npm start` and `npm run build` need no extra steps.
+- Community keys expire yearly and must be renewed.
 
 ## Assets
 

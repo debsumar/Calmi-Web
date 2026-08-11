@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AuthService } from '@/core/services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   imports: [],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#0c0517] px-4">
       <div class="p-8 w-full max-w-md bg-white dark:bg-[#120822] border border-gray-100 dark:border-white/5 rounded-2xl shadow-xl">

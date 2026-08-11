@@ -6,6 +6,10 @@ export interface OnboardingSelections {
   duration: string | null;
 }
 
+export interface OnboardingStartOptions {
+  studentVerification?: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OnboardingService {
   // Private writable signals
@@ -17,11 +21,13 @@ export class OnboardingService {
     soundPreference: null,
     duration: null,
   });
+  private readonly _studentVerificationRequested = signal(false);
 
   // Public readonly signals
   readonly isActive = this._isActive.asReadonly();
   readonly currentStep = this._currentStep.asReadonly();
   readonly selections = this._selections.asReadonly();
+  readonly studentVerificationRequested = this._studentVerificationRequested.asReadonly();
   
   // Computed progress percentage
   readonly progress = computed(() => {
@@ -45,7 +51,8 @@ export class OnboardingService {
     });
   }
 
-  start(): void {
+  start(options: OnboardingStartOptions = {}): void {
+    this._studentVerificationRequested.set(options.studentVerification === true);
     this._currentStep.set(1);
     this._selections.set({ goal: null, soundPreference: null, duration: null });
     this._isActive.set(true);

@@ -1,9 +1,10 @@
-import { Component, input, output } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 @Component({
   selector: 'app-primary-button',
-  imports: [LucideAngularModule],
+  imports: [LucideDynamicIcon],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (variant() === 'outline') {
       <button (click)="clicked.emit()"
@@ -11,7 +12,7 @@ import { LucideAngularModule } from 'lucide-angular';
         {{ label() }}
         @if (icon()) {
           <span class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-brand">
-            <lucide-icon [name]="icon()!" [size]="16"></lucide-icon>
+            <svg [lucideIcon]="icon()!" [size]="16"></svg>
           </span>
         }
       </button>
@@ -21,7 +22,7 @@ import { LucideAngularModule } from 'lucide-angular';
         {{ label() }}
         @if (icon()) {
           <span class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-white/60">
-            <lucide-icon [name]="icon()!" [size]="16"></lucide-icon>
+            <svg [lucideIcon]="icon()!" [size]="16"></svg>
           </span>
         }
       </button>

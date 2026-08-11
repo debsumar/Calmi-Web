@@ -1,17 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 @Component({
   selector: 'app-notfound',
-  imports: [RouterLink, LucideAngularModule],
+  imports: [RouterLink, LucideDynamicIcon],
   host: { class: 'flex flex-1' },
   template: `
     <div class="flex-1 min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center bg-[#f5f3f0] dark:bg-[#090514] px-6 py-12 text-center relative overflow-hidden transition-colors duration-300">
       
       <!-- Back Button -->
       <a routerLink="/home" class="absolute top-6 right-8 text-gray-400 hover:text-brand dark:hover:text-white transition-colors duration-300 z-10">
-        <lucide-icon name="x" [size]="28"></lucide-icon>
+        <svg [lucideIcon]="'x'" [size]="28"></svg>
       </a>
 
       <!-- Animated Illustration Container -->
@@ -72,13 +72,14 @@ import { LucideAngularModule } from 'lucide-angular';
         <div class="flex justify-center">
           <a routerLink="/home" class="inline-flex items-center gap-2 px-8 py-3.5 bg-brand hover:bg-brand-dark text-white font-semibold rounded-full shadow-lg shadow-brand/20 dark:shadow-none hover:shadow-xl transition-all duration-300 group">
             <span>Back to Home</span>
-            <lucide-icon name="arrow-right" [size]="18" class="group-hover:translate-x-1 transition-transform"></lucide-icon>
+            <svg [lucideIcon]="'arrow-right'" [size]="18" class="group-hover:translate-x-1 transition-transform"></svg>
           </a>
         </div>
       </div>
 
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     @keyframes float {
       0%, 100% { transform: translateY(0) rotate(0deg); }

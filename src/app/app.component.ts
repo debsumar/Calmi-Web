@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { OnboardingWizardComponent } from './features/onboarding/components/onboarding-wizard/onboarding-wizard.component';
 import { OnboardingService } from './features/onboarding/services/onboarding.service';
@@ -6,6 +6,7 @@ import { OnboardingService } from './features/onboarding/services/onboarding.ser
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, OnboardingWizardComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <router-outlet />
     @if (onboardingService.isActive()) {

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AppTopbar } from './app.topbar';
 import { LoginDialogComponent } from '@/shared/components/login-dialog/login-dialog.component';
@@ -7,6 +7,7 @@ import { ScrollPositionService } from '@/core/services/scroll-position.service';
 @Component({
   selector: 'app-layout',
   imports: [RouterOutlet, AppTopbar, LoginDialogComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="min-h-screen flex flex-col bg-[#f5f3f0] dark:bg-[#090514]">
       <app-topbar class="sticky top-0 z-50 w-full" />

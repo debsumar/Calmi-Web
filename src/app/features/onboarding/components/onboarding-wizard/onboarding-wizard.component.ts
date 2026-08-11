@@ -1,11 +1,12 @@
-import { Component, inject } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { OnboardingService } from '../../services/onboarding.service';
 
 @Component({
   selector: 'app-onboarding-wizard',
-  imports: [LucideAngularModule],
+  imports: [LucideDynamicIcon],
   templateUrl: './onboarding-wizard.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     @keyframes slideUpFade {
       from { opacity: 0; transform: translateY(20px); }

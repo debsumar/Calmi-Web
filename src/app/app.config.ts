@@ -3,9 +3,19 @@ import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
-import { LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
-import { ArrowRight, Moon, User, Frown, Brain, Headphones, Cloud, Heart, Zap, Play, CircleCheck, Lock, Sun, Monitor, Search, Waves, CloudRain, TreePine, AudioLines, Flame, X, ChevronLeft, ChevronRight, Leaf, Wind, Sparkles, SkipBack, SkipForward, Pause, Volume2, MoreVertical, ChevronDown, Menu, Repeat, Shuffle, LogOut } from 'lucide-angular';
+import {
+  provideLucideIcons,
+  LucideArrowRight, LucideMoon, LucideUser, LucideFrown, LucideBrain,
+  LucideHeadphones, LucideCloud, LucideHeart, LucideZap, LucidePlay,
+  LucideCircleCheck, LucideLock, LucideSun, LucideMonitor, LucideSearch,
+  LucideWaves, LucideCloudRain, LucideTreePine, LucideAudioLines,
+  LucideFlame, LucideX, LucideChevronLeft, LucideChevronRight, LucideLeaf,
+  LucideWind, LucideSparkles, LucideSkipBack, LucideSkipForward,
+  LucidePause, LucideVolume2, LucideMoreVertical, LucideChevronDown,
+  LucideMenu, LucideRepeat, LucideShuffle, LucideLogOut, LucideGraduationCap,
+} from '@lucide/angular';
 import Aura from '@primeuix/themes/aura';
+import { primeLicenseKey } from '../environments/license';
 import { appRoutes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { loaderInterceptor } from './core/interceptors/loader.interceptor';
@@ -17,8 +27,18 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch(), withInterceptors([jwtInterceptor, loaderInterceptor])),
     provideAnimationsAsync(),
     providePrimeNG({
+      license: primeLicenseKey,
       theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } },
     }),
-    { provide: LUCIDE_ICONS, multi: true, useValue: new LucideIconProvider({ ArrowRight, Moon, User, Frown, Brain, Headphones, Cloud, Heart, Zap, Play, CircleCheck, Lock, Sun, Monitor, Search, Waves, CloudRain, TreePine, AudioLines, Flame, X, ChevronLeft, ChevronRight, Leaf, Wind, Sparkles, SkipBack, SkipForward, Pause, Volume2, MoreVertical, ChevronDown, Menu, Repeat, Shuffle, LogOut }) },
+    provideLucideIcons(
+      LucideArrowRight, LucideMoon, LucideUser, LucideFrown, LucideBrain,
+      LucideHeadphones, LucideCloud, LucideHeart, LucideZap, LucidePlay,
+      LucideCircleCheck, LucideLock, LucideSun, LucideMonitor, LucideSearch,
+      LucideWaves, LucideCloudRain, LucideTreePine, LucideAudioLines,
+      LucideFlame, LucideX, LucideChevronLeft, LucideChevronRight, LucideLeaf,
+      LucideWind, LucideSparkles, LucideSkipBack, LucideSkipForward,
+      LucidePause, LucideVolume2, LucideMoreVertical, LucideChevronDown,
+      LucideMenu, LucideRepeat, LucideShuffle, LucideLogOut, LucideGraduationCap,
+    ),
   ],
 };

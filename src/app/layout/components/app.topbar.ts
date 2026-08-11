@@ -1,12 +1,13 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-topbar',
-  imports: [RouterLink, RouterLinkActive, LucideAngularModule],
+  imports: [RouterLink, RouterLinkActive, LucideDynamicIcon],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <header class="h-16 flex items-center justify-between px-4 md:px-8 bg-white/80 dark:bg-[#090514]/80 backdrop-blur-md border-b border-gray-100 dark:border-white/5">
       <a routerLink="/" class="flex items-center">
@@ -29,9 +30,9 @@ import { AuthService } from '../../core/services/auth.service';
                 class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
                 [title]="'Theme: ' + themeService.mode()">
           @switch (themeService.mode()) {
-            @case ('light') { <lucide-icon name="moon" [size]="20" class="text-gray-900 dark:text-gray-100"></lucide-icon> }
-            @case ('dark') { <lucide-icon name="sun" [size]="20" class="text-gray-900 dark:text-gray-100"></lucide-icon> }
-            @case ('auto') { <lucide-icon name="monitor" [size]="20" class="text-gray-900 dark:text-gray-100"></lucide-icon> }
+            @case ('light') { <svg [lucideIcon]="'moon'" [size]="20" class="text-gray-900 dark:text-gray-100"></svg> }
+            @case ('dark') { <svg [lucideIcon]="'sun'" [size]="20" class="text-gray-900 dark:text-gray-100"></svg> }
+            @case ('auto') { <svg [lucideIcon]="'monitor'" [size]="20" class="text-gray-900 dark:text-gray-100"></svg> }
           }
         </button>
 
@@ -65,7 +66,7 @@ import { AuthService } from '../../core/services/auth.service';
                 </div>
                 <button (click)="logout()" 
                         class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors text-left">
-                  <lucide-icon name="log-out" [size]="16"></lucide-icon>
+                  <svg [lucideIcon]="'log-out'" [size]="16"></svg>
                   Logout
                 </button>
               </div>
@@ -73,13 +74,13 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
         } @else {
           <button (click)="authService.openLogin()" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:scale-105 transition-all">
-            <lucide-icon name="user" [size]="16"></lucide-icon>
+            <svg [lucideIcon]="'user'" [size]="16"></svg>
           </button>
         }
 
         <!-- Mobile hamburger -->
         <button (click)="mobileMenuOpen.set(!mobileMenuOpen())" class="md:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10">
-          <lucide-icon [name]="mobileMenuOpen() ? 'x' : 'menu'" [size]="22" class="text-gray-900 dark:text-gray-100"></lucide-icon>
+          <svg [lucideIcon]="mobileMenuOpen() ? 'x' : 'menu'" [size]="22" class="text-gray-900 dark:text-gray-100"></svg>
         </button>
       </div>
     </header>
