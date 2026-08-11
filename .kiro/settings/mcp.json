@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "vercel": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote@0.1.38", "https://mcp.vercel.com", "7788"],
+      "timeout": 120000
+    }
+  }
+}
