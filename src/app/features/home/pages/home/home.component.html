@@ -33,7 +33,7 @@
       <app-card appAnimateOnScroll class="cursor-pointer hover:-translate-y-2 transition-transform duration-300 group" [style.--index]="i">
         <div class="flex flex-col h-full items-start">
           <div class="w-14 h-14 rounded-2xl bg-brand/10 dark:bg-white/10 text-brand dark:text-brand-light flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-            <lucide-icon [name]="card.icon" [size]="28"></lucide-icon>
+            <svg [lucideIcon]="card.icon" [size]="28"></svg>
           </div>
           <h3 class="text-2xl font-bold mb-3 text-gray-900 dark:text-gray-100">{{ card.title }}</h3>
           <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-6 flex-1">
@@ -41,7 +41,7 @@
           </p>
           <div class="mt-auto flex items-center gap-2 text-brand font-semibold group-hover:translate-x-2 transition-transform duration-300">
             <span>Start Session</span>
-            <lucide-icon name="arrow-right" [size]="18"></lucide-icon>
+            <svg [lucideIcon]="'arrow-right'" [size]="18"></svg>
           </div>
         </div>
       </app-card>
@@ -61,22 +61,22 @@
 
       <div class="grid grid-cols-2 gap-x-6 gap-y-5">
         <div>
-          <lucide-icon name="headphones" [size]="20" class="text-brand mb-1.5"></lucide-icon>
+          <svg [lucideIcon]="'headphones'" [size]="20" class="text-brand mb-1.5"></svg>
           <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-0.5 text-sm">Guided Audios</h4>
           <p class="text-gray-500 dark:text-gray-400 text-xs">Short sessions that help instantly.</p>
         </div>
         <div>
-          <lucide-icon name="cloud" [size]="20" class="text-brand mb-1.5"></lucide-icon>
+          <svg [lucideIcon]="'cloud'" [size]="20" class="text-brand mb-1.5"></svg>
           <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-0.5 text-sm">Soothing Sounds</h4>
           <p class="text-gray-500 dark:text-gray-400 text-xs">Ambient sounds to relax and sleep.</p>
         </div>
         <div>
-          <lucide-icon name="heart" [size]="20" class="text-brand mb-1.5"></lucide-icon>
+          <svg [lucideIcon]="'heart'" [size]="20" class="text-brand mb-1.5"></svg>
           <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-0.5 text-sm">Feel Better</h4>
           <p class="text-gray-500 dark:text-gray-400 text-xs">Designed to help you feel lighter.</p>
         </div>
         <div>
-          <lucide-icon name="zap" [size]="20" class="text-brand mb-1.5"></lucide-icon>
+          <svg [lucideIcon]="'zap'" [size]="20" class="text-brand mb-1.5"></svg>
           <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-0.5 text-sm">Instant Relief</h4>
           <p class="text-gray-500 dark:text-gray-400 text-xs">Calm your mind in minutes.</p>
         </div>
@@ -87,7 +87,7 @@
       <h3 class="text-2xl font-bold mb-1">One-Minute Reset</h3>
       <p class="text-white/70 mb-12">Chibs Okereke</p>
       <button class="w-24 h-24 rounded-full border-2 border-white/30 flex items-center justify-center mb-12 hover:bg-white/10 transition-colors">
-        <lucide-icon name="play" [size]="36" class="text-white ml-1"></lucide-icon>
+        <svg [lucideIcon]="'play'" [size]="36" class="text-white ml-1"></svg>
       </button>
       <div class="w-full">
         <div class="w-full h-1 bg-white/20 rounded-full relative">
@@ -130,19 +130,19 @@
       <div class="flex-1 border-r-0 md:border-r border-gray-200 dark:border-[#3a3a50] pr-0 md:pr-8">
         <ul class="space-y-3">
         <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-          <lucide-icon name="circle-check" [size]="18" class="text-brand"></lucide-icon>
+          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand"></svg>
           Unlock access to all sessions
         </li>
         <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-          <lucide-icon name="circle-check" [size]="18" class="text-brand"></lucide-icon>
+          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand"></svg>
           Premium sound library
         </li>
         <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-          <lucide-icon name="circle-check" [size]="18" class="text-brand"></lucide-icon>
+          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand"></svg>
           New content every week
         </li>
         <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-          <lucide-icon name="circle-check" [size]="18" class="text-brand"></lucide-icon>
+          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand"></svg>
           Cancel anytime
         </li>
       </ul>
@@ -152,7 +152,7 @@
       <p class="text-4xl font-bold text-gray-900 dark:text-gray-100">₹99 <span class="text-base font-normal text-gray-500 dark:text-gray-400">/ month</span></p>
       <app-primary-button label="Get Full Access" />
       <p class="mt-3 text-xs text-gray-400 flex items-center justify-center gap-1">
-        <lucide-icon name="lock" [size]="12"></lucide-icon>
+        <svg [lucideIcon]="'lock'" [size]="12"></svg>
         Secure payment. Cancel anytime.
       </p>
     </div>

@@ -1,9 +1,9 @@
 import { Component, input, output, signal } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 @Component({
   selector: 'app-sound-card',
-  imports: [LucideAngularModule],
+  imports: [LucideDynamicIcon],
   host: { class: 'block' },
   template: `
     <div (click)="played.emit()" [class]="'relative rounded-2xl overflow-hidden group cursor-pointer bg-gray-200 dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow ' + (size() === 'lg' ? 'aspect-[3/4]' : size() === 'sm' ? 'aspect-[16/9]' : 'aspect-[4/3]') + (isActive() ? ' ring-2 ring-brand/60' : '')">
@@ -13,7 +13,7 @@ import { LucideAngularModule } from 'lucide-angular';
         <button (click)="toggleLike($event)"
                 class="absolute top-4 left-4 z-20 transition-transform duration-200"
                 [class]="liked() ? 'text-red-500 scale-125' : 'text-white/80 hover:text-white scale-100'">
-          <lucide-icon name="heart" [size]="18" [class]="liked() ? 'fill-red-500' : ''"></lucide-icon>
+          <svg [lucideIcon]="'heart'" [size]="18" [class]="liked() ? 'fill-red-500' : ''"></svg>
         </button>
         @if (isActive()) {
           <div (click)="togglePause($event)" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center cursor-pointer">
@@ -23,7 +23,7 @@ import { LucideAngularModule } from 'lucide-angular';
           </div>
         } @else {
           <button class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:bg-black/80 transition-all duration-300 scale-75 group-hover:scale-100">
-            <lucide-icon name="play" [size]="22" class="text-white ml-0.5"></lucide-icon>
+            <svg [lucideIcon]="'play'" [size]="22" class="text-white ml-0.5"></svg>
           </button>
         }
       }

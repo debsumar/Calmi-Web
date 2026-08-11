@@ -1,10 +1,10 @@
 import { Component, inject } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { OnboardingService } from '../../services/onboarding.service';
 
 @Component({
   selector: 'app-onboarding-wizard',
-  imports: [LucideAngularModule],
+  imports: [LucideDynamicIcon],
   templateUrl: './onboarding-wizard.component.html',
   styles: [`
     @keyframes slideUpFade {

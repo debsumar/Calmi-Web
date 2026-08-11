@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { CardComponent } from '@/shared/components/cards/card.component';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 
 @Component({
   selector: 'app-about',
-  imports: [LucideAngularModule, CardComponent, AnimateOnScrollDirective],
+  imports: [LucideDynamicIcon, CardComponent, AnimateOnScrollDirective],
   templateUrl: './about.component.html',
 })
 export class AboutComponent {

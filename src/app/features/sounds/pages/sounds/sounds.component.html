@@ -24,10 +24,10 @@
     <div class="flex items-center gap-4">
       <div class="hidden md:flex gap-2">
         <button (click)="carousel.scrollBy({left: -320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <lucide-icon name="chevron-left" [size]="20"></lucide-icon>
+          <svg [lucideIcon]="'chevron-left'" [size]="20"></svg>
         </button>
         <button (click)="carousel.scrollBy({left: 320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <lucide-icon name="chevron-right" [size]="20"></lucide-icon>
+          <svg [lucideIcon]="'chevron-right'" [size]="20"></svg>
         </button>
       </div>
     </div>
@@ -72,7 +72,7 @@
   <div class="flex items-center justify-between mb-8">
     <h2 appAnimateOnScroll style="--index:0" class="text-3xl font-bold text-gray-900 dark:text-gray-100">Browse by Vibe</h2>
     <div class="relative w-64">
-      <lucide-icon name="search" [size]="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></lucide-icon>
+      <svg [lucideIcon]="'search'" [size]="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></svg>
       <input type="text" placeholder="Search sounds..."
              class="w-full bg-white dark:bg-[#2a2a40] border border-gray-200 dark:border-white/10 rounded-full py-2 pl-12 pr-4 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all shadow-sm">
     </div>
@@ -81,7 +81,7 @@
     @for (vibe of vibes(); track vibe.label; let i = $index) {
       <button appAnimateOnScroll [style.--index]="i + 1" class="flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md whitespace-nowrap"
               [class]="vibe.active ? 'bg-[#9b8abf] dark:bg-brand-dark text-white' : 'bg-white dark:bg-[#2a2a40] text-gray-800 dark:text-gray-100'">
-        <lucide-icon [name]="vibe.icon" [size]="18" [class]="vibe.active ? 'text-white' : 'text-gray-600 dark:text-gray-300'"></lucide-icon>
+        <svg [lucideIcon]="vibe.icon" [size]="18" [class]="vibe.active ? 'text-white' : 'text-gray-600 dark:text-gray-300'"></svg>
         <span class="text-sm font-semibold">{{ vibe.label }}</span>
       </button>
     }
@@ -96,12 +96,12 @@
       <!-- Duration Dropdown -->
       <button class="px-4 py-2 bg-gray-100 dark:bg-[#1a1a2e] rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#2a2a40] transition-colors border border-transparent dark:border-white/5">
         Duration
-        <lucide-icon name="chevron-down" [size]="14"></lucide-icon>
+        <svg [lucideIcon]="'chevron-down'" [size]="14"></svg>
       </button>
       <!-- Most Popular Dropdown -->
       <button class="px-4 py-2 bg-gray-100 dark:bg-[#1a1a2e] rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#2a2a40] transition-colors border border-transparent dark:border-white/5">
         Most Popular
-        <lucide-icon name="chevron-down" [size]="14"></lucide-icon>
+        <svg [lucideIcon]="'chevron-down'" [size]="14"></svg>
       </button>
     </div>
   </div>
@@ -114,7 +114,7 @@
           <img [src]="sound.image" [alt]="sound.title" class="w-full h-full object-cover">
           <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
             <div class="w-10 h-10 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm shadow-lg group-hover:scale-110 transition-transform">
-              <lucide-icon name="play" [size]="16" class="text-white ml-0.5 fill-white"></lucide-icon>
+              <svg [lucideIcon]="'play'" [size]="16" class="text-white ml-0.5 fill-white"></svg>
             </div>
           </div>
         </div>
@@ -134,10 +134,10 @@
         <div class="flex items-center gap-4 md:gap-6 shrink-0 pl-4">
           <span class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">{{ sound.duration }}</span>
           <button class="text-gray-400 hover:text-brand dark:hover:text-purple-400 transition-colors">
-            <lucide-icon name="heart" [size]="18"></lucide-icon>
+            <svg [lucideIcon]="'heart'" [size]="18"></svg>
           </button>
           <button class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
-            <lucide-icon name="more-vertical" [size]="18"></lucide-icon>
+            <svg [lucideIcon]="'more-vertical'" [size]="18"></svg>
           </button>
         </div>
       </div>
@@ -186,15 +186,15 @@
     
     <div class="flex items-center gap-3 md:gap-5">
       <button (click)="playerService.toggleShuffle()" class="hidden md:flex text-gray-500 hover:text-brand transition-colors active:scale-75 duration-150" [class.text-brand]="playerService.shuffle()">
-        <lucide-icon name="shuffle" [size]="16"></lucide-icon>
+        <svg [lucideIcon]="'shuffle'" [size]="16"></svg>
       </button>
-      <button (click)="playerService.skipBack()" class="text-gray-500 hover:text-brand transition-colors active:scale-75 duration-150"><lucide-icon name="skip-back" [size]="18"></lucide-icon></button>
+      <button (click)="playerService.skipBack()" class="text-gray-500 hover:text-brand transition-colors active:scale-75 duration-150"><svg [lucideIcon]="'skip-back'" [size]="18"></svg></button>
       <button (click)="playerService.togglePlayPause()" class="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brand-dark transition-colors shadow-lg active:scale-90 duration-150">
-        <lucide-icon [name]="playerService.isPlaying() ? 'pause' : 'play'" [size]="18" class="fill-current"></lucide-icon>
+        <svg [lucideIcon]="playerService.isPlaying() ? 'pause' : 'play'" [size]="18" class="fill-current"></svg>
       </button>
-      <button (click)="playerService.skipForward()" class="text-gray-500 hover:text-brand transition-colors active:scale-75 duration-150"><lucide-icon name="skip-forward" [size]="18"></lucide-icon></button>
+      <button (click)="playerService.skipForward()" class="text-gray-500 hover:text-brand transition-colors active:scale-75 duration-150"><svg [lucideIcon]="'skip-forward'" [size]="18"></svg></button>
       <button (click)="playerService.toggleRepeat()" class="hidden md:flex text-gray-500 hover:text-brand transition-colors active:scale-75 duration-150" [class.text-brand]="playerService.repeat()">
-        <lucide-icon name="repeat" [size]="16"></lucide-icon>
+        <svg [lucideIcon]="'repeat'" [size]="16"></svg>
       </button>
     </div>
     
@@ -203,7 +203,7 @@
         {{ playerService.speed() }}x
       </button>
       <div class="flex items-center gap-2 w-28">
-        <lucide-icon name="volume-2" [size]="14" class="text-gray-500 shrink-0"></lucide-icon>
+        <svg [lucideIcon]="'volume-2'" [size]="14" class="text-gray-500 shrink-0"></svg>
         <input type="range" min="0" max="1" step="0.1" [value]="playerService.volume()" (input)="playerService.setVolume(+$any($event.target).value)"
                class="w-full h-1 accent-brand cursor-pointer">
       </div>

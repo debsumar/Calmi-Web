@@ -1,5 +1,5 @@
 import { Component, signal, ViewChild, ElementRef, afterNextRender, HostListener, inject } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { DragScrollDirective } from '@/shared/directives/drag-scroll.directive';
 import { SoundCardComponent } from '@/shared/components/cards/sound-card.component';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
@@ -7,7 +7,7 @@ import { PlayerService, SoundTrack } from '@/core/services/player.service';
 
 @Component({
   selector: 'app-sounds',
-  imports: [LucideAngularModule, DragScrollDirective, SoundCardComponent, AnimateOnScrollDirective],
+  imports: [LucideDynamicIcon, DragScrollDirective, SoundCardComponent, AnimateOnScrollDirective],
   templateUrl: './sounds.component.html',
 })
 export class SoundsComponent {
