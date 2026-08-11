@@ -11,7 +11,7 @@ Calmi-Web is a wellness/meditation web app built with Angular 21. It provides gu
 | Framework | Angular 21 (standalone, zoneless) |
 | UI Library | PrimeNG 21 (Aura preset) |
 | Styling | Tailwind CSS 4 + tailwindcss-primeui |
-| Icons | Lucide Angular (globally registered) |
+| Icons | @lucide/angular (globally registered dynamic icons) |
 | State | Angular Signals |
 | Routing | Lazy-loaded standalone components |
 | Build | Angular CLI 21, port 2000 |
@@ -156,8 +156,8 @@ Shadow: `0 4px 4px 0 rgba(0,0,0,0.25)` (matches Figma spec).
 3. **Always** signals for state (`signal()`, `computed()`)
 4. **Always** `templateUrl` for page components (>30 lines)
 5. Inline templates OK for small shared components
-6. Use Lucide icons via `<lucide-icon name="x" [size]="n" />`
-7. Register new icons in `app.config.ts` LUCIDE_ICONS provider
+6. Use Lucide icons via `<svg [lucideIcon]="'x'" [size]="n"></svg>`; dynamic names require registration in `provideLucideIcons(...)`
+7. Register new dynamic icons in `app.config.ts` `provideLucideIcons(...)` provider
 
 ## Assets
 
