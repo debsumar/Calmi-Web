@@ -12,7 +12,7 @@ import {
   LucideFlame, LucideX, LucideChevronLeft, LucideChevronRight, LucideLeaf,
   LucideWind, LucideSparkles, LucideSkipBack, LucideSkipForward,
   LucidePause, LucideVolume2, LucideMoreVertical, LucideChevronDown,
-  LucideMenu, LucideRepeat, LucideShuffle, LucideLogOut,
+  LucideMenu, LucideRepeat, LucideShuffle, LucideLogOut, LucideGraduationCap,
 } from '@lucide/angular';
 import Aura from '@primeuix/themes/aura';
 import { primeLicenseKey } from '../environments/license';
@@ -38,7 +38,7 @@ export const appConfig: ApplicationConfig = {
       LucideFlame, LucideX, LucideChevronLeft, LucideChevronRight, LucideLeaf,
       LucideWind, LucideSparkles, LucideSkipBack, LucideSkipForward,
       LucidePause, LucideVolume2, LucideMoreVertical, LucideChevronDown,
-      LucideMenu, LucideRepeat, LucideShuffle, LucideLogOut,
+      LucideMenu, LucideRepeat, LucideShuffle, LucideLogOut, LucideGraduationCap,
     ),
   ],
 };

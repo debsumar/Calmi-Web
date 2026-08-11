@@ -1,9 +1,11 @@
-import { Component, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
-import { CardComponent } from '@/shared/components/cards/card.component';
 import { PrimaryButtonComponent } from '@/shared/components/primary-button/primary-button.component';
 import { OnboardingService } from '@/features/onboarding/services/onboarding.service';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
+
+type PlanEmphasis = 'none' | 'recommended' | 'popular';
+type PlanAction = 'start' | 'verifyStudent' | 'trial';
 
 interface PricingPlan {
   name: string;
@@ -14,7 +16,10 @@ interface PricingPlan {
   features: string[];
   buttonText: string;
   buttonVariant: 'solid' | 'outline';
-  highlight: boolean;
+  emphasis: PlanEmphasis;
+  badgeIcon?: string;
+  badgeLabel?: string;
+  action: PlanAction;
 }
 
 @Component({
@@ -25,68 +30,91 @@ interface PricingPlan {
 })
 export class PricingComponent {
   onboardingService = inject(OnboardingService);
-  annualBilling = signal(true);
 
-  getStarted() {
-    this.onboardingService.start();
+  readonly plans: readonly PricingPlan[] = [
+    {
+      name: 'Free',
+      icon: 'leaf',
+      price: '₹0',
+      period: 'forever',
+      description: 'Perfect for exploring Calmi.',
+      features: [
+        'Daily Mood Check-ins',
+        'Basic Journaling',
+        'Limited Sleep Sessions',
+        'Access to Community',
+        'Limited Rumi AI Conversations'
+      ],
+      buttonText: 'Get Started',
+      buttonVariant: 'outline',
+      emphasis: 'none',
+      action: 'start'
+    },
+    {
+      name: 'Student Premium',
+      icon: 'graduation-cap',
+      price: '₹99',
+      period: 'per month',
+      description: 'Built for students who need affordable mental wellness support.',
+      features: [
+        'Everything in Free',
+        'Unlimited Sleep Library',
+        'Unlimited Guided Journals',
+        'Unlimited Rumi AI',
+        'Personalized Recommendations',
+        'Mood Insights & Progress',
+        'Early Access to New Features'
+      ],
+      buttonText: 'Verify Student Status',
+      buttonVariant: 'outline',
+      emphasis: 'recommended',
+      badgeIcon: 'graduation-cap',
+      badgeLabel: 'Student Plan',
+      action: 'verifyStudent'
+    },
+    {
+      name: 'Premium',
+      icon: 'sparkles',
+      price: '₹249',
+      period: 'per month',
+      description: 'Complete mental wellness for every stage of your journey.',
+      features: [
+        'Everything in Student Premium',
+        'Priority AI Responses',
+        'Therapist Session Discounts',
+        'Advanced Mood Analytics',
+        'Premium Sleep Journeys',
+        'Priority Customer Support',
+        'Exclusive Weekly Content'
+      ],
+      buttonText: 'Start 7-Day Free Trial',
+      buttonVariant: 'solid',
+      emphasis: 'popular',
+      action: 'trial'
+    }
+  ];
+
+  ribbonLabel(emphasis: PlanEmphasis): string | null {
+    return emphasis === 'popular' ? 'Most Popular' : emphasis === 'recommended' ? 'Recommended' : null;
   }
 
-  plans = computed<PricingPlan[]>(() => {
-    const isAnnual = this.annualBilling();
-    return [
-      {
-        name: 'Basic',
-        icon: 'leaf',
-        price: '$0',
-        period: 'forever',
-        description: 'Perfect to start your mindfulness journey.',
-        features: [
-          '3 essential ambient sounds',
-          'Basic breathing exercises',
-          '5 mins daily meditation',
-          'Community access'
-        ],
-        buttonText: 'Get Started',
-        buttonVariant: 'outline',
-        highlight: false
-      },
-      {
-        name: 'Premium',
-        icon: 'zap',
-        price: isAnnual ? '$5' : '$8',
-        period: 'per month',
-        description: 'Everything you need for deep relaxation.',
-        features: [
-          'All premium soundscapes',
-          'Guided meditation sessions',
-          'Offline listening mode',
-          'Sleep stories & tracks',
-          'Personalized insights'
-        ],
-        buttonText: 'Start 7-Day Free Trial',
-        buttonVariant: 'solid',
-        highlight: true
-      },
-      {
-        name: 'Lifetime',
-        icon: 'sparkles',
-        price: '$199',
-        period: 'one-time',
-        description: 'Uninterrupted peace, forever.',
-        features: [
-          'Everything in Premium',
-          'Pay once, yours forever',
-          'Early access to new features',
-          'Direct support from creators'
-        ],
-        buttonText: 'Get Lifetime',
-        buttonVariant: 'outline',
-        highlight: false
-      }
-    ];
-  });
+  ariaPrice(plan: PricingPlan): string {
+    return `${plan.price} ${plan.period}`;
+  }
 
-  toggleBilling() {
-    this.annualBilling.update(v => !v);
+  onPlanAction(plan: PricingPlan): void {
+    switch (plan.action) {
+      case 'verifyStudent':
+        this.startStudentVerification();
+        return;
+      case 'trial':
+      case 'start':
+      default:
+        this.onboardingService.start();
+    }
+  }
+
+  startStudentVerification(): void {
+    this.onboardingService.start({ studentVerification: true });
   }
 }

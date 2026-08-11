@@ -28,6 +28,9 @@
       <div class="w-full max-w-2xl animate-slide-up flex flex-col items-center">
         <h2 class="text-3xl md:text-5xl font-bold mb-4 text-center">What brings you to Calmi?</h2>
         <p class="text-gray-500 dark:text-gray-400 text-lg mb-12 text-center">We'll personalize your experience based on your main goal.</p>
+        @if (onboardingService.studentVerificationRequested()) {
+          <p class="text-brand dark:text-brand-light text-sm font-semibold mb-6 text-center">Student verification requested. We'll continue after onboarding.</p>
+        }
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           @for (goal of goals; track goal.id) {
