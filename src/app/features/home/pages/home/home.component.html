@@ -1,5 +1,5 @@
 <!-- Hero Section -->
-<section class="relative w-full overflow-hidden bg-[#9b8abf] dark:bg-gradient-to-b dark:from-[#1b0d36] dark:to-[#0c0517] min-h-[400px] md:min-h-[500px] flex items-center justify-center">
+<section class="relative w-full overflow-hidden bg-hero dark:bg-gradient-to-b dark:from-hero-grad-from dark:to-hero-grad-to min-h-[400px] md:min-h-[500px] flex items-center justify-center">
   <img src="assets/Illustration_2.avif" alt="" class="absolute left-0 top-0 h-full w-auto object-cover object-left pointer-events-none z-0 hidden sm:block opacity-80">
   <img src="assets/Illustration_1.avif" alt="" class="absolute right-0 top-0 h-full w-auto object-cover object-right pointer-events-none z-0 hidden sm:block opacity-80">
 
@@ -83,7 +83,7 @@
       </div>
     </div>
 
-    <div class="bg-gradient-to-b from-[#9b8abf] to-[#7c6499] dark:from-brand dark:to-[#2d2550] rounded-2xl p-8 text-white flex flex-col items-center">
+    <div class="bg-gradient-to-b from-hero to-brand-deep dark:from-brand dark:to-brand-night rounded-2xl p-8 text-white flex flex-col items-center">
       <h3 class="text-2xl font-bold mb-1">One-Minute Reset</h3>
       <p class="text-white/70 mb-12">Chibs Okereke</p>
       <button class="w-24 h-24 rounded-full border-2 border-white/30 flex items-center justify-center mb-12 hover:bg-white/10 transition-colors">
@@ -109,7 +109,7 @@
     Soothing sounds for every moment.
   </h2>
   <div class="flex justify-end mb-6">
-    <a routerLink="/sounds" fragment="featured" class="text-brand font-medium hover:underline">View All</a>
+    <a routerLink="/sounds" fragment="featured" class="text-brand font-semibold hover:underline">View All</a>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -123,11 +123,11 @@
 <section class="py-12 md:py-16 px-4 md:px-8 max-w-5xl mx-auto">
   <app-card>
     <div class="flex flex-col md:flex-row items-center gap-8">
-      <div class="flex-1 border-r-0 md:border-r border-gray-200 dark:border-[#3a3a50] pr-0 md:pr-8">
+      <div class="flex-1 border-r-0 md:border-r border-hairline pr-0 md:pr-8">
         <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Unlock more of Calmi</h3>
         <p class="text-gray-500 dark:text-gray-400 text-sm">Unlock all guided sessions, sleep sounds and new content every week.</p>
       </div>
-      <div class="flex-1 border-r-0 md:border-r border-gray-200 dark:border-[#3a3a50] pr-0 md:pr-8">
+      <div class="flex-1 border-r-0 md:border-r border-hairline pr-0 md:pr-8">
         <ul class="space-y-3">
         <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
           <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand"></svg>
@@ -222,7 +222,7 @@
     </app-card>
 
     <!-- Right - CTA card -->
-    <div class="flex-1 bg-[#9b8abf] dark:bg-brand rounded-2xl p-10 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex-1 bg-hero dark:bg-brand rounded-2xl p-10 flex flex-col justify-between relative overflow-hidden">
       <div class="relative z-10">
         <h3 class="text-3xl font-bold text-white leading-tight mb-8">
           Still feeling<br>overwhelmed?<br><span class="font-normal">Try another session.</span>

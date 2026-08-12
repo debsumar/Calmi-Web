@@ -1,5 +1,5 @@
 <!-- Hero Section -->
-<section class="relative w-full overflow-hidden bg-[#9b8abf] dark:bg-brand-dark min-h-[280px] md:min-h-[360px] flex rounded-b-3xl md:rounded-none">
+<section class="relative w-full overflow-hidden bg-hero dark:bg-brand-dark min-h-[280px] md:min-h-[360px] flex rounded-b-3xl md:rounded-none">
   <div class="flex-1 relative z-10 px-4 md:px-16 py-10 md:py-16 flex flex-col justify-center">
     <div class="max-w-xl">
       <h1 appAnimateOnScroll class="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">
@@ -51,10 +51,10 @@
           (paused)="playerService.togglePlayPause()" />
       }
     </div>
-    <div class="absolute left-0 top-0 bottom-4 w-16 bg-gradient-to-r from-[#f5f3f0] dark:from-[#090514] to-transparent z-20 pointer-events-none transition-opacity duration-300"
+    <div class="absolute left-0 top-0 bottom-4 w-16 bg-gradient-to-r from-canvas to-transparent z-20 pointer-events-none transition-opacity duration-300"
          [class.opacity-0]="!showLeftShadow()"
          [class.opacity-100]="showLeftShadow()"></div>
-    <div class="absolute right-0 top-0 bottom-4 w-16 bg-gradient-to-l from-[#f5f3f0] dark:from-[#090514] to-transparent z-20 pointer-events-none transition-opacity duration-300"
+    <div class="absolute right-0 top-0 bottom-4 w-16 bg-gradient-to-l from-canvas to-transparent z-20 pointer-events-none transition-opacity duration-300"
          [class.opacity-0]="!showRightShadow()"
          [class.opacity-100]="showRightShadow()"></div>
   </div>
@@ -72,15 +72,15 @@
   <div class="flex items-center justify-between mb-8">
     <h2 appAnimateOnScroll style="--index:0" class="text-3xl font-bold text-gray-900 dark:text-gray-100">Browse by Vibe</h2>
     <div class="relative w-64">
-      <svg [lucideIcon]="'search'" [size]="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></svg>
+      <svg [lucideIcon]="'search'" [size]="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-400"></svg>
       <input type="text" placeholder="Search sounds..."
-             class="w-full bg-white dark:bg-[#2a2a40] border border-gray-200 dark:border-white/10 rounded-full py-2 pl-12 pr-4 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all shadow-sm">
+             class="w-full bg-surface border border-gray-200 dark:border-white/10 rounded-full py-2 pl-12 pr-4 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all shadow-sm">
     </div>
   </div>
   <div class="flex gap-3 overflow-x-auto p-2 -m-2 scrollbar-hide">
     @for (vibe of vibes(); track vibe.label; let i = $index) {
       <button appAnimateOnScroll [style.--index]="i + 1" class="flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md whitespace-nowrap"
-              [class]="vibe.active ? 'bg-[#9b8abf] dark:bg-brand-dark text-white' : 'bg-white dark:bg-[#2a2a40] text-gray-800 dark:text-gray-100'">
+              [class]="vibe.active ? 'bg-hero dark:bg-brand-dark text-white' : 'bg-surface text-gray-800 dark:text-gray-100'">
         <svg [lucideIcon]="vibe.icon" [size]="18" [class]="vibe.active ? 'text-white' : 'text-gray-600 dark:text-gray-300'"></svg>
         <span class="text-sm font-semibold">{{ vibe.label }}</span>
       </button>
@@ -91,15 +91,15 @@
 <!-- All Sounds Section -->
 <section class="max-w-6xl mx-auto px-4 md:px-8 mb-32">
   <div class="flex items-center justify-between mb-8">
-    <h2 appAnimateOnScroll style="--index:0" class="text-2xl font-bricolage font-bold text-gray-900 dark:text-gray-100">All Sounds</h2>
+    <h2 appAnimateOnScroll style="--index:0" class="text-2xl font-sans font-bold text-gray-900 dark:text-gray-100">All Sounds</h2>
     <div class="flex items-center gap-3">
       <!-- Duration Dropdown -->
-      <button class="px-4 py-2 bg-gray-100 dark:bg-[#1a1a2e] rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#2a2a40] transition-colors border border-transparent dark:border-white/5">
+      <button class="px-4 py-2 bg-gray-100 dark:bg-sunken rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-surface transition-colors border border-transparent dark:border-white/5">
         Duration
         <svg [lucideIcon]="'chevron-down'" [size]="14"></svg>
       </button>
       <!-- Most Popular Dropdown -->
-      <button class="px-4 py-2 bg-gray-100 dark:bg-[#1a1a2e] rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#2a2a40] transition-colors border border-transparent dark:border-white/5">
+      <button class="px-4 py-2 bg-gray-100 dark:bg-sunken rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-surface transition-colors border border-transparent dark:border-white/5">
         Most Popular
         <svg [lucideIcon]="'chevron-down'" [size]="14"></svg>
       </button>
@@ -108,7 +108,7 @@
 
   <div class="space-y-4">
     @for (sound of allSounds(); track sound.title) {
-      <div appAnimateOnScroll (click)="playSound(sound, allSounds())" class="flex items-center p-3 rounded-2xl bg-white dark:bg-[#2a2a40] border border-gray-100 dark:border-white/5 hover:border-brand/30 dark:hover:border-brand/30 transition-colors group cursor-pointer shadow-sm hover:shadow">
+      <div appAnimateOnScroll (click)="playSound(sound, allSounds())" class="flex items-center p-3 rounded-2xl bg-surface border border-gray-100 dark:border-white/5 hover:border-brand/30 dark:hover:border-brand/30 transition-colors group cursor-pointer shadow-sm hover:shadow">
         <!-- Thumbnail -->
         <div class="relative w-32 md:w-44 aspect-video rounded-xl overflow-hidden shrink-0">
           <img [src]="sound.image" [alt]="sound.title" class="w-full h-full object-cover">
@@ -123,7 +123,7 @@
         <div class="flex-1 min-w-0 pl-4 pr-4">
           <div class="flex items-center gap-3 mb-1">
             <h3 class="font-bold text-base md:text-lg text-gray-900 dark:text-gray-100 truncate">{{ sound.title }}</h3>
-            <span class="text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-full {{ sound.categoryColor }}">
+            <span class="text-xs uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-full {{ sound.categoryColor }}">
               {{ sound.category }}
             </span>
           </div>
@@ -132,7 +132,7 @@
         
         <!-- Actions -->
         <div class="flex items-center gap-4 md:gap-6 shrink-0 pl-4">
-          <span class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">{{ sound.duration }}</span>
+          <span class="text-xs md:text-sm font-semibold text-gray-500 dark:text-gray-400">{{ sound.duration }}</span>
           <button class="text-gray-400 hover:text-brand dark:hover:text-purple-400 transition-colors">
             <svg [lucideIcon]="'heart'" [size]="18"></svg>
           </button>
@@ -147,18 +147,18 @@
   <!-- Pagination -->
   <div class="flex items-center justify-end gap-2 mt-8">
     <button class="w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center text-xs font-bold shadow-md shadow-brand/20">1</button>
-    <button class="w-7 h-7 rounded-full bg-gray-100 dark:bg-[#160d26] text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#201335] transition-colors flex items-center justify-center text-xs font-bold border border-transparent dark:border-white/5">2</button>
-    <button class="w-7 h-7 rounded-full bg-gray-100 dark:bg-[#160d26] text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#201335] transition-colors flex items-center justify-center text-xs font-bold border border-transparent dark:border-white/5">3</button>
+    <button class="w-7 h-7 rounded-full bg-gray-100 dark:bg-player-from text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-player-to transition-colors flex items-center justify-center text-xs font-bold border border-transparent dark:border-white/5">2</button>
+    <button class="w-7 h-7 rounded-full bg-gray-100 dark:bg-player-from text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-player-to transition-colors flex items-center justify-center text-xs font-bold border border-transparent dark:border-white/5">3</button>
   </div>
 </section>
 
 <!-- Now Playing Player Bar -->
 @if (playerService.hasTrack()) {
-<div class="stagger-enter fixed bottom-0 left-0 right-0 bg-white/10 dark:bg-[#1a1a2e]/10 backdrop-blur-sm border-t border-white/20 dark:border-white/10 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]" style="--index:0">
+<div class="stagger-enter fixed bottom-0 left-0 right-0 bg-white/10 dark:bg-sunken/10 backdrop-blur-sm border-t border-white/20 dark:border-white/10 z-50 shadow-player" style="--index:0">
   <!-- Full-width seekbar -->
   <div class="px-2 md:px-4">
     <div class="flex items-center gap-2 md:gap-3 pt-2 md:pt-3">
-      <span class="text-[10px] text-gray-500 w-7 md:w-8 text-right">{{ playerService.elapsedFormatted() }}</span>
+      <span class="text-xs text-gray-500 w-7 md:w-8 text-right">{{ playerService.elapsedFormatted() }}</span>
       <div class="relative h-5 flex-1 flex items-center cursor-pointer group"
            (click)="onSeek($event)">
         <div class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
@@ -168,7 +168,7 @@
         <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-brand rounded-full shadow-md border-2 border-white dark:border-gray-900 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
              [style.left.%]="playerService.progress()"></div>
       </div>
-      <span class="text-[10px] text-gray-500 w-7 md:w-8">{{ playerService.remainingFormatted() }}</span>
+      <span class="text-xs text-gray-500 w-7 md:w-8">{{ playerService.remainingFormatted() }}</span>
     </div>
   </div>
 
@@ -180,7 +180,7 @@
       </div>
       <div class="hidden sm:block">
         <h4 class="font-bold text-gray-900 dark:text-gray-100 text-sm">{{ playerService.nowPlaying()!.title }}</h4>
-        <p class="text-[10px] text-gray-500 w-24">{{ playerService.isPlaying() ? 'Playing' : 'Paused' }}</p>
+        <p class="text-xs text-gray-500 w-24">{{ playerService.isPlaying() ? 'Playing' : 'Paused' }}</p>
       </div>
     </div>
     

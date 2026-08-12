@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [RouterLink, RouterLinkActive, LucideDynamicIcon],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <header class="h-16 flex items-center justify-between px-4 md:px-8 bg-white/80 dark:bg-[#090514]/80 backdrop-blur-md border-b border-gray-100 dark:border-white/5">
+    <header class="h-16 flex items-center justify-between px-4 md:px-8 bg-glass backdrop-blur-md border-b border-gray-100 dark:border-white/5">
       <a routerLink="/" class="flex items-center">
         <img src="assets/logo.avif" alt="Calmi" class="h-8 md:h-10">
       </a>
@@ -18,7 +18,7 @@ import { AuthService } from '../../core/services/auth.service';
       <nav class="hidden md:flex items-center gap-8">
         @for (link of navLinks(); track link.path) {
           <a [routerLink]="link.path" routerLinkActive="border-b-2 border-brand"
-             class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-brand pb-1">
+             class="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-brand pb-1">
             {{ link.label }}
           </a>
         }
@@ -32,7 +32,7 @@ import { AuthService } from '../../core/services/auth.service';
           @switch (themeService.mode()) {
             @case ('light') { <svg [lucideIcon]="'moon'" [size]="20" class="text-gray-900 dark:text-gray-100"></svg> }
             @case ('dark') { <svg [lucideIcon]="'sun'" [size]="20" class="text-gray-900 dark:text-gray-100"></svg> }
-            @case ('auto') { <svg [lucideIcon]="'monitor'" [size]="20" class="text-gray-900 dark:text-gray-100"></svg> }
+            @case ('auto') { <span aria-hidden="true" class="w-5 h-5 flex items-center justify-center text-base font-bold leading-none text-gray-900 dark:text-gray-100">A</span> }
           }
         </button>
 
@@ -55,7 +55,7 @@ import { AuthService } from '../../core/services/auth.service';
               <!-- Click outside overlay to close -->
               <div class="fixed inset-0 z-10" (click)="dropdownOpen.set(false)"></div>
               
-              <div class="absolute right-0 mt-2 w-56 rounded-xl bg-white dark:bg-[#120822] border border-gray-100 dark:border-white/5 p-2 shadow-xl z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div class="absolute right-0 mt-2 w-56 rounded-xl bg-elevated border border-gray-100 dark:border-white/5 p-2 shadow-xl z-20 animate-in fade-in slide-in-from-top-2 duration-200">
                 <div class="px-3 py-2 border-b border-gray-100 dark:border-white/5 mb-1">
                   <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                     {{ user.user_metadata['full_name'] || 'User' }}
@@ -87,11 +87,11 @@ import { AuthService } from '../../core/services/auth.service';
 
     <!-- Mobile menu overlay -->
     @if (mobileMenuOpen()) {
-      <div class="md:hidden fixed inset-0 top-16 z-40 bg-white dark:bg-[#090514] p-6 flex flex-col gap-4 stagger-enter" style="--index:0">
+      <div class="md:hidden fixed inset-0 top-16 z-40 bg-canvas p-6 flex flex-col gap-4 stagger-enter" style="--index:0">
         @for (link of navLinks(); track link.path; let i = $index) {
           <a [routerLink]="link.path" routerLinkActive="text-brand font-bold"
              (click)="mobileMenuOpen.set(false)"
-             class="stagger-enter text-lg font-medium text-gray-800 dark:text-gray-200 hover:text-brand py-2 border-b border-gray-100 dark:border-white/10"
+             class="stagger-enter text-lg font-semibold text-gray-800 dark:text-gray-200 hover:text-brand py-2 border-b border-gray-100 dark:border-white/10"
              [style.--index]="i + 1">
             {{ link.label }}
           </a>

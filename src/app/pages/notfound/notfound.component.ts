@@ -7,7 +7,7 @@ import { LucideDynamicIcon } from '@lucide/angular';
   imports: [RouterLink, LucideDynamicIcon],
   host: { class: 'flex flex-1' },
   template: `
-    <div class="flex-1 min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center bg-[#f5f3f0] dark:bg-[#090514] px-6 py-12 text-center relative overflow-hidden transition-colors duration-300">
+    <div class="flex-1 min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center bg-canvas px-6 py-12 text-center relative overflow-hidden transition-colors duration-300">
       
       <!-- Back Button -->
       <a routerLink="/home" class="absolute top-6 right-8 text-gray-400 hover:text-brand dark:hover:text-white transition-colors duration-300 z-10">
@@ -23,7 +23,7 @@ import { LucideDynamicIcon } from '@lucide/angular';
         <svg class="absolute bottom-16 left-6 w-4 h-4 text-brand-dark/50 dark:text-gray-100/40 animate-sparkle-delayed" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
         </svg>
-        <svg class="absolute top-12 right-12 w-8 h-8 text-[#f5b731] animate-sparkle" viewBox="0 0 24 24" fill="currentColor">
+        <svg class="absolute top-12 right-12 w-8 h-8 text-accent-gold animate-sparkle" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
         </svg>
 
@@ -33,7 +33,7 @@ import { LucideDynamicIcon } from '@lucide/angular';
         <!-- Main Animated Heart Group -->
         <div class="relative w-48 h-48 animate-float">
           <!-- Back shadow/glow layer -->
-          <svg class="absolute inset-0 w-full h-full drop-shadow-[0_10px_20px_rgba(232,114,74,0.3)] dark:drop-shadow-[0_10px_30px_rgba(245,183,49,0.2)]" viewBox="0 0 64 64">
+          <svg class="absolute inset-0 w-full h-full drop-shadow-accent-coral dark:drop-shadow-accent-gold" viewBox="0 0 64 64">
             <path d="M32 56S4 36 4 20C4 10 12 4 22 4c6 0 10 4 10 4s4-4 10-4c10 0 18 6 18 16C60 36 32 56 32 56z" fill="url(#heartGradient)"/>
           </svg>
 
@@ -41,20 +41,20 @@ import { LucideDynamicIcon } from '@lucide/angular';
           <svg class="absolute inset-0 w-full h-full" viewBox="0 0 64 64">
             <defs>
               <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#f5b731" />
-                <stop offset="100%" stop-color="#e8724a" />
+                <stop offset="0%" stop-color="var(--color-accent-gold)" />
+                <stop offset="100%" stop-color="var(--color-accent-coral)" />
               </linearGradient>
             </defs>
             <!-- Left Half (Soft Pink/Red tint) -->
-            <path d="M32 56S4 36 4 20C4 10 12 4 22 4c6 0 10 4 10 4z" fill="#f2a0b0" opacity="0.85"/>
+            <path d="M32 56S4 36 4 20C4 10 12 4 22 4c6 0 10 4 10 4z" fill="var(--color-accent-pink)" opacity="0.85"/>
             <!-- Right Half (Rich Warm Orange) -->
             <path d="M32 56S32 4 42 4c10 0 18 6 18 16C60 36 32 56 32 56z" fill="url(#heartGradient)"/>
           </svg>
 
           <!-- Floating Tiny Heart (overlapping top-left) -->
           <svg class="absolute -top-4 -left-4 w-12 h-12 animate-float-tiny" viewBox="0 0 64 64">
-            <path d="M32 56S4 36 4 20C4 10 12 4 22 4c6 0 10 4 10 4s4-4 10-4c10 0 18 6 18 16C60 36 32 56 32 56z" fill="#f2a0b0"/>
-            <path d="M32 56S32 4 42 4c10 0 18 6 18 16C60 36 32 56 32 56z" fill="#e8724a" opacity="0.6"/>
+            <path d="M32 56S4 36 4 20C4 10 12 4 22 4c6 0 10 4 10 4s4-4 10-4c10 0 18 6 18 16C60 36 32 56 32 56z" fill="var(--color-accent-pink)"/>
+            <path d="M32 56S32 4 42 4c10 0 18 6 18 16C60 36 32 56 32 56z" fill="var(--color-accent-coral)" opacity="0.6"/>
           </svg>
         </div>
       </div>
@@ -64,7 +64,7 @@ import { LucideDynamicIcon } from '@lucide/angular';
         <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 leading-tight mb-4 tracking-tight">
           Under Construction
         </h1>
-        <p class="text-gray-500 dark:text-gray-400 text-lg mb-8 leading-relaxed font-medium">
+        <p class="text-gray-500 dark:text-gray-400 text-lg mb-8 leading-relaxed font-semibold">
           We're carefully designing this space to bring you a calming, premium experience. Thank you for your patience!
         </p>
 
