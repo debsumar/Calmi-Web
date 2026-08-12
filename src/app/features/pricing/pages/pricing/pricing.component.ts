@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { PrimaryButtonComponent } from '@/shared/components/primary-button/primary-button.component';
 import { OnboardingService } from '@/features/onboarding/services/onboarding.service';
@@ -6,12 +6,19 @@ import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.
 
 type PlanEmphasis = 'none' | 'recommended' | 'popular';
 type PlanAction = 'start' | 'verifyStudent' | 'trial';
+type BillingPeriod = 'monthly' | 'annual';
+type PricePeriod = 'month' | 'year' | 'forever';
+
+type BillingPrice = {
+  value: string;
+  period: PricePeriod;
+};
 
 interface PricingPlan {
   name: string;
   icon: string;
-  price: string;
-  period: string;
+  monthly: BillingPrice;
+  annual: BillingPrice;
   description: string;
   features: string[];
   buttonText: string;
@@ -22,6 +29,11 @@ interface PricingPlan {
   action: PlanAction;
 }
 
+type DisplayedPricingPlan = PricingPlan & BillingPrice & {
+  ribbonLabel: string | null;
+  ariaLabel: string;
+};
+
 @Component({
   selector: 'app-pricing',
   imports: [LucideDynamicIcon, PrimaryButtonComponent, AnimateOnScrollDirective],
@@ -31,12 +43,14 @@ interface PricingPlan {
 export class PricingComponent {
   onboardingService = inject(OnboardingService);
 
+  readonly billingPeriod = signal<BillingPeriod>('monthly');
+
   readonly plans: readonly PricingPlan[] = [
     {
       name: 'Free',
       icon: 'leaf',
-      price: '₹0',
-      period: 'forever',
+      monthly: { value: '₹0', period: 'forever' },
+      annual: { value: '₹0', period: 'forever' },
       description: 'Perfect for exploring Calmi.',
       features: [
         'Daily Mood Check-ins',
@@ -53,17 +67,17 @@ export class PricingComponent {
     {
       name: 'Student Premium',
       icon: 'graduation-cap',
-      price: '₹99',
-      period: 'per month',
-      description: 'Built for students who need affordable mental wellness support.',
+      monthly: { value: '₹99', period: 'month' },
+      annual: { value: '₹999', period: 'year' },
+      description: 'Everything you need for everyday self-reflection.',
       features: [
         'Everything in Free',
-        'Unlimited Sleep Library',
-        'Unlimited Guided Journals',
-        'Unlimited Rumi AI',
-        'Personalized Recommendations',
+        'Limited Rumi AI conversations — 20–30 conversations/month',
+        'Unlimited Guided Journaling',
+        'Sleep Library',
+        'Personalised Recommendations',
         'Mood Insights & Progress',
-        'Early Access to New Features'
+        'Notice Your Patterns.'
       ],
       buttonText: 'Verify Student Status',
       buttonVariant: 'outline',
@@ -75,17 +89,17 @@ export class PricingComponent {
     {
       name: 'Premium',
       icon: 'sparkles',
-      price: '₹249',
-      period: 'per month',
-      description: 'Complete mental wellness for every stage of your journey.',
+      monthly: { value: '₹249', period: 'month' },
+      annual: { value: '₹2,399', period: 'year' },
+      description: 'More room to reflect, understand and explore.',
       features: [
         'Everything in Student Premium',
-        'Priority AI Responses',
-        'Therapist Session Discounts',
-        'Advanced Mood Analytics',
+        'Higher Rumi AI limits — 100–150 conversations/month',
+        'Deeper Mood Insights',
         'Premium Sleep Journeys',
-        'Priority Customer Support',
-        'Exclusive Weekly Content'
+        'Therapist Session Discounts',
+        'Exclusive Weekly Content',
+        'Priority Support'
       ],
       buttonText: 'Start 7-Day Free Trial',
       buttonVariant: 'solid',
@@ -94,12 +108,30 @@ export class PricingComponent {
     }
   ];
 
-  ribbonLabel(emphasis: PlanEmphasis): string | null {
-    return emphasis === 'popular' ? 'Most Popular' : emphasis === 'recommended' ? 'Recommended' : null;
-  }
+  readonly displayedPlans = computed<readonly DisplayedPricingPlan[]>(() => {
+    const selectedPrice = this.billingPeriod();
 
-  ariaPrice(plan: PricingPlan): string {
-    return `${plan.price} ${plan.period}`;
+    return this.plans.map((plan) => {
+      const price = selectedPrice === 'annual' ? plan.annual : plan.monthly;
+      const ribbonLabel = plan.emphasis === 'popular'
+        ? 'Most Popular'
+        : plan.emphasis === 'recommended'
+          ? 'Recommended'
+          : null;
+
+      return {
+        ...plan,
+        ...price,
+        ribbonLabel,
+        ariaLabel: price.period === 'forever'
+          ? `${price.value} forever`
+          : `${price.value} per ${price.period}`,
+      };
+    });
+  });
+
+  setBillingPeriod(period: BillingPeriod): void {
+    this.billingPeriod.set(period);
   }
 
   onPlanAction(plan: PricingPlan): void {
