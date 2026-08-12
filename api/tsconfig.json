@@ -1,0 +1,16 @@
+/* Vercel compiles api/*.ts with the nearest tsconfig. The root one targets
+   ES2022 modules, which emits `export default` into a .js file that the Node
+   function launcher loads as CommonJS - that crashes with
+   FUNCTION_INVOCATION_FAILED. Force CommonJS emit here. */
+{
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "module": "CommonJS",
+    "types": ["node"],
+    "lib": ["ES2022", "DOM"]
+  },
+  "include": ["./**/*.ts"]
+}
