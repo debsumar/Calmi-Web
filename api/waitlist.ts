@@ -81,6 +81,13 @@ async function addContact(email: string, config: BrevoConfig): Promise<boolean> 
 }
 
 /**
+ * Absolute HTTPS URL: email clients cannot resolve relative paths.
+ * PNG, not the site's AVIF - Gmail and Outlook do not render AVIF in email.
+ * Served at 3x the display size so it stays sharp on retina screens.
+ */
+const LOGO_URL = 'https://www.calmi.in/assets/logo-email.png';
+
+/**
  * Sends the welcome mail. Failure here is logged but not fatal:
  * the lead is already stored, so the user should still see success.
  */
@@ -89,11 +96,32 @@ async function sendWelcomeEmail(email: string, config: BrevoConfig): Promise<voi
     const response = await brevoFetch('/smtp/email', config.apiKey, {
       sender: { email: config.senderEmail, name: config.senderName },
       to: [{ email }],
-      subject: "You're on the Calmi waitlist",
+      // Plain text, not HTML - entities would render literally in the subject.
+      subject: "You're in. Welcome to Calmi.",
+      // Inline styles only - email clients strip <style> blocks and class rules.
+      // Entities instead of literal glyphs keep this readable whatever charset
+      // the client guesses.
       htmlContent:
-        '<p>Thanks for joining the Calmi waitlist.</p>' +
-        "<p>We'll email you as soon as early access opens.</p>" +
-        '<p>— The Calmi team</p>',
+        '<div style="margin:0;padding:32px 16px;background-color:#f6f5f8;">' +
+        '<div style="max-width:480px;margin:0 auto;padding:32px;background-color:#ffffff;border-radius:16px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;text-align:center;">' +
+        // No percentage sizing: Gmail rewrites the parent container and a
+        // percentage max-width resolves against zero, collapsing the image to
+        // nothing. Explicit pixel width/height attributes plus matching inline
+        // styles are what survive. Verified in Gmail web.
+        `<img src="${LOGO_URL}" alt="Calmi" width="120" height="120" style="width:120px;height:120px;border:0;outline:none;text-decoration:none;display:block;margin:0 auto 24px;">` +
+        // #967BB6 is SEED_PRIMARY from src/app/core/theme/calmi-preset.ts, the
+        // lavender the app palette is generated from. Hardcoded because email
+        // cannot read CSS custom properties.
+        '<h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#1f2937;">You&rsquo;re in. Welcome to <span style="color:#967BB6;">Calmi</span>.</h1>' +
+        '<p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#4b5563;">Thanks for joining us. Early access is coming soon. Your spot is saved.</p>' +
+        '<p style="margin:0;font-size:15px;line-height:1.6;color:#6b7280;">&mdash; Team Calmi &#128156;</p>' +
+        '</div></div>',
+      // Plain-text part: improves deliverability and covers clients that
+      // block or cannot render the HTML body.
+      textContent:
+        "You're in. Welcome to Calmi.\n\n" +
+        'Thanks for joining us. Early access is coming soon. Your spot is saved.\n\n' +
+        '-- Team Calmi',
     });
 
     if (!response.ok) {
