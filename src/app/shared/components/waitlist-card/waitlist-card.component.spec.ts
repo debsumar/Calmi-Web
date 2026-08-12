@@ -4,7 +4,9 @@ import { WaitlistCardComponent } from './waitlist-card.component';
 import { WaitlistService, WaitlistResponse } from '@/core/services/waitlist.service';
 
 class WaitlistServiceStub {
-  join = vi.fn<(email: string) => Promise<WaitlistResponse>>(() => Promise.resolve({ success: true }));
+  join = vi.fn<(email: string, honeypot?: string) => Promise<WaitlistResponse>>(() =>
+    Promise.resolve({ success: true }),
+  );
 }
 
 describe('WaitlistCardComponent', () => {
@@ -53,10 +55,30 @@ describe('WaitlistCardComponent', () => {
     typeEmail('user@example.com');
     await submit();
 
-    expect(service.join).toHaveBeenCalledWith('user@example.com');
+    expect(service.join).toHaveBeenCalledWith('user@example.com', '');
     expect(fixture.componentInstance.status()).toBe('success');
     expect(fixture.nativeElement.textContent).toContain("You're on the list");
     expect(fixture.nativeElement.querySelector('form')).toBeNull();
+  });
+
+  it('keeps the honeypot out of the accessibility tree and tab order', () => {
+    const decoy = fixture.nativeElement.querySelector('input[name="website"]') as HTMLInputElement;
+
+    expect(decoy).not.toBeNull();
+    expect(decoy.getAttribute('tabindex')).toBe('-1');
+    expect(decoy.closest('[aria-hidden="true"]')).not.toBeNull();
+  });
+
+  it('forwards a filled honeypot so the server can drop the submission', async () => {
+    const decoy = fixture.nativeElement.querySelector('input[name="website"]') as HTMLInputElement;
+    decoy.value = 'http://spam.example';
+    decoy.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    typeEmail('user@example.com');
+    await submit();
+
+    expect(service.join).toHaveBeenCalledWith('user@example.com', 'http://spam.example');
   });
 
   it('treats a 200 response with success:false as an error', async () => {

@@ -30,6 +30,20 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
       } @else {
         <form class="flex flex-col sm:flex-row items-stretch gap-3" (submit)="onSubmit($event)" novalidate>
           <label class="sr-only" for="waitlist-email">Email address</label>
+          <!--
+            Honeypot: bots fill every field they find, humans never see this one.
+            aria-hidden + tabindex="-1" keep it out of the accessibility tree and
+            tab order. Positioned off-screen rather than display:none, which
+            simple bots detect and skip.
+          -->
+          <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+            <input type="text"
+                   name="website"
+                   tabindex="-1"
+                   autocomplete="off"
+                   [value]="honeypot()"
+                   (input)="onHoneypotInput($event)">
+          </div>
           <input id="waitlist-email"
                  type="email"
                  name="email"
@@ -67,6 +81,8 @@ export class WaitlistCardComponent {
   private waitlistService = inject(WaitlistService);
 
   readonly email = signal('');
+  /** Decoy field value. Stays empty for real users; forwarded to the server as-is. */
+  readonly honeypot = signal('');
   readonly status = signal<WaitlistStatus>('idle');
   readonly errorMessage = signal('');
   /** True only when the email field itself is invalid, so aria-invalid never fires on a network failure. */
@@ -80,6 +96,10 @@ export class WaitlistCardComponent {
       this.errorMessage.set('');
       this.fieldError.set(false);
     }
+  }
+
+  onHoneypotInput(event: Event): void {
+    this.honeypot.set((event.target as HTMLInputElement).value);
   }
 
   async onSubmit(event: Event): Promise<void> {
@@ -99,7 +119,7 @@ export class WaitlistCardComponent {
     this.status.set('submitting');
 
     try {
-      const response = await this.waitlistService.join(this.email().trim());
+      const response = await this.waitlistService.join(this.email().trim(), this.honeypot());
 
       // A 200 response can still carry a server-side rejection; only affirm on success.
       if (response?.success === false) {
