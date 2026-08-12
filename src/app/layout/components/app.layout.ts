@@ -9,7 +9,7 @@ import { ScrollPositionService } from '@/core/services/scroll-position.service';
   imports: [RouterOutlet, AppTopbar, LoginDialogComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <div class="min-h-screen flex flex-col bg-[#f5f3f0] dark:bg-[#090514]">
+    <div class="min-h-screen flex flex-col bg-canvas">
       <app-topbar class="sticky top-0 z-50 w-full" />
       <main class="flex-1">
         <router-outlet />

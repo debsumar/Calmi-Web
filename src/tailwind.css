@@ -1,15 +1,100 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 @import "../node_modules/tailwindcss-primeui/v4/index.css";
 
 @variant dark (&:where([class*="app-dark"], [class*="app-dark"] *));
 
+/* Every role below is derived from the live theme palette. The only literals are
+   `white`, `black` and `transparent`, which are anchors, not brand decisions.
+   Change the seed (ThemeService.setPrimary) and every surface, border, glass
+   layer and gradient stop follows without a rebuild.
+
+   `color-mix()` needs no fallback: Tailwind 4 already requires Chrome 111+ /
+   Safari 16.4+ / Firefox 128+, which all support it. */
+@layer base {
+  :root {
+    --calmi-canvas: color-mix(in srgb, var(--color-brand) 5%, white);
+    --calmi-surface: white;
+    --calmi-elevated: white;
+    --calmi-sunken: color-mix(in srgb, var(--color-brand) 10%, white);
+    --calmi-sunken-alt: color-mix(in srgb, var(--color-brand) 15%, white);
+    --calmi-hairline: color-mix(in srgb, var(--color-brand) 12%, white);
+    --calmi-glass: color-mix(in srgb, white 60%, transparent);
+
+    --calmi-shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.25);
+    --calmi-shadow-player: 0 -4px 20px rgb(0 0 0 / 0.1);
+    --calmi-shadow-accent-coral: 0 10px 20px color-mix(in srgb, var(--color-accent-coral) 30%, transparent);
+    --calmi-shadow-accent-gold: 0 10px 30px color-mix(in srgb, var(--color-accent-gold) 20%, transparent);
+  }
+
+  /* Must out-specify :root (0,1,0) or the dark values never apply.
+     .app-dark is toggled on <html>, so :root[class*="app-dark"] is (0,2,0). */
+  :root[class*="app-dark"] {
+    --calmi-canvas: color-mix(in srgb, var(--color-brand) 7%, black);
+    --calmi-surface: color-mix(in srgb, var(--color-brand) 32%, black);
+    --calmi-elevated: color-mix(in srgb, var(--color-brand) 13%, black);
+    --calmi-sunken: color-mix(in srgb, var(--color-brand) 19%, black);
+    --calmi-sunken-alt: color-mix(in srgb, var(--color-brand) 13%, black);
+    --calmi-hairline: color-mix(in srgb, var(--color-brand) 40%, black);
+    --calmi-glass: color-mix(in srgb, var(--calmi-elevated) 55%, transparent);
+
+    --calmi-shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.5);
+    --calmi-shadow-player: 0 -4px 20px rgb(0 0 0 / 0.4);
+  }
+
+  /* Glass is a deliberate part of the visual language, but it must degrade to an
+     opaque surface when the user asks for reduced transparency. */
+  @media (prefers-reduced-transparency: reduce) {
+    :root {
+      --calmi-glass: var(--calmi-surface);
+    }
+    :root[class*="app-dark"] {
+      --calmi-glass: var(--calmi-elevated);
+    }
+  }
+}
+
 @theme {
   --font-sans: 'Bricolage Grotesque', sans-serif;
-  --color-brand: #967BB6;
-  --color-brand-dark: #4E0E99;
+
+  /* Brand bridge: the generated primary palette drives every brand utility.
+     Hex fallbacks cover the first paint, before PrimeNG injects --p-primary-*. */
+  --color-brand: var(--p-primary-500, #967bb6);
+  --color-brand-light: var(--p-primary-300, #beadd2);
+  --color-brand-dark: var(--p-primary-700, #69567f);
+  --color-brand-soft: var(--p-primary-400, #aa94c4);
+  --color-brand-deep: var(--p-primary-600, #80699b);
+
+  /* Scheme-aware neutral roles, derived above from the brand palette. */
+  --color-canvas: var(--calmi-canvas);
+  --color-surface: var(--calmi-surface);
+  --color-elevated: var(--calmi-elevated);
+  --color-sunken: var(--calmi-sunken);
+  --color-sunken-alt: var(--calmi-sunken-alt);
+  --color-hairline: var(--calmi-hairline);
+  --color-glass: var(--calmi-glass);
+
+  /* Accent palettes registered in core/theme/calmi-preset.ts. */
+  --color-accent-coral: var(--p-coral-500, #e8724a);
+  --color-accent-gold: var(--p-gold-500, #f5b731);
+  --color-accent-pink: var(--p-pink-500, #f2a0b0);
+
+  /* Decorative stops, all derived from the brand palette. */
+  --color-hero: color-mix(in srgb, var(--color-brand) 92%, white);
+  --color-hero-grad-from: color-mix(in srgb, var(--color-brand) 19%, black);
+  --color-hero-grad-to: color-mix(in srgb, var(--color-brand) 9%, black);
+  --color-brand-night: color-mix(in srgb, var(--color-brand) 28%, black);
+  --color-player-from: color-mix(in srgb, var(--color-brand) 11%, black);
+  --color-player-to: color-mix(in srgb, var(--color-brand) 16%, black);
+
+  --shadow-card: var(--calmi-shadow-card);
+  --shadow-player: var(--calmi-shadow-player);
+  --drop-shadow-accent-coral: var(--calmi-shadow-accent-coral);
+  --drop-shadow-accent-gold: var(--calmi-shadow-accent-gold);
+
   --breakpoint-sm: 576px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 992px;
   --breakpoint-xl: 1200px;
   --breakpoint-2xl: 1920px;
 }
+
