@@ -1,71 +1,100 @@
-<div class="min-h-[calc(100vh-4rem)] flex flex-col bg-canvas text-gray-900 dark:text-gray-100 transition-colors duration-300">
-  
-  <!-- Hero Section -->
-  <section class="relative pt-24 pb-32 px-6 overflow-hidden flex flex-col items-center text-center">
-    <!-- Abstract Background shapes -->
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-full pointer-events-none opacity-40 dark:opacity-20 z-0 flex justify-center">
-      <div class="w-96 h-96 bg-brand/30 rounded-full blur-3xl absolute -top-10 -left-20"></div>
-      <div class="w-80 h-80 bg-accent-coral/20 rounded-full blur-3xl absolute top-20 right-0"></div>
-    </div>
+<!-- Hero -->
+<section class="relative w-full overflow-hidden bg-hero dark:bg-gradient-to-b dark:from-hero-grad-from dark:to-hero-grad-to min-h-[400px] md:min-h-[500px] flex items-center justify-center">
+  <img src="assets/Illustration_2.avif" alt="" class="absolute left-0 top-0 h-full w-auto object-cover object-left pointer-events-none z-0 hidden sm:block opacity-80">
+  <img src="assets/Illustration_1.avif" alt="" class="absolute right-0 top-0 h-full w-auto object-cover object-right pointer-events-none z-0 hidden sm:block opacity-80">
 
-    <div class="relative z-10 max-w-3xl mx-auto" appAnimateOnScroll>
-      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-white/10 backdrop-blur-sm border border-brand/20 dark:border-white/10 text-brand dark:text-brand-light text-sm font-semibold mb-8">
-        <svg [lucideIcon]="'leaf'" [size]="16"></svg>
-        <span>Our Story</span>
-      </div>
-      
-      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight text-gray-900 dark:text-gray-100">
-        Find Your <span class="text-brand dark:text-brand-light">Center.</span>
-      </h1>
-      
-      <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
-        In a world of constant noise and endless notifications, we built Calmi to be your digital sanctuary. A place to breathe, reflect, and just be.
+  <div class="relative z-10 text-center px-6 md:px-4 max-w-2xl py-12 md:py-16">
+    <h1 appAnimateOnScroll class="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-4 md:mb-6" style="--index:0">
+      Mental wellness isn't<br>one-size-fits-all.
+    </h1>
+    <p appAnimateOnScroll class="text-white/90 text-base md:text-lg" style="--index:1">
+      Your journey adapts to your emotions, habits, sleep, and goals.
+    </p>
+  </div>
+</section>
+
+
+<!-- Why We Built Calmi -->
+<section class="px-4 md:px-8 max-w-6xl mx-auto py-12 md:py-20">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+    <img appAnimateOnScroll style="--index:0" src="assets/illustration_4.avif" alt=""
+         class="w-full max-w-md mx-auto md:mx-0 h-auto">
+
+    <div appAnimateOnScroll style="--index:1">
+      <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Why We Built Calmi?</h2>
+      <p class="text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+        Mental wellness often feels overwhelming. Many platforms focus on a single solution—meditation, therapy, or habit
+        tracking; leaving people to navigate their journey alone.
+      </p>
+      <p class="text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+        Calmi was created to bring everything together in one thoughtful experience. By combining mood tracking, guided
+        journaling, sleep support, AI-powered reflections, and access to licensed psychologists, we aim to help people
+        build healthier emotional habits at their own pace.
       </p>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Image Break / Visual Section -->
-  <section class="relative -mt-12 px-6 z-20" appAnimateOnScroll>
-    <div class="max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl shadow-brand/10 dark:shadow-black/50 aspect-[21/9] bg-surface relative">
-      <img src="assets/Illustration_3.avif" alt="Calmi Landscape" class="absolute inset-0 w-full h-full object-cover opacity-90 dark:opacity-70 mix-blend-multiply dark:mix-blend-screen">
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-    </div>
-  </section>
 
-  <!-- Values Section -->
-  <section class="py-24 px-6 relative z-10">
-    <div class="max-w-5xl mx-auto">
-      <div class="text-center mb-16" appAnimateOnScroll>
-        <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">Our Core Values</h2>
-        <p class="text-gray-600 dark:text-gray-400">The principles that guide everything we create.</p>
+<!-- What Drives Us -->
+<section class="px-4 md:px-8 max-w-6xl mx-auto pb-20 md:pb-28">
+  <h2 appAnimateOnScroll style="--index:0" class="text-2xl md:text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-3">
+    What Drives Us?
+  </h2>
+  <p appAnimateOnScroll style="--index:1" class="text-sm md:text-base text-gray-600 dark:text-gray-300 text-center max-w-3xl mx-auto mb-10 md:mb-14">
+    Every decision we make is guided by a simple belief: mental wellness should feel supportive, not overwhelming.
+  </p>
+
+  <ul class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-center list-none">
+    @for (value of values(); track value.title; let i = $index) {
+      <li appAnimateOnScroll [style.--index]="i + 2"
+          class="rounded-3xl text-center text-white flex flex-col items-center justify-center transition-transform duration-300 hover:-translate-y-1"
+          [class]="value.featured
+            ? 'bg-hero dark:bg-brand-dark px-6 md:px-8 py-12 md:py-20 shadow-xl md:-my-8'
+            : 'bg-brand/70 dark:bg-brand/40 px-6 py-10 md:py-12 shadow-card'">
+        <svg [lucideIcon]="value.icon" [size]="value.featured ? 64 : 48" class="mb-6" aria-hidden="true"></svg>
+        <h3 [class]="value.featured ? 'text-xl md:text-2xl font-bold mb-4' : 'text-lg font-bold mb-3'">
+          {{ value.title }}
+        </h3>
+        <p class="text-white/90 leading-relaxed max-w-xs" [class]="value.featured ? 'text-sm md:text-base' : 'text-xs md:text-sm'">
+          {{ value.description }}
+        </p>
+      </li>
+    }
+  </ul>
+</section>
+
+
+<!-- Early access CTA -->
+<section class="px-4 md:px-8 max-w-6xl mx-auto pb-16 md:pb-24">
+  <div appAnimateOnScroll class="relative overflow-hidden bg-hero dark:bg-surface dark:shadow-card rounded-3xl px-8 md:px-14 py-10 md:py-14">
+    <!-- Decorative heart cluster -->
+    <div aria-hidden="true" class="hidden sm:block absolute z-0 right-8 md:right-16 top-1/2 -translate-y-1/2 pointer-events-none">
+      <div class="relative w-48 h-40">
+        <svg [lucideIcon]="'heart'" [size]="88" class="absolute right-4 top-10 text-amber-400 fill-current rotate-12"></svg>
+        <svg [lucideIcon]="'heart'" [size]="48" class="absolute right-2 top-0 text-accent-coral fill-current -rotate-12"></svg>
+        <svg [lucideIcon]="'heart'" [size]="28" class="absolute left-6 bottom-4 text-white/90 fill-current -rotate-6"></svg>
+        <svg [lucideIcon]="'sparkles'" [size]="18" class="absolute left-0 top-6 text-white/80"></svg>
+        <svg [lucideIcon]="'sparkles'" [size]="14" class="absolute right-0 bottom-8 text-amber-300 rotate-12"></svg>
+        <svg [lucideIcon]="'sparkles'" [size]="12" class="absolute left-20 -top-2 text-white/70"></svg>
       </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        @for (value of values; track value.title) {
-          <app-card class="hover:-translate-y-2 transition-transform duration-300 group" appAnimateOnScroll>
-            <div class="flex flex-col h-full items-start">
-              <div class="w-14 h-14 rounded-2xl bg-brand/10 dark:bg-white/10 text-brand dark:text-brand-light flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg [lucideIcon]="value.icon" [size]="28"></svg>
-              </div>
-              <h3 class="text-2xl font-bold mb-3 text-gray-900 dark:text-gray-100">{{ value.title }}</h3>
-              <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
-                {{ value.description }}
-              </p>
-            </div>
-          </app-card>
-        }
-      </div>
     </div>
-  </section>
 
-  <!-- Footer CTA -->
-  <section class="py-20 px-6 bg-sunken-alt">
-    <div class="max-w-4xl mx-auto text-center" appAnimateOnScroll>
-      <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">Ready to start your journey?</h2>
-      <a href="/sounds" class="inline-flex items-center gap-2 px-8 py-4 bg-brand hover:bg-brand-deep text-white font-semibold rounded-full shadow-lg transition-all duration-300 group">
-        <span>Listen to Sounds</span>
-        <svg [lucideIcon]="'headphones'" [size]="20" class="group-hover:scale-110 transition-transform"></svg>
-      </a>
+    <div class="relative z-10">
+    <h2 class="text-2xl md:text-3xl font-bold text-white leading-tight mb-4">
+      We're building something,<br>worth waiting for.
+    </h2>
+    <p class="text-white/90 text-sm md:text-base leading-relaxed max-w-xl mb-8">
+      Our team is working hard to bring you a calmer, more personalized approach to mental wellness. Join the waitlist
+      to receive launch updates and exclusive early access.
+    </p>
+    <a href="/home"
+       class="inline-flex items-center gap-3 bg-white text-gray-900 dark:bg-brand-deep dark:text-white font-semibold text-sm rounded-full pl-6 pr-4 py-3 hover:shadow-lg transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
+      <span>Get Early Access</span>
+      <span aria-hidden="true" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900">
+        <svg [lucideIcon]="'arrow-right'" [size]="14"></svg>
+      </span>
+    </a>
     </div>
-  </section>
-</div>
+  </div>
+</section>

@@ -1,5 +1,6 @@
 ﻿# Project Steering â€” Calmi-Web
 
+NEVER RUN ng test, or any test commands or test cases
 ## Overview
 
 Calmi-Web is a wellness/meditation web app built with Angular 22. It provides guided calm sessions, soothing sounds, and wellness coaching.
@@ -57,7 +58,8 @@ src/app/
 â”‚
 â”œâ”€â”€ features/              # Feature modules (lazy-loaded)
 â”‚   â”œâ”€â”€ home/pages/home/        # Landing page
-â”‚   â”œâ”€â”€ sounds/pages/sounds/    # Sounds browser
+â”‚   â”œâ”€â”€     therapy/pages/therapy/  # Therapy page
+    sleep/pages/sleep/      # Sleep sounds browser
 â”‚   â”œâ”€â”€ about/pages/about/      # About Us
 â”‚   â”œâ”€â”€ pricing/pages/pricing/  # Pricing plans
 â”‚   â””â”€â”€ onboarding/             # Onboarding wizard
@@ -77,7 +79,10 @@ All feature pages are children of `AppLayout` (which provides the sticky topbar)
 
 ```
 /home        â†’ HomeComponent
-/sounds      â†’ SoundsComponent
+/therapy     -> TherapyComponent
+/sleep       -> SleepComponent
+/sessions    -> redirects to /therapy
+/sounds      -> redirects to /sleep
 /about       â†’ AboutComponent
 /pricing     â†’ PricingComponent
 /notfound    â†’ NotFoundComponent
@@ -207,4 +212,3 @@ PrimeNG 22 requires a license key (free Community tier or Commercial). Without o
 - [Signals Overview](references/signals-overview.md)
 - [Tailwind CSS v4](references/tailwind-css.md)
 - [Dynamic theming](../docs/dynamic-theming.md)
-

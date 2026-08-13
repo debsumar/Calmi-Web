@@ -11,9 +11,15 @@ export const appRoutes: Routes = [
         loadComponent: () => import('@/features/home/pages/home/home.component').then((m) => m.HomeComponent),
       },
       {
-        path: 'sounds',
-        loadComponent: () => import('@/features/sounds/pages/sounds/sounds.component').then((m) => m.SoundsComponent),
+        path: 'therapy',
+        loadComponent: () => import('@/features/therapy/pages/therapy/therapy.component').then((m) => m.TherapyComponent),
       },
+      {
+        path: 'sleep',
+        loadComponent: () => import('@/features/sleep/pages/sleep/sleep.component').then((m) => m.SleepComponent),
+      },
+      { path: 'sessions', redirectTo: 'therapy', pathMatch: 'full' },
+      { path: 'sounds', redirectTo: 'sleep', pathMatch: 'full' },
       {
         path: 'about',
         loadComponent: () => import('@/features/about/pages/about/about.component').then((m) => m.AboutComponent),
