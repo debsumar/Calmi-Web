@@ -1,30 +1,39 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
-import { CardComponent } from '@/shared/components/cards/card.component';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
+
+interface DriverValue {
+  icon: string;
+  title: string;
+  description: string;
+  featured: boolean;
+}
 
 @Component({
   selector: 'app-about',
-  imports: [LucideDynamicIcon, CardComponent, AnimateOnScrollDirective],
+  imports: [LucideDynamicIcon, AnimateOnScrollDirective],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './about.component.html',
 })
 export class AboutComponent {
-  values = [
+  readonly values = signal<DriverValue[]>([
     {
-      icon: 'wind',
-      title: 'Tranquility',
-      description: 'We believe peace of mind is not a luxury, but a fundamental human need. Our spaces are designed to quiet the noise.'
+      icon: 'hand-heart',
+      title: 'Human-Centered Care',
+      description: 'We design every experience with empathy, making emotional support simple, accessible, and judgment-free.',
+      featured: false,
     },
     {
-      icon: 'heart',
-      title: 'Empathy',
-      description: 'Every sound and session is crafted with deep understanding of the daily stresses we all face.'
+      icon: 'stethoscope',
+      title: 'Expert-Led Guidance',
+      description: 'Our approach is inspired by psychological principles and built to complement professional mental health support.',
+      featured: true,
     },
     {
-      icon: 'sparkles',
-      title: 'Simplicity',
-      description: 'We strip away the complex, leaving only what genuinely helps you reconnect with yourself.'
-    }
-  ];
+      icon: 'sprout',
+      title: 'Personalized Growth',
+      description: 'No two journeys are the same. It adapts to your emotions, habits, and goals to provide support that feels relevant to you.',
+      featured: false,
+    },
+  ]);
 }

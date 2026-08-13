@@ -1,0 +1,47 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { PsychologistCardComponent } from './psychologist-card.component';
+
+describe('PsychologistCardComponent', () => {
+  let fixture: ComponentFixture<PsychologistCardComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [PsychologistCardComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(PsychologistCardComponent);
+    fixture.componentRef.setInput('name', 'Ayushi Arora');
+    fixture.componentRef.setInput('price', 2000);
+    fixture.componentRef.setInput('duration', '50 mins');
+    fixture.componentRef.setInput('rating', 4.9);
+    fixture.componentRef.setInput('reviews', 128);
+    fixture.componentRef.setInput('specialties', ['Anxiety & Stress', 'Depression', 'Relationship']);
+    fixture.componentRef.setInput('languages', ['English', 'Hindi', 'Punjabi']);
+    fixture.detectChanges();
+  });
+
+  it('renders the psychologist details and initials placeholder', () => {
+    const text = fixture.nativeElement.textContent;
+
+    expect(text).toContain('Ayushi Arora');
+    expect(text).toContain('₹2000');
+    expect(text).toContain('for 50 mins');
+    expect(text).toContain('4.9');
+    expect(text).toContain('(128)');
+    expect(text).toContain('Anxiety & Stress');
+    expect(text).toContain('Depression');
+    expect(text).toContain('Relationship');
+    expect(text).toContain('Speaks: English, Hindi, Punjabi');
+    expect(fixture.nativeElement.querySelector('[aria-hidden="true"]').textContent).toContain('AA');
+  });
+
+  it('emits when Book Session is clicked', () => {
+    let emitted = false;
+    fixture.componentInstance.booked.subscribe(() => { emitted = true; });
+
+    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+
+    expect(emitted).toBe(true);
+  });
+});

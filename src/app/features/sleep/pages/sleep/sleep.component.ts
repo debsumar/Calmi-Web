@@ -6,12 +6,12 @@ import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.
 import { PlayerService, SoundTrack } from '@/core/services/player.service';
 
 @Component({
-  selector: 'app-sounds',
+  selector: 'app-sleep',
   imports: [LucideDynamicIcon, DragScrollDirective, SoundCardComponent, AnimateOnScrollDirective],
   changeDetection: ChangeDetectionStrategy.Eager,
-  templateUrl: './sounds.component.html',
+  templateUrl: './sleep.component.html',
 })
-export class SoundsComponent {
+export class SleepComponent {
   playerService = inject(PlayerService);
   @ViewChild('carousel', { static: false }) carouselRef?: ElementRef<HTMLElement>;
 

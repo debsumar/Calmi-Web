@@ -1,0 +1,140 @@
+<!-- Hero -->
+<section class="relative w-full overflow-hidden bg-hero dark:bg-gradient-to-b dark:from-hero-grad-from dark:to-hero-grad-to min-h-[400px] md:min-h-[500px] flex items-center justify-center">
+  <img src="assets/Illustration_2.avif" alt="" class="absolute left-0 top-0 h-full w-auto object-cover object-left pointer-events-none z-0 hidden sm:block opacity-80">
+  <img src="assets/Illustration_1.avif" alt="" class="absolute right-0 top-0 h-full w-auto object-cover object-right pointer-events-none z-0 hidden sm:block opacity-80">
+
+  <div class="relative z-10 text-center px-6 md:px-4 max-w-2xl py-12 md:py-16">
+    <h1 appAnimateOnScroll class="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-4 md:mb-6" style="--index:0">
+      Connect with someone<br>who understands.
+    </h1>
+    <p appAnimateOnScroll class="text-white/90 text-base md:text-lg" style="--index:1">
+      Book private sessions with trusted psychologists and wellness counselors for personal support.
+    </p>
+  </div>
+</section>
+
+<!-- Filters -->
+<section class="px-4 md:px-8 max-w-6xl mx-auto py-8 md:py-10">
+  <div class="flex flex-wrap items-center gap-3 md:gap-4" role="group" aria-label="Therapist filters">
+    <button type="button"
+            appAnimateOnScroll style="--index:0"
+            class="inline-flex items-center gap-2 bg-surface shadow-card rounded-full px-5 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 hover:shadow-lg transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+      <span>All Filters</span>
+      <svg [lucideIcon]="'filter'" [size]="16" class="text-gray-700 dark:text-gray-300"></svg>
+    </button>
+
+    @for (filter of dropdownFilters(); track filter.id; let i = $index) {
+      <button type="button"
+              appAnimateOnScroll [style.--index]="i + 1"
+              (click)="toggleFilter(filter.id)"
+              [attr.aria-expanded]="openFilter() === filter.id"
+              aria-haspopup="listbox"
+              class="inline-flex items-center gap-2 bg-surface shadow-card rounded-full px-5 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 hover:shadow-lg transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <span>{{ filter.label }}</span>
+        <svg [lucideIcon]="'chevron-down'" [size]="16"
+             class="text-gray-700 dark:text-gray-300 transition-transform"
+             [class.rotate-180]="openFilter() === filter.id"></svg>
+      </button>
+    }
+  </div>
+</section>
+
+<!-- Top Psychologists -->
+<section id="top-psychologists" class="pt-2 pb-8 md:pt-4 md:pb-12 px-4 md:px-8 max-w-6xl mx-auto overflow-hidden">
+  <div class="flex items-center justify-between mb-8">
+    <h2 appAnimateOnScroll style="--index:0" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Top Psychologists</h2>
+    <div class="flex items-center gap-4">
+      <a href="/therapy" class="text-sm font-semibold text-brand hover:text-brand-dark dark:hover:text-brand-light transition-colors">View all</a>
+      <div class="hidden md:flex gap-2">
+        <button type="button" aria-label="Previous psychologists" (click)="carousel.scrollBy({left: -320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <svg [lucideIcon]="'chevron-left'" [size]="20"></svg>
+        </button>
+        <button type="button" aria-label="Next psychologists" (click)="carousel.scrollBy({left: 320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <svg [lucideIcon]="'chevron-right'" [size]="20"></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="relative">
+    <div #carousel appDragScroll (scroll)="onScroll($event)" class="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      @for (psychologist of psychologists(); track psychologist.name) {
+        <app-psychologist-card
+          appAnimateOnScroll
+          class="shrink-0 w-[70vw] md:w-[260px] snap-start hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+          [name]="psychologist.name"
+          [image]="psychologist.image"
+          [price]="psychologist.price"
+          [duration]="psychologist.duration"
+          [rating]="psychologist.rating"
+          [reviews]="psychologist.reviews"
+          [specialties]="psychologist.specialties"
+          [languages]="psychologist.languages" />
+      }
+    </div>
+    <div class="absolute left-0 top-0 bottom-4 w-16 bg-gradient-to-r from-canvas to-transparent z-20 pointer-events-none transition-opacity duration-300"
+         [class.opacity-0]="!showLeftShadow()"
+         [class.opacity-100]="showLeftShadow()"></div>
+    <div class="absolute right-0 top-0 bottom-4 w-16 bg-gradient-to-l from-canvas to-transparent z-20 pointer-events-none transition-opacity duration-300"
+         [class.opacity-0]="!showRightShadow()"
+         [class.opacity-100]="showRightShadow()"></div>
+  </div>
+
+  <div class="flex justify-center gap-1.5 mt-4" aria-label="Psychologist carousel pagination">
+    @for (dot of slideDots; track dot) {
+      <button type="button"
+              [attr.aria-label]="'Go to slide ' + (dot + 1)"
+              [attr.aria-current]="activeSlide() === dot ? 'true' : null"
+              (click)="scrollToSlide(dot)"
+              class="h-2 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+              [class]="activeSlide() === dot ? 'bg-brand w-5' : 'bg-gray-300 dark:bg-gray-600 w-2'"></button>
+    }
+  </div>
+</section>
+
+<!-- Frequently Asked Questions -->
+<section id="faq" class="px-4 md:px-8 max-w-4xl mx-auto pb-20 md:pb-28">
+  <h2 appAnimateOnScroll style="--index:0" class="text-2xl md:text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
+    Frequently Asked Questions
+  </h2>
+  <p appAnimateOnScroll style="--index:1" class="text-sm text-gray-600 dark:text-gray-400 text-center mb-8">
+    Find answers to common questions about using Calmi and supporting your mental well-being.
+  </p>
+
+  <div class="flex flex-col gap-4">
+    @for (faq of faqs(); track faq.question; let i = $index) {
+      <div appAnimateOnScroll [style.--index]="i + 2"
+           class="bg-surface rounded-2xl overflow-hidden transition-all duration-300 motion-reduce:transition-none"
+           [class]="openFaq() === i ? 'shadow-lg ring-1 ring-brand/20' : 'shadow-card'">
+        <h3>
+          <button type="button"
+                  (click)="toggleFaq(i)"
+                  [attr.aria-expanded]="openFaq() === i"
+                  [attr.aria-controls]="'faq-panel-' + i"
+                  [id]="'faq-trigger-' + i"
+                  class="w-full flex items-center justify-between gap-4 text-left px-5 md:px-6 py-5 text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-brand transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset">
+            <span>{{ faq.question }}</span>
+            <svg [lucideIcon]="'chevron-down'" [size]="18"
+                 class="shrink-0 transition-all duration-300 motion-reduce:transition-none"
+                 [class]="openFaq() === i ? 'rotate-180 text-brand' : 'text-gray-500 dark:text-gray-400'"></svg>
+          </button>
+        </h3>
+
+        <!-- Animated panel: grid rows interpolate from 0fr to 1fr, so any answer height works -->
+        <div class="grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
+             [class]="openFaq() === i ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
+          <div [id]="'faq-panel-' + i" role="region" [attr.aria-labelledby]="'faq-trigger-' + i"
+               [attr.inert]="openFaq() === i ? null : ''"
+               class="overflow-hidden">
+            <div class="mx-5 md:mx-6 border-t border-hairline pt-4 pb-5">
+              <p class="max-w-2xl text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                {{ faq.answer }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</section>
+

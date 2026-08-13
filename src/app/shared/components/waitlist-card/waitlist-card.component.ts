@@ -17,7 +17,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
       <h2 id="waitlist-title" class="text-lg font-bold text-brand-deep dark:text-brand-light mb-1">
         Join the Waitlist
       </h2>
-      <p class="text-base text-gray-600 dark:text-gray-300 mb-5 leading-relaxed">
+      <p class="text-base text-gray-600 dark:text-gray-300 mb-5 leading-relaxed sm:whitespace-nowrap">
         Be the first to experience personalized anxiety and sleep relief.
       </p>
 
