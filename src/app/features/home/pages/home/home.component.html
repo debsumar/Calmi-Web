@@ -14,10 +14,8 @@
       <span>• Takes less than 2 minutes</span>
       <span>• Works instantly</span>
     </div>
-    <app-primary-button label="Calm Me Now" icon="arrow-right" variant="outline" appAnimateOnScroll class="flex justify-center" style="--index:4" />
-
     @if (!authService.currentUser()) {
-      <app-waitlist-card appAnimateOnScroll class="block max-w-lg mx-auto mt-8 md:mt-10" style="--index:5" />
+      <app-waitlist-card appAnimateOnScroll class="block max-w-2xl mx-auto mt-8 md:mt-10" style="--index:4" />
     }
   </div>
 </section>
@@ -125,39 +123,45 @@
 
 <!-- Unlock more / Pricing CTA -->
 <section class="py-12 md:py-16 px-4 md:px-8 max-w-5xl mx-auto">
+  <p appAnimateOnScroll class="text-center text-xs text-gray-500 dark:text-gray-400 mb-6" style="--index:0">
+    Join the first wave of people building healthier emotional habits with Calmi.
+  </p>
   <app-card>
-    <div class="flex flex-col md:flex-row items-center gap-8">
-      <div class="flex-1 border-r-0 md:border-r border-hairline pr-0 md:pr-8">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Unlock more of Calmi</h3>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Unlock all guided sessions, sleep sounds and new content every week.</p>
+    <div class="flex flex-col md:flex-row items-stretch gap-8">
+      <div class="flex-1 min-w-0 flex flex-col justify-center border-r-0 md:border-r border-hairline pr-0 md:pr-8">
+        <h3 class="text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-3">
+          Go Premium.<br>Go Deeper.
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
+          Get unlimited access to guided sleep journeys, personalized audio, AI reflections, and exclusive content designed to support your mental well-being.
+        </p>
       </div>
-      <div class="flex-1 border-r-0 md:border-r border-hairline pr-0 md:pr-8">
-        <ul class="space-y-3">
-        <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand"></svg>
-          Unlock access to all sessions
+      <div class="flex-1 min-w-0 flex flex-col justify-center border-r-0 md:border-r border-hairline pr-0 md:pr-8">
+        <ul class="space-y-6">
+        <li class="flex items-start gap-3 text-gray-700 dark:text-gray-300 text-base leading-snug">
+          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand shrink-0 mt-0.5"></svg>
+          <span>Unlimited Sleep Sessions</span>
         </li>
-        <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand"></svg>
-          Premium sound library
+        <li class="flex items-start gap-3 text-gray-700 dark:text-gray-300 text-base leading-snug">
+          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand shrink-0 mt-0.5"></svg>
+          <span>Personalized Rumi AI</span>
         </li>
-        <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand"></svg>
-          New content every week
+        <li class="flex items-start gap-3 text-gray-700 dark:text-gray-300 text-base leading-snug">
+          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand shrink-0 mt-0.5"></svg>
+          <span>Exclusive Guided Journals</span>
         </li>
-        <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand"></svg>
-          Cancel anytime
+        <li class="flex items-start gap-3 text-gray-700 dark:text-gray-300 text-base leading-snug">
+          <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand shrink-0 mt-0.5"></svg>
+          <span>Cancel anytime</span>
         </li>
       </ul>
     </div>
-    <div class="text-center">
-      <p class="text-sm text-gray-500 dark:text-gray-400">Just</p>
-      <p class="text-4xl font-bold text-gray-900 dark:text-gray-100">₹99 <span class="text-base font-normal text-gray-500 dark:text-gray-400">/ month</span></p>
-      <app-primary-button label="Get Full Access" />
-      <p class="mt-3 text-xs text-gray-400 flex items-center justify-center gap-1">
-        <svg [lucideIcon]="'lock'" [size]="12"></svg>
-        Secure payment. Cancel anytime.
+    <div class="w-full md:w-56 shrink-0 flex flex-col justify-center text-center md:text-left md:pl-2">
+      <p class="text-base text-gray-500 dark:text-gray-400">*from</p>
+      <p class="text-4xl font-bold text-gray-900 dark:text-gray-100 leading-tight">₹99 <span class="text-base font-normal text-gray-500 dark:text-gray-400">/ month</span></p>
+      <p class="mt-3 text-xs text-gray-400 flex items-center justify-center md:justify-start gap-1">
+        <svg [lucideIcon]="'lock'" [size]="12" class="shrink-0"></svg>
+        <span>Secure payment. Cancel anytime.</span>
       </p>
     </div>
     </div>
@@ -209,31 +213,37 @@
     <!-- Left - Links card -->
     <app-card class="flex-1">
       <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8">Calmi</h2>
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-y-4 mb-12">
-        <a href="/about" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">About</a>
-        <a href="https://instagram.com" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Instagram</a>
-        <a href="/terms" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Terms Of Use</a>
-        <a href="/sessions" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Sessions</a>
-        <a href="https://twitter.com" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Twitter</a>
-        <a href="/privacy" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Privacy Policy</a>
-        <a href="/sounds" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Sounds</a>
-        <span></span><span></span>
-        <a href="/pricing" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Pricing</a>
-        <span></span><span></span>
-        <a href="/contact" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Contact</a>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 mb-12">
+        <div class="flex flex-col gap-y-4">
+          <a href="/features" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Features</a>
+          <a href="/therapy" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Therapy</a>
+          <a href="/sleep" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Sleep</a>
+          <a href="/pricing" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Pricing</a>
+          <a href="/contact" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Follow Us</a>
+        </div>
+        <div class="flex flex-col gap-y-4">
+          <a href="/about" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">About Us</a>
+          <a href="/blog" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Blog</a>
+        </div>
+        <div class="flex flex-col gap-y-4">
+          <a href="/privacy" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Privacy Policy</a>
+          <a href="/terms" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Terms Of Use</a>
+          <a href="/faq" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">FAQ</a>
+        </div>
       </div>
-      <p class="text-gray-400 text-xs mt-auto">© 2026 Calmi All Rights Reserved.</p>
+      <p class="text-gray-400 text-xs mt-auto">© 2026 Calmi. All Rights Reserved. Built With Care.</p>
     </app-card>
 
     <!-- Right - CTA card -->
     <div class="flex-1 bg-hero dark:bg-surface dark:shadow-card rounded-2xl p-10 flex flex-col justify-between relative overflow-hidden">
       <div class="relative z-10">
         <h3 class="text-3xl font-bold text-white leading-tight mb-8">
-          Still feeling<br>overwhelmed?<br><span class="font-normal">Try another session.</span>
+          Feeling overwhelmed today?<br><span class="font-normal">Take a minute for yourself.</span>
         </h3>
       </div>
-      <button class="relative z-10 bg-white text-gray-900 dark:bg-brand-deep dark:text-white font-semibold px-8 py-4 rounded-full text-center hover:shadow-lg transition-shadow w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-        Calm Me Again
+      <button class="relative z-10 bg-white text-gray-900 dark:bg-brand-deep dark:text-white font-semibold px-8 py-4 rounded-full hover:shadow-lg transition-shadow w-full flex items-center justify-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        <span>Start Your Journey</span>
+        <span aria-hidden="true" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs">→</span>
       </button>
     </div>
   </div>
