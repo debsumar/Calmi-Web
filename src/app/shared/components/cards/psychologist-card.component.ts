@@ -10,7 +10,7 @@ import { DragScrollDirective } from '@/shared/directives/drag-scroll.directive';
   template: `
     <div class="h-full bg-surface rounded-2xl p-4 shadow-card flex flex-col">
       <!-- Portrait -->
-      <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-brand/15 dark:bg-brand/20">
+      <div class="relative rounded-2xl overflow-hidden aspect-[3/4] bg-brand/15 dark:bg-brand/20">
         @if (image()) {
           <img [src]="image()" [alt]="'Portrait of ' + name()" class="absolute inset-0 w-full h-full object-cover">
         } @else {
