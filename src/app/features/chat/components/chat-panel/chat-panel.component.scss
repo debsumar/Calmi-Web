@@ -1,0 +1,58 @@
+:host {
+  display: block;
+}
+
+.chat-panel {
+  animation: chatPanelEnter 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: bottom right;
+}
+
+.chat-panel--lifted {
+  bottom: 10rem;
+}
+
+.chat-panel--exit {
+  animation: chatPanelExit 180ms ease-in both;
+}
+
+.chat-panel--minimized {
+  height: auto;
+  min-height: 0;
+}
+
+@keyframes chatPanelEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes chatPanelExit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-panel,
+  .chat-panel--exit {
+    animation: none;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .chat-panel {
+    background-color: var(--color-surface);
+    backdrop-filter: none;
+  }
+}
