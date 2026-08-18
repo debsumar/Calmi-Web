@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { provideLucideIcons, LucideMailCheck, LucideLoaderCircle, LucideCircleAlert } from '@lucide/angular';
 import { WaitlistCardComponent } from './waitlist-card.component';
 import { WaitlistService, WaitlistResponse } from '@/core/services/waitlist.service';
 
@@ -34,7 +35,10 @@ describe('WaitlistCardComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [WaitlistCardComponent],
-      providers: [{ provide: WaitlistService, useValue: service }],
+      providers: [
+        { provide: WaitlistService, useValue: service },
+        provideLucideIcons(LucideMailCheck, LucideLoaderCircle, LucideCircleAlert),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WaitlistCardComponent);

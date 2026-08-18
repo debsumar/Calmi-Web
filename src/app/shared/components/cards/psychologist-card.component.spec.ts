@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { provideLucideIcons, LucideStar } from '@lucide/angular';
 import { PsychologistCardComponent } from './psychologist-card.component';
 
 describe('PsychologistCardComponent', () => {
@@ -8,6 +9,7 @@ describe('PsychologistCardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PsychologistCardComponent],
+      providers: [provideLucideIcons(LucideStar)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PsychologistCardComponent);

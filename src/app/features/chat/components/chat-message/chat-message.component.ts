@@ -17,7 +17,7 @@ import { ChatStoreService } from '../../services/chat-store.service';
             <p class="whitespace-pre-wrap break-words">{{ message().text }}</p>
             @if (message().status === 'error') {
               <div class="mt-2 flex flex-wrap items-center gap-2 border-t border-white/30 pt-2 text-xs" role="alert">
-                <svg [lucideIcon]="'alert-circle'" [size]="14" aria-hidden="true"></svg>
+                <svg [lucideIcon]="'circle-alert'" [size]="14" aria-hidden="true"></svg>
                 <span>Failed to send</span>
                 <button type="button" (click)="retry()"
                         class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white px-2.5 py-1 font-semibold text-on-brand hover:bg-brand-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep">
