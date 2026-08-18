@@ -19,6 +19,9 @@
     --calmi-sunken-alt: color-mix(in srgb, var(--color-brand) 15%, white);
     --calmi-hairline: color-mix(in srgb, var(--color-brand) 12%, white);
     --calmi-glass: color-mix(in srgb, white 60%, transparent);
+    --calmi-scrim: color-mix(in srgb, black 45%, transparent);
+    --calmi-on-coral: white;
+    --calmi-on-brand: white;
 
     --calmi-shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.25);
     --calmi-shadow-player: 0 -4px 20px rgb(0 0 0 / 0.1);
@@ -36,6 +39,7 @@
     --calmi-sunken-alt: color-mix(in srgb, var(--color-brand) 13%, black);
     --calmi-hairline: color-mix(in srgb, var(--color-brand) 40%, black);
     --calmi-glass: color-mix(in srgb, var(--calmi-elevated) 55%, transparent);
+    --calmi-scrim: color-mix(in srgb, black 65%, transparent);
 
     --calmi-shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.5);
     --calmi-shadow-player: 0 -4px 20px rgb(0 0 0 / 0.4);
@@ -72,6 +76,9 @@
   --color-sunken-alt: var(--calmi-sunken-alt);
   --color-hairline: var(--calmi-hairline);
   --color-glass: var(--calmi-glass);
+  --color-scrim: var(--calmi-scrim);
+  --color-on-coral: var(--calmi-on-coral);
+  --color-on-brand: var(--calmi-on-brand);
 
   /* Accent palettes registered in core/theme/calmi-preset.ts. */
   --color-accent-coral: var(--p-coral-500, #e8724a);
