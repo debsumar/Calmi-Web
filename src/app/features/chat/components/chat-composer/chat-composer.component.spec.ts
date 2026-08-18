@@ -1,17 +1,8 @@
 // @vitest-environment jsdom
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 import { ChatComposerComponent } from './chat-composer.component';
 import { ChatStoreService } from '../../services/chat-store.service';
-
-const angularTesting = globalThis as typeof globalThis & { __calmiAngularTestingInitialized?: boolean };
-if (!angularTesting.__calmiAngularTestingInitialized) {
-  TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
-  angularTesting.__calmiAngularTestingInitialized = true;
-}
-
-afterEach(() => TestBed.resetTestingModule());
 
 describe('ChatComposerComponent', () => {
   let fixture: ComponentFixture<ChatComposerComponent>;

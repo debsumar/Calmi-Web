@@ -10,6 +10,7 @@ describe('ChatStoreService', () => {
 
   afterEach(() => {
     service.cancelPendingReply();
+    service.cancelPendingClose();
     vi.useRealTimers();
   });
 
@@ -56,5 +57,42 @@ describe('ChatStoreService', () => {
     service.setDraft('   ');
 
     expect(service.canSend()).toBe(false);
+  });
+
+  it('keeps the panel mounted while the exit animation plays', () => {
+    vi.useFakeTimers();
+    service.open();
+
+    service.requestClose(180);
+
+    expect(service.isClosing()).toBe(true);
+    expect(service.isOpen()).toBe(true);
+
+    vi.advanceTimersByTime(180);
+
+    expect(service.isOpen()).toBe(false);
+    expect(service.isClosing()).toBe(false);
+  });
+
+  it('animates dismissal when toggled shut from the bubble', () => {
+    vi.useFakeTimers();
+    service.open();
+
+    service.toggle();
+
+    expect(service.isClosing()).toBe(true);
+    expect(service.isOpen()).toBe(true);
+  });
+
+  it('cancels a pending close when reopened mid-animation', () => {
+    vi.useFakeTimers();
+    service.open();
+    service.requestClose(180);
+
+    service.open();
+    vi.advanceTimersByTime(400);
+
+    expect(service.isOpen()).toBe(true);
+    expect(service.isClosing()).toBe(false);
   });
 });

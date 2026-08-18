@@ -1,4 +1,6 @@
-<div class="fixed inset-0 z-[55] bg-scrim backdrop-blur-md md:hidden" aria-hidden="true" (click)="closePanel()"></div>
+<div class="chat-scrim fixed inset-0 z-[55] bg-scrim backdrop-blur-md md:hidden"
+     [class.chat-scrim--exit]="chatStore.isClosing()"
+     aria-hidden="true" (click)="closePanel()"></div>
 
 <section
   id="rumi-chat-panel"
@@ -10,7 +12,7 @@
   class="chat-panel fixed inset-x-0 bottom-0 z-[60] flex h-[85dvh] max-h-[100dvh] flex-col overflow-hidden rounded-t-3xl border border-hairline bg-surface text-brand-deep dark:text-brand-light shadow-card md:right-6 md:inset-x-auto md:bottom-24 md:h-[600px] md:max-h-[calc(100dvh-9rem)] md:w-[380px] md:rounded-3xl md:bg-glass md:backdrop-blur-xl"
   [class.chat-panel--lifted]="liftedForPlayer()"
   [class.bottom-40]="liftedForPlayer()"
-  [class.chat-panel--exit]="isClosing()"
+  [class.chat-panel--exit]="chatStore.isClosing()"
   [class.chat-panel--minimized]="chatStore.isMinimized()">
   <div class="mx-auto mt-3 h-1 w-12 rounded-full bg-brand/30 md:hidden" aria-hidden="true"></div>
 

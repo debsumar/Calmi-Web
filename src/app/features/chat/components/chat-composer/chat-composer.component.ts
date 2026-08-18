@@ -24,7 +24,7 @@ import { ChatStoreService } from '../../services/chat-store.service';
                 [disabled]="!store.canSend()"
                 [attr.aria-disabled]="store.canSend() ? 'false' : 'true'"
                 aria-label="Send message"
-                class="h-11 min-w-11 shrink-0 rounded-full bg-brand-deep text-on-brand transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border disabled:border-hairline disabled:bg-sunken disabled:text-brand-deep dark:disabled:text-brand-light">
+                class="inline-flex h-11 w-11 min-w-11 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border disabled:border-hairline disabled:bg-sunken disabled:text-brand-deep dark:disabled:text-brand-light">
           <svg [lucideIcon]="'send'" [size]="18" aria-hidden="true"></svg>
         </button>
       </div>

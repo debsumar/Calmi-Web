@@ -5,6 +5,7 @@ import {
   Component,
   computed,
   DOCUMENT,
+  effect,
   HostListener,
   inject,
   input,
@@ -18,6 +19,9 @@ import { ChatStoreService } from '../../services/chat-store.service';
 import { ChatMessageListComponent } from '../chat-message-list/chat-message-list.component';
 import { ChatComposerComponent } from '../chat-composer/chat-composer.component';
 import { ChatSuggestionsComponent } from '../chat-suggestions/chat-suggestions.component';
+
+/** Must stay in sync with the chatPanelExit duration in chat-panel.component.scss. */
+const EXIT_ANIMATION_MS = 180;
 
 @Component({
   selector: 'app-chat-panel',
@@ -35,7 +39,6 @@ export class ChatPanelComponent implements AfterViewInit, OnDestroy, OnInit {
 
   readonly isMobileViewport = signal(false);
   readonly prefersReducedMotion = signal(false);
-  readonly isClosing = signal(false);
   readonly hasUserMessages = computed(() =>
     this.chatStore.messages().some((message) => message.role === 'user')
   );
@@ -44,7 +47,16 @@ export class ChatPanelComponent implements AfterViewInit, OnDestroy, OnInit {
     'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
   private bodyScrollLocked = false;
   private bodyHadOverflowHidden = false;
-  private closeTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    // With animations suppressed there is nothing to wait for, so collapse the
+    // exit delay rather than leaving a static panel on screen for 180ms.
+    effect(() => {
+      if (this.chatStore.isClosing() && this.prefersReducedMotion()) {
+        this.chatStore.close();
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.updateViewportState();
@@ -55,9 +67,6 @@ export class ChatPanelComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   ngOnDestroy(): void {
-    if (this.closeTimer !== null) {
-      clearTimeout(this.closeTimer);
-    }
     this.unlockBodyScroll();
     this.setAppShellInert(false);
   }
@@ -97,18 +106,14 @@ export class ChatPanelComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   closePanel(): void {
-    if (this.isClosing()) return;
+    if (this.chatStore.isClosing()) return;
 
-    this.isClosing.set(true);
     if (this.prefersReducedMotion()) {
       this.chatStore.close();
       return;
     }
 
-    this.closeTimer = setTimeout(() => {
-      this.chatStore.close();
-      this.closeTimer = null;
-    }, 180);
+    this.chatStore.requestClose(EXIT_ANIMATION_MS);
   }
 
   minimizePanel(): void {
