@@ -10,6 +10,7 @@ export class ChatStoreService {
   private readonly _isTyping = signal(false);
   private readonly _unreadCount = signal(0);
   private readonly _draft = signal('');
+  private readonly _isClosing = signal(false);
 
   readonly isOpen = this._isOpen.asReadonly();
   readonly isMinimized = this._isMinimized.asReadonly();
@@ -17,29 +18,56 @@ export class ChatStoreService {
   readonly isTyping = this._isTyping.asReadonly();
   readonly unreadCount = this._unreadCount.asReadonly();
   readonly draft = this._draft.asReadonly();
+  /** True while the exit animation plays, before the panel is torn down. */
+  readonly isClosing = this._isClosing.asReadonly();
 
   readonly hasMessages = computed(() => this.messages().length > 0);
   readonly canSend = computed(() => this.draft().trim().length > 0 && !this.isTyping());
 
   private pendingReplyTimeout: ReturnType<typeof setTimeout> | null = null;
+  private closeTimeout: ReturnType<typeof setTimeout> | null = null;
 
   open(): void {
+    this.cancelPendingClose();
     this._isOpen.set(true);
     this._isMinimized.set(false);
     this.markRead();
   }
 
+  /**
+   * Dismiss with the exit animation. Every close affordance routes here so the
+   * panel never disappears in one frame; `close()` stays the immediate path.
+   */
+  requestClose(animationMs = 180): void {
+    if (!this.isOpen() || this._isClosing()) return;
+
+    this._isClosing.set(true);
+    this.closeTimeout = setTimeout(() => {
+      this.closeTimeout = null;
+      this.close();
+    }, animationMs);
+  }
+
   close(): void {
+    this.cancelPendingClose();
     this._isOpen.set(false);
     this._isMinimized.set(false);
   }
 
   toggle(): void {
     if (this.isOpen()) {
-      this.close();
+      this.requestClose();
     } else {
       this.open();
     }
+  }
+
+  cancelPendingClose(): void {
+    if (this.closeTimeout !== null) {
+      clearTimeout(this.closeTimeout);
+      this.closeTimeout = null;
+    }
+    this._isClosing.set(false);
   }
 
   minimize(): void {
@@ -91,6 +119,7 @@ export class ChatStoreService {
 
   reset(): void {
     this.cancelPendingReply();
+    this.cancelPendingClose();
     this._isOpen.set(false);
     this._isMinimized.set(false);
     this._messages.set(this.cloneMessages(GREETING_MESSAGES));

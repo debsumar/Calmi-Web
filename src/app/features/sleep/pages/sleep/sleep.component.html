@@ -47,7 +47,7 @@
           [isActive]="playerService.nowPlaying()?.title === sound.title"
           [isPaused]="!playerService.isPlaying()"
           size="lg"
-          (played)="playSound(sound, featuredSounds())"
+          (played)="onRowActivate(sound, featuredSounds())"
           (paused)="playerService.togglePlayPause()" />
       }
     </div>
@@ -108,13 +108,15 @@
 
   <div class="space-y-4">
     @for (sound of allSounds(); track sound.title) {
-      <div appAnimateOnScroll (click)="playSound(sound, allSounds())" class="flex items-center p-3 rounded-2xl bg-surface border border-gray-100 dark:border-white/5 hover:border-brand/30 dark:hover:border-brand/30 transition-colors group cursor-pointer shadow-sm hover:shadow">
+      <div appAnimateOnScroll (click)="onRowActivate(sound, allSounds())"
+           class="flex items-center p-3 rounded-2xl bg-surface border transition-colors group cursor-pointer shadow-sm hover:shadow"
+           [class]="isCurrentTrack(sound) ? 'border-brand dark:border-brand' : 'border-gray-100 dark:border-white/5 hover:border-brand/30 dark:hover:border-brand/30'">
         <!-- Thumbnail -->
         <div class="relative w-32 md:w-44 aspect-video rounded-xl overflow-hidden shrink-0">
           <img [src]="sound.image" [alt]="sound.title" class="w-full h-full object-cover">
           <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
             <div class="w-10 h-10 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm shadow-lg group-hover:scale-110 transition-transform">
-              <svg [lucideIcon]="'play'" [size]="16" class="text-white ml-0.5 fill-white"></svg>
+              <svg [lucideIcon]="isTrackPlaying(sound) ? 'pause' : 'play'" [size]="16" class="text-white fill-white"></svg>
             </div>
           </div>
         </div>

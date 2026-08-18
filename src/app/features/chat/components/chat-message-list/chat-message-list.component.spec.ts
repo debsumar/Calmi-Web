@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { LucideDynamicIcon } from '@lucide/angular';
+import { describe, expect, it, beforeEach } from 'vitest';
+import { LucideDynamicIcon, LucideArrowDown, provideLucideIcons } from '@lucide/angular';
 import { ChatMessageListComponent } from './chat-message-list.component';
 import { ChatTypingComponent } from '../chat-typing/chat-typing.component';
 import { ChatStoreService } from '../../services/chat-store.service';
@@ -16,14 +15,6 @@ import { ChatStoreService } from '../../services/chat-store.service';
 })
 class ChatMessageStubComponent {}
 
-const angularTesting = globalThis as typeof globalThis & { __calmiAngularTestingInitialized?: boolean };
-if (!angularTesting.__calmiAngularTestingInitialized) {
-  TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
-  angularTesting.__calmiAngularTestingInitialized = true;
-}
-
-afterEach(() => TestBed.resetTestingModule());
-
 describe('ChatMessageListComponent', () => {
   let fixture: ComponentFixture<ChatMessageListComponent>;
   let store: ChatStoreService;
@@ -32,7 +23,10 @@ describe('ChatMessageListComponent', () => {
     TestBed.overrideComponent(ChatMessageListComponent, {
       set: { imports: [ChatMessageStubComponent, ChatTypingComponent, LucideDynamicIcon] },
     });
-    await TestBed.configureTestingModule({ imports: [ChatMessageListComponent] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [ChatMessageListComponent],
+      providers: [provideLucideIcons(LucideArrowDown)],
+    }).compileComponents();
     fixture = TestBed.createComponent(ChatMessageListComponent);
     store = TestBed.inject(ChatStoreService);
     store.reset();

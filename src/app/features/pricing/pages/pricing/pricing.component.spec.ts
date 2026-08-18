@@ -1,5 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+import {
+  provideLucideIcons,
+  LucideHeart, LucideCalendarDays, LucideBadgePercent,
+  LucideLeaf, LucideGraduationCap, LucideSparkles, LucideCircleCheck,
+} from '@lucide/angular';
 import { PricingComponent } from './pricing.component';
 
 describe('PricingComponent', () => {
@@ -8,10 +13,34 @@ describe('PricingComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PricingComponent],
+      // Mirrors appConfig: an unregistered dynamic icon throws mid-render and
+      // aborts the rest of the template, including entrance animation setup.
+      providers: [
+        provideLucideIcons(
+          LucideHeart, LucideCalendarDays, LucideBadgePercent,
+          LucideLeaf, LucideGraduationCap, LucideSparkles, LucideCircleCheck,
+        ),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PricingComponent);
     fixture.detectChanges();
+  });
+
+  it('renders every billing control icon without an unresolved-icon error', () => {
+    const icons = fixture.nativeElement.querySelectorAll('svg');
+
+    expect(icons.length).toBeGreaterThan(0);
+    expect(fixture.nativeElement.querySelectorAll('button[aria-pressed]').length).toBe(2);
+    expect(fixture.nativeElement.textContent).toContain('Monthly');
+    expect(fixture.nativeElement.textContent).toContain('Annually');
+  });
+
+  it('applies the staggered entrance animation to header and plan cards', () => {
+    const animated = fixture.nativeElement.querySelectorAll('[appAnimateOnScroll]');
+
+    expect(animated.length).toBe(7);
+    expect(fixture.nativeElement.querySelectorAll('.stagger-enter').length).toBe(7);
   });
 
   it('shows monthly prices and pressed state by default', () => {

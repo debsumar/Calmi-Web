@@ -15,6 +15,8 @@ import {
   LucideMenu, LucideRepeat, LucideShuffle, LucideLogOut, LucideGraduationCap,
   LucideStar, LucideFilter,
   LucideHandHeart, LucideStethoscope, LucideSprout,
+  LucideCalendarDays, LucideBadgePercent, LucideMinus,
+  LucideLoaderCircle, LucideMailCheck, LucideCircleAlert,
 } from '@lucide/angular';
 import { primeLicenseKey } from '../environments/license';
 import { appRoutes } from './app.routes';
@@ -43,6 +45,8 @@ export const appConfig: ApplicationConfig = {
       LucideMenu, LucideRepeat, LucideShuffle, LucideLogOut, LucideGraduationCap,
       LucideStar, LucideFilter,
       LucideHandHeart, LucideStethoscope, LucideSprout,
+      LucideCalendarDays, LucideBadgePercent, LucideMinus,
+      LucideLoaderCircle, LucideMailCheck, LucideCircleAlert,
     ),
   ],
 };
