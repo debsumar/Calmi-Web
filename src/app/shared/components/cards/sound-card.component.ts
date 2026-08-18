@@ -17,14 +17,14 @@ import { LucideDynamicIcon } from '@lucide/angular';
           <svg [lucideIcon]="'heart'" [size]="18" [class]="liked() ? 'fill-red-500' : ''"></svg>
         </button>
         @if (isActive()) {
-          <div (click)="togglePause($event)" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center cursor-pointer">
-            <div class="equalizer" [class.paused]="isPaused()">
-              <span></span><span></span><span></span><span></span>
-            </div>
-          </div>
+          <button (click)="togglePause($event)"
+                  [attr.aria-label]="isPaused() ? 'Play ' + title() : 'Pause ' + title()"
+                  class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center cursor-pointer hover:bg-black/80 transition-colors">
+            <svg [lucideIcon]="isPaused() ? 'play' : 'pause'" [size]="22" class="text-white fill-current"></svg>
+          </button>
         } @else {
-          <button class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:bg-black/80 transition-all duration-300 scale-75 group-hover:scale-100">
-            <svg [lucideIcon]="'play'" [size]="22" class="text-white ml-0.5"></svg>
+          <button [attr.aria-label]="'Play ' + title()" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:bg-black/80 transition-all duration-300 scale-75 group-hover:scale-100">
+            <svg [lucideIcon]="'play'" [size]="22" class="text-white ml-0.5 fill-current"></svg>
           </button>
         }
       }

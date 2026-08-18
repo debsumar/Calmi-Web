@@ -89,6 +89,25 @@ export class SleepComponent {
     this.playerService.play(track, list);
   }
 
+  /** True when the track occupies the footer player, playing or paused. */
+  isCurrentTrack(track: SoundTrack): boolean {
+    return this.playerService.nowPlaying()?.title === track.title;
+  }
+
+  /** True only while the track is actively playing, so icons mirror the footer. */
+  isTrackPlaying(track: SoundTrack): boolean {
+    return this.isCurrentTrack(track) && this.playerService.isPlaying();
+  }
+
+  /** Re-selecting the current track toggles it instead of restarting from zero. */
+  onRowActivate(track: SoundTrack, list?: SoundTrack[]): void {
+    if (this.isCurrentTrack(track)) {
+      this.playerService.togglePlayPause();
+      return;
+    }
+    this.playSound(track, list);
+  }
+
   onSeek(event: MouseEvent): void {
     const el = event.currentTarget as HTMLElement;
     const percent = (event.offsetX / el.clientWidth) * 100;
