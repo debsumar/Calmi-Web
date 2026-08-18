@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en" data-scheme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calmi — fluid tab switch variants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+  /* Mockup only. Mirrors the Calmi token values so it looks right in isolation;
+     the real implementation must use bg-brand / border-hairline / bg-canvas etc.
+     and never these literals. */
+  :root {
+    --brand: #967bb6;
+    --brand-light: #beadd2;
+    --brand-deep: #80699b;
+    --brand-dark: #69567f;
+    --canvas: color-mix(in srgb, var(--brand) 5%, white);
+    --surface: #ffffff;
+    --sunken: color-mix(in srgb, var(--brand) 10%, white);
+    --hairline: color-mix(in srgb, var(--brand) 12%, white);
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --on-brand: #ffffff;
+  }
+  html[data-scheme="dark"] {
+    --canvas: color-mix(in srgb, var(--brand) 7%, black);
+    --surface: color-mix(in srgb, var(--brand) 32%, black);
+    --sunken: color-mix(in srgb, var(--brand) 19%, black);
+    --hairline: color-mix(in srgb, var(--brand) 40%, black);
+    --text: #f3f4f6;
+    --text-muted: #9ca3af;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    background: var(--canvas);
+    color: var(--text);
+    padding: 32px 20px 64px;
+  }
+  .page { max-width: 940px; margin: 0 auto; }
+  h1 { font-size: 28px; font-weight: 700; margin: 0 0 6px; }
+  .sub { color: var(--text-muted); margin: 0 0 28px; font-size: 15px; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 32px; }
+  .toolbar button, .toolbar label {
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--hairline); border-radius: 999px;
+    padding: 8px 16px; cursor: pointer;
+  }
+  .toolbar label { display: inline-flex; align-items: center; gap: 8px; cursor: default; }
+  .toolbar input[type="range"] { accent-color: var(--brand); }
+
+  .variant {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 24px;
+    padding: 0 0 22px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .variant__head { padding: 20px 24px 0; }
+  .variant__title { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
+  .variant__title span { color: var(--brand); }
+  .variant__desc { margin: 0; font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+  .variant__note { margin: 10px 0 0; font-size: 12.5px; color: var(--text-muted); }
+  .variant__note b { color: var(--text); font-weight: 600; }
+
+  /* Fake topbar shell */
+  .bar {
+    height: 64px; margin: 18px 0 0;
+    display: flex; align-items: center; justify-content: center;
+    border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline);
+    background: color-mix(in srgb, var(--surface) 92%, var(--brand));
+  }
+  nav { position: relative; display: flex; align-items: center; gap: 32px; height: 100%; }
+  nav button {
+    position: relative; z-index: 2;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    background: none; border: 0; cursor: pointer; padding: 6px 2px;
+    color: var(--text-muted);
+    transition: color 260ms ease;
+  }
+  nav button:hover { color: var(--brand); }
+  nav button[aria-selected="true"] { color: var(--brand-dark); }
+  html[data-scheme="dark"] nav button[aria-selected="true"] { color: var(--brand-light); }
+  nav button:focus-visible { outline: 2px solid var(--brand); outline-offset: 4px; border-radius: 6px; }
+
+  /* ---------- Variant A: liquid pill ---------- */
+  .pill {
+    position: absolute; z-index: 1; top: 50%; left: 0;
+    height: 34px; margin-top: -17px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--brand) 18%, transparent);
+    border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+    transform-origin: center;
+    will-change: transform, width;
+  }
+  html[data-scheme="dark"] .pill { background: color-mix(in srgb, var(--brand) 32%, transparent); }
+  #barA nav button[aria-selected="true"] { color: var(--brand-dark); }
+  html[data-scheme="dark"] #barA nav button[aria-selected="true"] { color: #fff; }
+
+  /* ---------- Variant B: gooey metaball underline ---------- */
+  .goo { position: absolute; inset: 0; z-index: 1; filter: url(#goo); pointer-events: none; }
+  .goo__blob {
+    position: absolute; bottom: 12px; height: 4px;
+    border-radius: 999px; background: var(--brand);
+    will-change: transform, width;
+  }
+  .goo__blob--trail { opacity: .95; }
+
+  /* ---------- Variant C: elastic ink underline ---------- */
+  .ink {
+    position: absolute; z-index: 1; bottom: 12px; height: 3px;
+    border-radius: 999px; background: var(--brand);
+    will-change: left, width;
+  }
+  .ripple {
+    position: absolute; z-index: 0; bottom: 6px;
+    width: 14px; height: 14px; margin-left: -7px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--brand) 40%, transparent);
+    opacity: 0; pointer-events: none;
+  }
+
+  /* ---------- Shared lens stage ----------
+     Opaque bar, exactly like the real topbar. The bubble does not blur a
+     background: it carries its own magnified copy of the nav row, so the
+     labels underneath appear to bulge through glass. */
+  .bar--lens { position: relative; overflow: hidden; background: var(--surface); }
+  .bar--lens nav { isolation: isolate; }
+
+  .bubble {
+    position: absolute; z-index: 2; top: 50%; left: 0;
+    height: 40px; margin-top: -20px;
+    border-radius: 999px;
+    overflow: hidden;
+    /* Opaque base hides the real label so only the magnified copy shows. */
+    background: var(--surface);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / .85),
+      inset 0 -2px 3px rgb(150 123 182 / .18),
+      inset 0 0 0 1px rgb(150 123 182 / .22),
+      0 6px 18px rgb(105 86 127 / .22);
+    will-change: transform, width;
+  }
+  html[data-scheme="dark"] .bubble {
+    background: var(--sunken);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / .22),
+      inset 0 -2px 3px rgb(0 0 0 / .35),
+      inset 0 0 0 1px rgb(255 255 255 / .16),
+      0 6px 18px rgb(0 0 0 / .4);
+  }
+  /* Magnifies about the bubble centre. */
+  .bubble__zoom {
+    position: absolute; inset: 0;
+    transform: scale(1.16);
+    transform-origin: 50% 50%;
+  }
+  /* Copy of the nav row, shifted so nav coordinates line up inside the bubble. */
+  .bubble__row {
+    position: absolute; top: 0; height: 100%;
+    display: flex; align-items: center; gap: 32px;
+    white-space: nowrap; pointer-events: none;
+  }
+  .bubble__row span {
+    font-size: 14px; font-weight: 600; padding: 6px 2px;
+    color: var(--brand-dark);
+  }
+  html[data-scheme="dark"] .bubble__row span { color: var(--brand-light); }
+  /* Glass rim + specular dome drawn above the magnified text. */
+  .bubble__glare {
+    position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / .5) 0%, rgb(255 255 255 / .06) 42%, transparent 60%),
+      radial-gradient(120% 80% at 50% 120%, rgb(150 123 182 / .16), transparent 60%);
+  }
+  html[data-scheme="dark"] .bubble__glare {
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / .2) 0%, rgb(255 255 255 / .04) 42%, transparent 60%),
+      radial-gradient(120% 80% at 50% 120%, rgb(0 0 0 / .3), transparent 60%);
+  }
+  /* Hide the real label only where the bubble sits, so nothing double-prints. */
+  .bar--lens nav button[aria-selected="true"] { color: transparent; }
+
+  /* Variant E extras: droplet wobble + chromatic edge */
+  .bubble--droplet .bubble__zoom { transform: scale(1.2); }
+  .bubble--droplet.is-travelling .bubble__zoom { filter: url(#wobble); }
+  .bubble--droplet .bubble__row span { text-shadow: 0.6px 0 0 rgb(150 123 182 / .35), -0.6px 0 0 rgb(242 160 176 / .3); }
+
+  .verdict {
+    background: var(--sunken); border: 1px solid var(--hairline);
+    border-radius: 20px; padding: 20px 24px; font-size: 14px; line-height: 1.6;
+  }
+  .verdict h2 { font-size: 16px; font-weight: 700; margin: 0 0 8px; }
+  .verdict ul { margin: 0; padding-left: 20px; }
+  .verdict li { margin-bottom: 6px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pill, .goo__blob, .ink, .bubble { transition: none !important; }
+    .bubble--droplet.is-travelling .bubble__zoom { filter: none; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <filter id="goo">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+    <feColorMatrix in="blur" mode="matrix"
+      values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo"/>
+    <feBlend in="SourceGraphic" in2="goo"/>
+  </filter>
+  <filter id="wobble">
+    <feTurbulence type="fractalNoise" baseFrequency="0.02 0.05" numOctaves="2" seed="7" result="noise">
+      <animate attributeName="baseFrequency" dur="3s" values="0.02 0.05;0.035 0.08;0.02 0.05" repeatCount="indefinite"/>
+    </feTurbulence>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<div class="page">
+  <h1>Fluid tab switch — 5 variants</h1>
+  <p class="sub">Click the tabs in each bar. Same 5 nav items as the real topbar. A–C are motion treatments; D–E keep the bar fully opaque and make the sliding indicator a lens that magnifies the label under it. Pick one and I'll wire it into <code>app.topbar.ts</code> using Calmi tokens.</p>
+
+  <div class="toolbar">
+    <button id="scheme">Toggle dark mode</button>
+    <label>Speed
+      <input id="speed" type="range" min="0.5" max="2" step="0.1" value="1">
+      <span id="speedVal">1.0×</span>
+    </label>
+    <button id="cycle">Auto-cycle all</button>
+  </div>
+
+  <!-- Variant A -->
+  <section class="variant">
+    <div class="variant__head">
+      <p class="variant__title">Variant A — <span>Liquid pill</span></p>
+      <p class="variant__desc">A soft filled pill travels to the new tab and squashes horizontally while moving, then settles with a light overshoot. Reads as one continuous object rather than a jump.</p>
+      <p class="variant__note"><b>Feels:</b> calm, premium, product-like. <b>Risk:</b> the fill competes with the topbar glass; needs a low-opacity brand tint to stay quiet.</p>
+    </div>
+    <div class="bar" id="barA">
+      <nav role="tablist" aria-label="Variant A">
+        <span class="pill" aria-hidden="true"></span>
+      </nav>
+    </div>
+  </section>
+
+  <!-- Variant B -->
+  <section class="variant">
+    <div class="variant__head">
+      <p class="variant__title">Variant B — <span>Gooey underline</span></p>
+      <p class="variant__desc">The underline behaves like liquid: a trailing blob lags behind the leading one, the two stretch apart mid-travel and merge back together on arrival, via an SVG blur + contrast filter.</p>
+      <p class="variant__note"><b>Feels:</b> playful, distinctive, most "fluid" of the three. <b>Risk:</b> the SVG filter repaints on every frame — heaviest option on low-end mobile.</p>
+    </div>
+    <div class="bar" id="barB">
+      <nav role="tablist" aria-label="Variant B">
+        <span class="goo" aria-hidden="true">
+          <span class="goo__blob goo__blob--trail"></span>
+          <span class="goo__blob goo__blob--lead"></span>
+        </span>
+      </nav>
+    </div>
+  </section>
+
+  <!-- Variant C -->
+  <section class="variant">
+    <div class="variant__head">
+      <p class="variant__title">Variant C — <span>Elastic ink</span></p>
+      <p class="variant__desc">The underline's leading edge leaves first, so the line stretches to bridge both tabs, then the trailing edge catches up and it contracts into place. A faint ripple blooms under the new tab on arrival.</p>
+      <p class="variant__note"><b>Feels:</b> closest to the current underline, cheapest to ship, very readable direction of travel. <b>Risk:</b> subtle — least "wow" of the three.</p>
+    </div>
+    <div class="bar" id="barC">
+      <nav role="tablist" aria-label="Variant C">
+        <span class="ripple" aria-hidden="true"></span>
+        <span class="ink" aria-hidden="true"></span>
+      </nav>
+    </div>
+  </section>
+
+  <!-- Variant D -->
+  <section class="variant">
+    <div class="variant__head">
+      <p class="variant__title">Variant D — <span>Magnifier bubble</span></p>
+      <p class="variant__desc">Opaque bar, no background trickery. The sliding indicator is a glass bubble that <b>magnifies the label underneath it</b> — the active tab's text bulges as the bubble arrives, with a specular dome on top and a soft rim shadow.</p>
+      <p class="variant__note"><b>Feels:</b> physical, like a lens resting on the nav. <b>Cost:</b> cheap — one transform, no blur, no SVG filter. <b>Trick:</b> the bubble carries its own scaled copy of the nav row, so nothing behind it has to be translucent.</p>
+    </div>
+    <div class="bar bar--lens" id="barD">
+      <nav role="tablist" aria-label="Variant D">
+        <span class="bubble" aria-hidden="true">
+          <span class="bubble__zoom"><span class="bubble__row"></span></span>
+          <span class="bubble__glare"></span>
+        </span>
+      </nav>
+    </div>
+  </section>
+
+  <!-- Variant E -->
+  <section class="variant">
+    <div class="variant__head">
+      <p class="variant__title">Variant E — <span>Water droplet lens</span></p>
+      <p class="variant__desc">Same magnifying bubble, but it behaves like a water droplet: stronger magnification, squash and stretch while travelling, a faint chromatic fringe on the magnified text, and the whole lens ripples through turbulence mid-move before settling clean.</p>
+      <p class="variant__note"><b>Feels:</b> the most alive of the set. <b>Cost:</b> turbulence runs <em>only</em> while travelling — the class is removed on arrival, so there is zero idle repaint.</p>
+    </div>
+    <div class="bar bar--lens" id="barE">
+      <nav role="tablist" aria-label="Variant E">
+        <span class="bubble bubble--droplet" aria-hidden="true">
+          <span class="bubble__zoom"><span class="bubble__row"></span></span>
+          <span class="bubble__glare"></span>
+        </span>
+      </nav>
+    </div>
+  </section>
+
+  <div class="verdict">
+    <h2>My read for Calmi</h2>
+    <ul>
+      <li><b>Variant D (magnifier bubble)</b> is my pick now that the bar is opaque — it gives the glass/lens feel with none of the <code>backdrop-filter</code> cost, and it works on any background because the bubble supplies its own magnified text.</li>
+      <li><b>Variant E (water droplet)</b> is D with personality: stronger zoom, squash-and-stretch, chromatic fringe and a turbulence ripple gated to travel only.</li>
+      <li><b>Variant C (elastic ink)</b> stays the minimal-risk choice if you'd rather not touch the label rendering at all.</li>
+      <li><b>A</b> for an app-shell pill, <b>B</b> for the gooey underline.</li>
+    </ul>
+    <p style="margin:10px 0 0"><b>How the lens works:</b> the bubble is opaque and contains a duplicate of the nav row, offset by its own position and scaled about its centre. The real label under it is set to <code>transparent</code> so nothing double-prints. That means the magnified copy must stay in sync with the real row — so if you pick D or E, the Angular version needs the label list in one place feeding both the buttons and the lens copy.</p>
+    <p style="margin:10px 0 0">All five respect <code>prefers-reduced-motion</code> (bubble jumps instantly, no squash, no wobble). Tabs are real buttons with <code>role="tablist"</code>, <code>aria-selected</code> and arrow-key support.</p>
+  </div>
+</div>
+
+<script>
+const TABS = ['Home', 'Therapy', 'Sleep', 'About Us', 'Pricing'];
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+let speed = 1;
+
+const speedInput = document.getElementById('speed');
+const speedVal = document.getElementById('speedVal');
+speedInput.addEventListener('input', () => {
+  speed = Number(speedInput.value);
+  speedVal.textContent = speed.toFixed(1) + '\u00d7';
+});
+
+document.getElementById('scheme').addEventListener('click', () => {
+  const html = document.documentElement;
+  html.dataset.scheme = html.dataset.scheme === 'dark' ? 'light' : 'dark';
+});
+
+/** Builds the 5 tab buttons into a nav and wires selection + keyboard nav. */
+function buildTabs(nav, onSelect) {
+  const buttons = TABS.map((label, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    b.addEventListener('click', () => select(i));
+    b.addEventListener('keydown', (e) => {
+      const dir = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!dir) return;
+      e.preventDefault();
+      const next = (i + dir + TABS.length) % TABS.length;
+      buttons[next].focus();
+      select(next);
+    });
+    nav.appendChild(b);
+    return b;
+  });
+
+  let current = 0;
+  function select(i) {
+    if (i === current) return;
+    const from = buttons[current];
+    const to = buttons[i];
+    buttons.forEach((b, n) => b.setAttribute('aria-selected', String(n === i)));
+    current = i;
+    onSelect(to, from);
+  }
+
+  // Position on first paint and after fonts load (metrics shift).
+  requestAnimationFrame(() => onSelect(buttons[0], buttons[0], true));
+  document.fonts?.ready.then(() => onSelect(buttons[current], buttons[current], true));
+  window.addEventListener('resize', () => onSelect(buttons[current], buttons[current], true));
+  return { select, buttons, get current() { return current; } };
+}
+
+const rect = (el, nav) => {
+  const a = el.getBoundingClientRect();
+  const b = nav.getBoundingClientRect();
+  return { left: a.left - b.left, width: a.width };
+};
+
+/* ---------- Variant A: liquid pill ---------- */
+{
+  const nav = document.querySelector('#barA nav');
+  const pill = nav.querySelector('.pill');
+  const PAD = 16;
+
+  const api = buildTabs(nav, (to, from, instant) => {
+    const t = rect(to, nav);
+    const f = rect(from, nav);
+    const width = t.width + PAD * 2;
+    const x = t.left - PAD;
+
+    if (instant || reduced.matches) {
+      pill.style.width = width + 'px';
+      pill.style.transform = `translateX(${x}px)`;
+      return;
+    }
+
+    const travel = Math.abs(t.left - f.left);
+    // Longer trips squash more, capped so it never looks broken.
+    const squash = Math.min(1 + travel / 900, 1.28);
+    const fromX = f.left - PAD;
+
+    pill.style.width = width + 'px';
+    pill.animate([
+      { transform: `translateX(${fromX}px) scaleX(1)` },
+      { transform: `translateX(${(fromX + x) / 2}px) scaleX(${squash})`, offset: 0.45 },
+      { transform: `translateX(${x}px) scaleX(0.96)`, offset: 0.8 },
+      { transform: `translateX(${x}px) scaleX(1)` }
+    ], {
+      duration: 460 / speed,
+      easing: 'cubic-bezier(0.34, 1.3, 0.64, 1)',
+      fill: 'forwards'
+    });
+  });
+  window.__A = api;
+}
+
+/* ---------- Variant B: gooey underline ---------- */
+{
+  const nav = document.querySelector('#barB nav');
+  const lead = nav.querySelector('.goo__blob--lead');
+  const trail = nav.querySelector('.goo__blob--trail');
+
+  const api = buildTabs(nav, (to, from, instant) => {
+    const t = rect(to, nav);
+    const f = rect(from, nav);
+
+    const place = (el, left, width) => {
+      el.style.width = width + 'px';
+      el.style.transform = `translateX(${left}px)`;
+    };
+
+    if (instant || reduced.matches) {
+      place(lead, t.left, t.width);
+      place(trail, t.left, t.width);
+      return;
+    }
+
+    // Lead snaps across; trail lags, so the filter stretches them into one
+    // liquid strand that pinches off and merges at the destination.
+    lead.style.width = t.width + 'px';
+    lead.animate([
+      { transform: `translateX(${f.left}px)` },
+      { transform: `translateX(${t.left}px)` }
+    ], { duration: 420 / speed, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' });
+
+    trail.style.width = f.width + 'px';
+    trail.animate([
+      { transform: `translateX(${f.left}px)`, width: f.width + 'px' },
+      { transform: `translateX(${f.left + (t.left - f.left) * 0.35}px)`, width: (f.width * 0.7) + 'px', offset: 0.5 },
+      { transform: `translateX(${t.left}px)`, width: t.width + 'px' }
+    ], { duration: 620 / speed, easing: 'cubic-bezier(0.5, 0, 0.2, 1)', fill: 'forwards' });
+  });
+  window.__B = api;
+}
+
+/* ---------- Variant C: elastic ink ---------- */
+{
+  const nav = document.querySelector('#barC nav');
+  const ink = nav.querySelector('.ink');
+  const ripple = nav.querySelector('.ripple');
+
+  const api = buildTabs(nav, (to, from, instant) => {
+    const t = rect(to, nav);
+    const f = rect(from, nav);
+
+    if (instant || reduced.matches) {
+      ink.style.left = t.left + 'px';
+      ink.style.width = t.width + 'px';
+      return;
+    }
+
+    const goingRight = t.left > f.left;
+    // Bridge spans both tabs at the midpoint of the animation.
+    const bridgeLeft = Math.min(f.left, t.left);
+    const bridgeWidth = Math.abs(t.left - f.left) + (goingRight ? t.width : f.width);
+
+    ink.animate([
+      { left: f.left + 'px', width: f.width + 'px' },
+      { left: bridgeLeft + 'px', width: bridgeWidth + 'px', offset: 0.45 },
+      { left: t.left + 'px', width: t.width + 'px' }
+    ], {
+      duration: 520 / speed,
+      easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
+      fill: 'forwards'
+    });
+
+    ripple.style.left = (t.left + t.width / 2) + 'px';
+    ripple.animate([
+      { transform: 'scale(0.4)', opacity: 0.55 },
+      { transform: 'scale(2.6)', opacity: 0 }
+    ], { duration: 620 / speed, easing: 'ease-out' });
+  });
+  window.__C = api;
+}
+
+/* ---------- Shared lens-bubble plumbing ----------
+   The bubble is opaque and holds a duplicate of the nav row. Keeping that copy
+   offset by -bubbleLeft means nav coordinates line up inside the bubble, so
+   scaling the wrapper about its own centre magnifies exactly what sits under
+   the lens. No translucency, no backdrop-filter. */
+function lensBubble(barId, opts) {
+  const nav = document.querySelector('#' + barId + ' nav');
+  const bubble = nav.querySelector('.bubble');
+  const row = nav.querySelector('.bubble__row');
+  const PAD = 18;
+  let travelTimer = null;
+
+  // Duplicate the labels once; they mirror the real buttons' typography.
+  TABS.forEach((label) => {
+    const s = document.createElement('span');
+    s.textContent = label;
+    row.appendChild(s);
+  });
+
+  const api = buildTabs(nav, (to, from, instant) => {
+    const t = rect(to, nav);
+    const f = rect(from, nav);
+    const width = t.width + PAD * 2;
+    const x = t.left - PAD;
+    const fromX = f.left - PAD;
+
+    // Align the magnified copy with the bubble's resting position.
+    const alignRow = (left) => { row.style.left = (-left) + 'px'; };
+
+    if (instant || reduced.matches) {
+      bubble.style.width = width + 'px';
+      bubble.style.transform = `translateX(${x}px)`;
+      alignRow(x);
+      return;
+    }
+
+    bubble.style.width = width + 'px';
+    const anim = bubble.animate(opts.keyframes(fromX, x, Math.abs(t.left - f.left)), {
+      duration: opts.duration / speed,
+      easing: opts.easing,
+      fill: 'forwards'
+    });
+
+    // Track the row against the bubble every frame so the magnified text stays
+    // registered with the label beneath it during the whole trip.
+    let running = true;
+    const follow = () => {
+      if (!running) return;
+      const m = new DOMMatrixReadOnly(getComputedStyle(bubble).transform);
+      alignRow(m.m41);
+      requestAnimationFrame(follow);
+    };
+    requestAnimationFrame(follow);
+    anim.finished.then(() => { running = false; alignRow(x); }).catch(() => { running = false; });
+
+    if (opts.wobble) {
+      bubble.classList.add('is-travelling');
+      clearTimeout(travelTimer);
+      travelTimer = setTimeout(
+        () => bubble.classList.remove('is-travelling'),
+        opts.duration / speed
+      );
+    }
+  });
+  return api;
+}
+
+/* ---------- Variant D: magnifier bubble ---------- */
+window.__D = lensBubble('barD', {
+  duration: 480,
+  easing: 'cubic-bezier(0.32, 1.25, 0.6, 1)',
+  keyframes: (fromX, x) => [
+    { transform: `translateX(${fromX}px) scale(1, 1)` },
+    { transform: `translateX(${x}px) scale(1.04, 0.96)`, offset: 0.72 },
+    { transform: `translateX(${x}px) scale(1, 1)` }
+  ]
+});
+
+/* ---------- Variant E: water droplet lens ---------- */
+window.__E = lensBubble('barE', {
+  duration: 560,
+  easing: 'cubic-bezier(0.34, 1.4, 0.64, 1)',
+  wobble: true,
+  keyframes: (fromX, x, travel) => {
+    const squash = Math.min(1 + travel / 700, 1.32);
+    const squish = Math.max(1 - travel / 2400, 0.84);
+    return [
+      { transform: `translateX(${fromX}px) scale(1, 1)` },
+      { transform: `translateX(${(fromX + x) / 2}px) scale(${squash}, ${squish})`, offset: 0.42 },
+      { transform: `translateX(${x}px) scale(0.94, 1.07)`, offset: 0.76 },
+      { transform: `translateX(${x}px) scale(1, 1)` }
+    ];
+  }
+});
+
+/* Auto-cycle to compare all variants side by side. */
+let cycling = null;
+document.getElementById('cycle').addEventListener('click', (e) => {
+  if (cycling) {
+    clearInterval(cycling); cycling = null; e.target.textContent = 'Auto-cycle all'; return;
+  }
+  e.target.textContent = 'Stop cycling';
+  let i = 0;
+  cycling = setInterval(() => {
+    i = (i + 1) % TABS.length;
+    [window.__A, window.__B, window.__C, window.__D, window.__E].forEach((v) => v.select(i));
+  }, 1100 / speed);
+});
+</script>
+</body>
+</html>
