@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  afterRenderEffect,
+  computed,
+  effect,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePicker } from 'primeng/datepicker';
-import { LucideCircleAlert, LucideCircleCheck, LucideLock } from '@lucide/angular';
+import { LucideCircleAlert, LucideLock } from '@lucide/angular';
 import {
   AvailabilityState,
   TherapistAvailabilityDay,
@@ -11,7 +21,7 @@ type DateMeta = { day: number; month: number; year: number };
 
 @Component({
   selector: 'app-therapist-booking-sidebar',
-  imports: [DatePicker, FormsModule, LucideCircleAlert, LucideCircleCheck, LucideLock],
+  imports: [DatePicker, FormsModule, LucideCircleAlert, LucideLock],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <aside class="min-w-0 rounded-2xl border border-hairline bg-surface shadow-card lg:sticky lg:top-6" aria-labelledby="booking-heading">
@@ -115,7 +125,7 @@ type DateMeta = { day: number; month: number; year: number };
             @if (messageInvalid()) { <p id="booking-message-error" class="mt-1 flex items-center gap-2 text-xs text-danger" role="alert"><svg lucideCircleAlert [size]="15" class="text-danger" aria-hidden="true"></svg>Keep your message under 1,000 characters.</p> }
             @if (!messageInvalid()) { <p id="booking-message-help" class="mt-1 text-xs text-ink-soft">Up to 1,000 characters.</p> }
           </div>
-          <button type="submit" [disabled]="!formValid()"
+          <button #submitButton type="submit" [disabled]="!formValid()"
                   class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-deep px-5 py-3 text-base font-semibold text-on-brand transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
             <span>Book a Session</span>
           </button>
@@ -123,12 +133,62 @@ type DateMeta = { day: number; month: number; year: number };
             <svg lucideLock [size]="14" aria-hidden="true"></svg>
             Your information is private and secure.
           </p>
-          @if (bookingSaved()) {
-            <p class="flex items-start gap-2 rounded-lg bg-sunken p-4 text-xs text-ink-soft" role="status"><svg lucideCircleCheck [size]="18" class="mt-0.5 shrink-0 text-success" aria-hidden="true"></svg>Details saved locally for this local demo; not submitted.</p>
-          }
         </form>
       </div>
     </aside>
+
+    @if (bookingSaved()) {
+      <!-- Centred confirmation. Focus moves to the dialog and returns to the
+           submit button on close; Escape, a backdrop click, or the short
+           auto-dismiss timer all close it with an exit animation. -->
+      <div #backdrop class="fixed inset-0 z-50 grid place-items-center bg-scrim p-4" (click)="dismissConfirmation()">
+        <div #confirmation role="dialog" aria-modal="true" aria-labelledby="booking-confirmed-title"
+             tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="dismissConfirmation()"
+             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-elevated/10 p-8 text-center shadow-2xl backdrop-blur-sm dark:border-white/10">
+          <span class="dialog-stagger-item mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md" style="--index: 0" aria-hidden="true">
+            <svg viewBox="0 0 52 52" class="h-10 w-10" fill="none" stroke="currentColor" stroke-width="4"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle class="confirmation-ring" cx="26" cy="26" r="22" />
+              <path class="confirmation-tick" d="M15 27.5 L23 35 L38 19" />
+            </svg>
+          </span>
+          <h3 id="booking-confirmed-title" class="dialog-stagger-item mt-5 font-sans text-2xl font-bold text-white" style="--index: 1">Booking confirmed</h3>
+          <p class="dialog-stagger-item mt-2 text-sm tracking-wide text-white/80" style="--index: 2">Your session is reserved for {{ confirmationSummary() }}.</p>
+        </div>
+      </div>
+    }
+  `,
+  styles: `
+    /* Stroke only: the draw-on effect adds no colour of its own. The panel and
+       backdrop transitions are driven from the component so the exit animation
+       can finish before the dialog leaves the DOM. */
+    .confirmation-ring {
+      stroke-dasharray: 145;
+      stroke-dashoffset: 145;
+      animation: confirmation-draw 420ms ease-out 60ms forwards;
+    }
+    .confirmation-tick {
+      stroke-dasharray: 48;
+      stroke-dashoffset: 48;
+      animation: confirmation-draw 300ms ease-out 380ms forwards;
+    }
+    @keyframes confirmation-draw {
+      to { stroke-dashoffset: 0; }
+    }
+    @media (prefers-reduced-transparency: reduce) {
+      /* Glass must degrade to an opaque surface when the user asks for it. */
+      .confirmation-panel {
+        background-color: var(--color-brand-deep);
+        backdrop-filter: none;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .confirmation-ring,
+      .confirmation-tick {
+        animation: none;
+        stroke-dashoffset: 0;
+      }
+    }
   `,
 })
 export class TherapistBookingSidebarComponent {
@@ -159,6 +219,21 @@ export class TherapistBookingSidebarComponent {
   readonly slotInvalid = computed(() => this.submitAttempted() && !this.isSlotValid());
   readonly messageInvalid = computed(() => this.submitAttempted() && this.message().length > 1000);
   readonly formValid = computed(() => this.isNameValid() && this.isPhoneValid() && this.isDateValid() && this.isSlotValid() && this.message().length <= 1000);
+  readonly confirmationSummary = computed(() => {
+    const date = this.selectedDate();
+    const slot = this.availableSlots().find((item) => item.id === this.selectedSlot());
+    if (!date) {
+      return 'your selected slot';
+    }
+    const day = date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+    return slot ? `${day} at ${slot.label}` : day;
+  });
+
+  private readonly confirmationEl = viewChild<ElementRef<HTMLElement>>('confirmation');
+  private readonly backdropEl = viewChild<ElementRef<HTMLElement>>('backdrop');
+  private readonly submitButton = viewChild<ElementRef<HTMLButtonElement>>('submitButton');
+  private closing = false;
+  private dismissTimer: ReturnType<typeof setTimeout> | undefined;
   /**
    * Component-scoped PrimeNG design tokens. Keys are the datepicker's OWN token
    * sections (panel, header, date, ...) with NO `datepicker` wrapper: `[dt]` is
@@ -213,6 +288,32 @@ export class TherapistBookingSidebarComponent {
         this.selectedSlot.set(first.slots[0]?.id ?? null);
       }
     });
+
+    afterRenderEffect(() => {
+      if (!this.bookingSaved()) {
+        return;
+      }
+
+      const panel = this.confirmationEl()?.nativeElement;
+      panel?.focus();
+
+      if (panel && typeof panel.animate === 'function' && !this.prefersReducedMotion()) {
+        this.backdropEl()?.nativeElement.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: 'ease-out' });
+        panel.animate(
+          [
+            { opacity: 0, transform: 'scale(0.94) translateY(8px)' },
+            { opacity: 1, transform: 'scale(1) translateY(0)' },
+          ],
+          { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+        );
+      }
+
+      // No dismiss button by design: it closes itself shortly after landing,
+      // and Escape or a backdrop click closes it sooner.
+      if (this.dismissTimer === undefined) {
+        this.dismissTimer = setTimeout(() => this.dismissConfirmation(), 2600);
+      }
+    });
   }
 
   onDateSelected(date: Date | null): void {
@@ -241,6 +342,54 @@ export class TherapistBookingSidebarComponent {
     }
     // TODO: future authenticated endpoint, explicit consent/retention review, server-side field validation, and server-authoritative availability recheck.
     this.bookingSaved.set(true);
+  }
+
+  closeConfirmation(): void {
+    this.bookingSaved.set(false);
+    this.dismissTimer = undefined;
+    // Return focus to the control that opened the dialog.
+    this.submitButton()?.nativeElement.focus();
+  }
+
+  /** Plays the exit animation, then removes the dialog from the DOM. */
+  dismissConfirmation(): void {
+    if (this.closing) {
+      return;
+    }
+    this.closing = true;
+    if (this.dismissTimer !== undefined) {
+      clearTimeout(this.dismissTimer);
+      this.dismissTimer = undefined;
+    }
+
+    const panel = this.confirmationEl()?.nativeElement;
+    const backdrop = this.backdropEl()?.nativeElement;
+    const finish = () => {
+      this.closing = false;
+      this.closeConfirmation();
+    };
+
+    if (!panel || typeof panel.animate !== 'function' || this.prefersReducedMotion()) {
+      finish();
+      return;
+    }
+
+    backdrop?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, easing: 'ease-in', fill: 'both' });
+    panel
+      .animate(
+        [
+          { opacity: 1, transform: 'scale(1) translateY(0)' },
+          { opacity: 0, transform: 'scale(0.96) translateY(6px)' },
+        ],
+        { duration: 180, easing: 'ease-in', fill: 'both' },
+      )
+      .addEventListener('finish', finish, { once: true });
+  }
+
+  private prefersReducedMotion(): boolean {
+    return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false;
   }
 
   dateMetaState(meta: DateMeta): AvailabilityState | 'past' {
