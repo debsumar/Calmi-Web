@@ -7,7 +7,7 @@
         <app-therapist-why-choose-us [benefits]="profile.whyChooseUs" />
         <app-therapist-testimonials [testimonials]="profile.testimonials" />
       </div>
-      <app-therapist-booking-sidebar [availability]="profile.availability" />
+      <app-therapist-booking-sidebar [therapist]="profile" />
     </div>
     <app-faq-accordion
       class="block pt-16 md:pt-20"
