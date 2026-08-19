@@ -11,6 +11,10 @@ export const appRoutes: Routes = [
         loadComponent: () => import('@/features/home/pages/home/home.component').then((m) => m.HomeComponent),
       },
       {
+        path: 'therapy/:id',
+        loadComponent: () => import('@/features/therapy/pages/therapist-profile/therapist-profile.component').then((m) => m.TherapistProfileComponent),
+      },
+      {
         path: 'therapy',
         loadComponent: () => import('@/features/therapy/pages/therapy/therapy.component').then((m) => m.TherapyComponent),
       },

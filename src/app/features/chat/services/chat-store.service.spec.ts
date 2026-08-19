@@ -59,6 +59,20 @@ describe('ChatStoreService', () => {
     expect(service.canSend()).toBe(false);
   });
 
+  it('stamps the greeting with the current local time', () => {
+    const before = Date.now();
+    service.reset();
+    const after = Date.now();
+
+    const stamps = service.messages().map((m) => m.timestamp.getTime());
+
+    expect(stamps.length).toBe(2);
+    for (const stamp of stamps) {
+      expect(stamp).toBeGreaterThanOrEqual(before);
+      expect(stamp).toBeLessThanOrEqual(after);
+    }
+  });
+
   it('keeps the panel mounted while the exit animation plays', () => {
     vi.useFakeTimers();
     service.open();

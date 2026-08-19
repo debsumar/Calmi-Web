@@ -3,25 +3,17 @@ import { LucideDynamicIcon } from '@lucide/angular';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { DragScrollDirective } from '@/shared/directives/drag-scroll.directive';
 import { PsychologistCardComponent } from '@/shared/components/cards/psychologist-card.component';
+import { FaqAccordionComponent } from '@/features/therapy/components/faq-accordion/faq-accordion.component';
+import { THERAPY_FAQS } from '@/features/therapy/data/faq.data';
+import { THERAPISTS, Therapist } from '@/features/therapy/data/therapist.data';
 
 type FilterId = 'availability' | 'gender' | 'language';
-
-interface Psychologist {
-  name: string;
-  image: string;
-  price: number;
-  duration: string;
-  rating: number;
-  reviews: number;
-  specialties: string[];
-  languages: string[];
-}
 
 const CARD_STRIDE = 284; // md card width (260) + gap (24)
 
 @Component({
   selector: 'app-therapy',
-  imports: [LucideDynamicIcon, AnimateOnScrollDirective, DragScrollDirective, PsychologistCardComponent],
+  imports: [LucideDynamicIcon, AnimateOnScrollDirective, DragScrollDirective, PsychologistCardComponent, FaqAccordionComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './therapy.component.html',
 })
@@ -36,47 +28,13 @@ export class TherapyComponent {
 
   readonly openFilter = signal<FilterId | null>(null);
 
-  readonly psychologists = signal<Psychologist[]>([
-    { name: 'Ayushi Arora', image: '', price: 2000, duration: '50 mins', rating: 4.9, reviews: 128, specialties: ['Anxiety & Stress', 'Depression', 'Relationship'], languages: ['English', 'Hindi', 'Punjabi'] },
-    { name: 'Mukesh Patel', image: '', price: 1500, duration: '30 mins', rating: 4.8, reviews: 96, specialties: ['Loneliness', 'Depression', 'Adult ADHD'], languages: ['English', 'Hindi', 'Gujarati'] },
-    { name: 'Prerna Gawde', image: '', price: 2500, duration: '45 mins', rating: 4.7, reviews: 74, specialties: ['Bipolar disorder', 'Schizophrenia'], languages: ['English', 'Hindi', 'Marathi'] },
-    { name: 'Rahul Menon', image: '', price: 1800, duration: '40 mins', rating: 4.8, reviews: 112, specialties: ['Burnout', 'Sleep Issues', 'Grief'], languages: ['English', 'Hindi', 'Malayalam'] },
-    { name: 'Sneha Iyer', image: '', price: 2200, duration: '50 mins', rating: 4.9, reviews: 143, specialties: ['Trauma & PTSD', 'Anxiety & Stress', 'Self Esteem'], languages: ['English', 'Hindi', 'Tamil'] },
-    { name: 'Arjun Sharma', image: '', price: 1200, duration: '30 mins', rating: 4.6, reviews: 58, specialties: ['Career Stress', 'Anger Issues', 'OCD'], languages: ['English', 'Hindi'] },
-  ]);
+  readonly psychologists = signal<Therapist[]>(THERAPISTS);
 
   readonly showLeftShadow = signal(false);
   readonly showRightShadow = signal(true);
   readonly activeSlide = signal(0);
 
-  readonly faqs = signal<{ question: string; answer: string }[]>([
-    {
-      question: 'How is Calmi different from other mental wellness apps?',
-      answer: 'Calmi brings mood tracking, personalized guidance, sleep support, journaling, and therapist connections into one calm, personalized experience.',
-    },
-    {
-      question: 'Is Calmi a replacement for professional therapy?',
-      answer: 'No. Calmi is designed to complement professional support, not replace a qualified psychologist or therapist.',
-    },
-    {
-      question: 'How does Sleep Mode recommend the right audio for me?',
-      answer: 'Sleep Mode uses your preferences, mood, and listening patterns to surface calming sounds and sessions suited to how you want to wind down.',
-    },
-    {
-      question: 'How do I know which psychologist is right for me?',
-      answer: 'Calmi uses your goals, preferences, and support needs to recommend psychologists who may be a good fit. You can review their profiles before choosing.',
-    },
-    {
-      question: 'Can I use Calmi for free before subscribing?',
-      answer: 'Yes. Calmi will offer free access to selected features, with premium content and experiences available through a subscription.',
-    },
-  ]);
-
-  readonly openFaq = signal<number | null>(null);
-
-  toggleFaq(index: number): void {
-    this.openFaq.update((current) => (current === index ? null : index));
-  }
+  readonly faqs = THERAPY_FAQS;
 
   get slideDots(): number[] {
     return this.psychologists().map((_, index) => index);

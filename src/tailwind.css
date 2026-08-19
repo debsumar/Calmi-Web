@@ -21,7 +21,16 @@
     --calmi-glass: color-mix(in srgb, white 60%, transparent);
     --calmi-scrim: color-mix(in srgb, black 45%, transparent);
     --calmi-on-coral: white;
+    --calmi-success: var(--p-success-700);
+    --calmi-danger: var(--p-danger-700);
     --calmi-on-brand: white;
+    /* Text roles are near-neutral on purpose: content reads as ink, not brand.
+       The small brand percentage keeps them seed-tracking without tinting copy
+       lavender. Retune the percentage, never swap in a literal gray. */
+    --calmi-ink: color-mix(in srgb, var(--color-brand) 10%, black);
+    --calmi-ink-soft: color-mix(in srgb, var(--calmi-ink) 72%, white);
+    --calmi-ink-muted: color-mix(in srgb, var(--calmi-ink) 56%, white);
+    --calmi-on-hero: var(--p-primary-950, #261f2e);
 
     --calmi-shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.25);
     --calmi-shadow-player: 0 -4px 20px rgb(0 0 0 / 0.1);
@@ -40,6 +49,12 @@
     --calmi-hairline: color-mix(in srgb, var(--color-brand) 40%, black);
     --calmi-glass: color-mix(in srgb, var(--calmi-elevated) 55%, transparent);
     --calmi-scrim: color-mix(in srgb, black 65%, transparent);
+    --calmi-success: var(--p-success-300);
+    --calmi-danger: var(--p-danger-300);
+    --calmi-ink: color-mix(in srgb, var(--color-brand) 6%, white);
+    --calmi-ink-soft: color-mix(in srgb, var(--color-brand) 18%, white);
+    --calmi-ink-muted: color-mix(in srgb, var(--color-brand) 34%, white);
+    --calmi-on-hero: white;
 
     --calmi-shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.5);
     --calmi-shadow-player: 0 -4px 20px rgb(0 0 0 / 0.4);
@@ -78,7 +93,13 @@
   --color-glass: var(--calmi-glass);
   --color-scrim: var(--calmi-scrim);
   --color-on-coral: var(--calmi-on-coral);
+  --color-success: var(--calmi-success);
+  --color-danger: var(--calmi-danger);
   --color-on-brand: var(--calmi-on-brand);
+  --color-ink: var(--calmi-ink);
+  --color-ink-soft: var(--calmi-ink-soft);
+  --color-ink-muted: var(--calmi-ink-muted);
+  --color-on-hero: var(--calmi-on-hero);
 
   /* Accent palettes registered in core/theme/calmi-preset.ts. */
   --color-accent-coral: var(--p-coral-500, #e8724a);
