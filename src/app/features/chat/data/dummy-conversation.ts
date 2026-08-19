@@ -1,21 +1,29 @@
 import { ChatMessage, SuggestedPrompt } from '../models/chat-message.model';
 
-export const GREETING_MESSAGES: ChatMessage[] = [
-  {
-    id: 'greeting-disclaimer',
-    role: 'system',
-    text: 'Rumi AI is an AI companion, not a licensed therapist.',
-    timestamp: new Date('2026-01-01T00:00:00.000Z'),
-    status: 'sent',
-  },
-  {
-    id: 'greeting-welcome',
-    role: 'ai',
-    text: 'Hi, I’m here with you. What would feel supportive to talk through today?',
-    timestamp: new Date('2026-01-01T00:00:01.000Z'),
-    status: 'sent',
-  },
-];
+/**
+ * Built per call so the greeting carries the user's current local time instead
+ * of a baked-in date.
+ */
+export function createGreetingMessages(): ChatMessage[] {
+  const now = new Date();
+
+  return [
+    {
+      id: 'greeting-disclaimer',
+      role: 'system',
+      text: 'Rumi AI is an AI companion, not a licensed therapist.',
+      timestamp: now,
+      status: 'sent',
+    },
+    {
+      id: 'greeting-welcome',
+      role: 'ai',
+      text: 'Hi, I’m here with you. What would feel supportive to talk through today?',
+      timestamp: now,
+      status: 'sent',
+    },
+  ];
+}
 
 export const SUGGESTED_PROMPTS: SuggestedPrompt[] = [
   { id: 'prompt-anxious', label: 'I feel anxious' },

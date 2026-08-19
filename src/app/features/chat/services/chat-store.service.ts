@@ -1,12 +1,12 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { GREETING_MESSAGES, pickReply } from '../data/dummy-conversation';
+import { createGreetingMessages, pickReply } from '../data/dummy-conversation';
 import { ChatMessage } from '../models/chat-message.model';
 
 @Injectable({ providedIn: 'root' })
 export class ChatStoreService {
   private readonly _isOpen = signal(false);
   private readonly _isMinimized = signal(false);
-  private readonly _messages = signal<ChatMessage[]>(this.cloneMessages(GREETING_MESSAGES));
+  private readonly _messages = signal<ChatMessage[]>(createGreetingMessages());
   private readonly _isTyping = signal(false);
   private readonly _unreadCount = signal(0);
   private readonly _draft = signal('');
@@ -122,7 +122,7 @@ export class ChatStoreService {
     this.cancelPendingClose();
     this._isOpen.set(false);
     this._isMinimized.set(false);
-    this._messages.set(this.cloneMessages(GREETING_MESSAGES));
+    this._messages.set(createGreetingMessages());
     this._isTyping.set(false);
     this._unreadCount.set(0);
     this._draft.set('');
@@ -155,9 +155,5 @@ export class ChatStoreService {
         this._unreadCount.update((count) => count + 1);
       }
     }, delay);
-  }
-
-  private cloneMessages(messages: ChatMessage[]): ChatMessage[] {
-    return messages.map((message) => ({ ...message, timestamp: new Date(message.timestamp) }));
   }
 }
