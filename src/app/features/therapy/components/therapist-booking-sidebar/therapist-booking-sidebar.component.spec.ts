@@ -74,7 +74,17 @@ describe('TherapistBookingSidebarComponent', () => {
     component.submitBooking(new Event('submit'));
     fixture.detectChanges();
     expect(component.bookingSaved()).toBe(true);
-    expect(fixture.nativeElement.textContent).toContain('local demo; not submitted');
+    const dialog = fixture.nativeElement.querySelector('[role="dialog"][aria-modal="true"]') as HTMLElement;
+    expect(dialog).not.toBeNull();
+    expect(dialog.textContent).toContain('Booking confirmed');
+    expect(dialog.textContent).not.toContain('this device only');
+    expect(dialog.querySelector('button')).toBeNull();
+    expect(dialog.querySelector('.confirmation-tick')).not.toBeNull();
+
+    component.dismissConfirmation();
+    fixture.detectChanges();
+    expect(component.bookingSaved()).toBe(false);
+    expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
     const successIcon = fixture.nativeElement.querySelector('svg[lucideCircleCheck]');
     expect(successIcon?.getAttribute('aria-hidden')).toBe('true');
     expect(successIcon?.querySelector('path, line, circle, polyline, rect')).not.toBeNull();
