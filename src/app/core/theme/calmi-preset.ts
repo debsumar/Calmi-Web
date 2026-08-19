@@ -13,6 +13,8 @@ export const SEED_ACCENTS = {
   coral: '#e8724a',
   gold: '#f5b731',
   pink: '#f2a0b0',
+  success: '#2E7D32',
+  danger: '#C62828',
 } as const;
 
 /**
@@ -32,6 +34,8 @@ export const CalmiPreset = definePreset(Aura, {
     coral: palette(SEED_ACCENTS.coral),
     gold: palette(SEED_ACCENTS.gold),
     pink: palette(SEED_ACCENTS.pink),
+    success: palette(SEED_ACCENTS.success),
+    danger: palette(SEED_ACCENTS.danger),
   },
   semantic: {
     primary: palette(SEED_PRIMARY),

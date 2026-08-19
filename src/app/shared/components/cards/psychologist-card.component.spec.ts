@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { provideLucideIcons, LucideStar } from '@lucide/angular';
 import { PsychologistCardComponent } from './psychologist-card.component';
@@ -9,11 +10,12 @@ describe('PsychologistCardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PsychologistCardComponent],
-      providers: [provideLucideIcons(LucideStar)],
+      providers: [provideRouter([]), provideLucideIcons(LucideStar)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PsychologistCardComponent);
     fixture.componentRef.setInput('name', 'Ayushi Arora');
+    fixture.componentRef.setInput('profileId', 'ayushi-arora');
     fixture.componentRef.setInput('price', 2000);
     fixture.componentRef.setInput('duration', '50 mins');
     fixture.componentRef.setInput('rating', 4.9);
@@ -35,6 +37,9 @@ describe('PsychologistCardComponent', () => {
     expect(text).toContain('Depression');
     expect(text).toContain('Relationship');
     expect(text).toContain('Speaks: English, Hindi, Punjabi');
+    const profileLink = fixture.nativeElement.querySelector('a[aria-label="View Ayushi Arora profile"]') as HTMLAnchorElement;
+    expect(profileLink).not.toBeNull();
+    expect(profileLink.getAttribute('href')).toBe('/therapy/ayushi-arora');
     expect(fixture.nativeElement.querySelector('[aria-hidden="true"]').textContent).toContain('AA');
   });
 

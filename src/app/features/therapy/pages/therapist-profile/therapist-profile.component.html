@@ -1,0 +1,23 @@
+<main class="min-h-screen bg-canvas font-sans text-ink">
+  @if (therapist(); as profile) {
+    <app-therapist-profile-hero [profile]="profile" />
+    <div class="mx-auto grid max-w-6xl min-w-0 grid-cols-1 gap-8 px-4 pb-16 md:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)] lg:gap-10">
+      <div class="min-w-0 space-y-8">
+        <app-therapist-profile-about [profile]="profile" />
+        <app-therapist-why-choose-us [benefits]="profile.whyChooseUs" />
+        <app-therapist-testimonials [testimonials]="profile.testimonials" />
+      </div>
+      <app-therapist-booking-sidebar [availability]="profile.availability" />
+    </div>
+    <app-faq-accordion
+      class="block pt-16 md:pt-20"
+      [faqs]="profileFaqs()"
+      heading="Before Your First Session"
+      subtitle="Find answers to common questions about therapy sessions, therapists, and getting started with Calmi."
+      sectionId="profile-faq"
+      idPrefix="profile-faq" />
+  } @else {
+    <app-therapist-profile-empty-state />
+  }
+</main>
+
