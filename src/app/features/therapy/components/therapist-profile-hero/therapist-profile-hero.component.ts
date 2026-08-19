@@ -2,15 +2,15 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { RouterLink } from '@angular/router';
 import {
   LucideArrowLeft,
-  LucideBrain,
   LucideBriefcaseBusiness,
   LucideMedal,
+  LucideTarget,
 } from '@lucide/angular';
 import { Therapist } from '@/features/therapy/data/therapist.data';
 
 @Component({
   selector: 'app-therapist-profile-hero',
-  imports: [RouterLink, LucideArrowLeft, LucideBrain, LucideBriefcaseBusiness, LucideMedal],
+  imports: [RouterLink, LucideArrowLeft, LucideTarget, LucideBriefcaseBusiness, LucideMedal],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="w-full bg-brand-deep text-on-brand">
@@ -41,12 +41,16 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
             <h1 id="therapist-name" class="font-sans text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">{{ profile().name }}</h1>
             <p class="mt-3 text-base text-ink-soft">{{ profile().subtitle }}</p>
             <div class="mt-6 grid gap-3 text-xs font-semibold text-ink-soft" aria-label="Professional experience">
-              <div class="flex items-start gap-3">
-                <svg lucideMedal [size]="18" aria-hidden="true" class="mt-0.5 shrink-0 fill-current text-ink-soft"></svg>
+              <div class="flex items-center gap-3">
+                <span class="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
+                  <svg lucideMedal [size]="18" class="fill-current text-ink-soft"></svg>
+                </span>
                 <span>{{ profile().qualifications.join(', ') }}</span>
               </div>
-              <div class="flex items-start gap-3">
-                <svg lucideBriefcaseBusiness [size]="18" aria-hidden="true" class="mt-0.5 shrink-0 fill-current text-ink-soft"></svg>
+              <div class="flex items-center gap-3">
+                <span class="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
+                  <svg lucideBriefcaseBusiness [size]="18" class="fill-current text-ink-soft"></svg>
+                </span>
                 <span>{{ profile().experienceYears }} years of experience</span>
               </div>
             </div>
@@ -55,7 +59,7 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
           <section class="min-w-0 border-t border-hairline pt-8 md:col-span-2 lg:col-span-1 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0" aria-labelledby="expertise-heading">
             <div class="flex items-center gap-3">
               <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand" aria-hidden="true">
-                <svg lucideBrain [size]="20" aria-hidden="true"></svg>
+                <svg lucideTarget [size]="20" aria-hidden="true"></svg>
               </span>
               <h2 id="expertise-heading" class="font-sans text-xl font-bold leading-tight whitespace-nowrap text-ink md:text-2xl">Areas of Expertise</h2>
             </div>
