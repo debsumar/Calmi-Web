@@ -43,7 +43,7 @@ describe('TherapistProfileComponent', () => {
     expect(root.querySelector('nav[aria-label="Breadcrumb"] [aria-current="page"]')?.textContent).toContain('Therapist Profile');
 
     const profileIcons = root.querySelectorAll(
-      'app-therapist-profile-hero svg[lucideArrowLeft], app-therapist-profile-hero svg[lucideMedal], app-therapist-profile-hero svg[lucideBriefcaseBusiness], app-therapist-profile-hero svg[lucideBrain]',
+      'app-therapist-profile-hero svg[lucideArrowLeft], app-therapist-profile-hero svg[lucideMedal], app-therapist-profile-hero svg[lucideBriefcaseBusiness], app-therapist-profile-hero svg[lucideTarget]',
     );
     expect(profileIcons.length).toBe(4);
     profileIcons.forEach((icon) => {
