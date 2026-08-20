@@ -1,31 +1,36 @@
 import { ChangeDetectionStrategy, Component, ElementRef, QueryList, ViewChildren, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { AuthRole, AuthService } from '@/core/services/auth.service';
 import { AuthSplitCardComponent } from '@/shared/components/auth-split-card/auth-split-card.component';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 
 interface RoleOption {
   value: AuthRole;
   title: string;
+  description: string;
   icon: string;
 }
 
 @Component({
   selector: 'app-identification',
-  imports: [AuthSplitCardComponent],
+  imports: [AuthSplitCardComponent, AnimateOnScrollDirective, LucideDynamicIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-auth-split-card
-      imageSrc="/assets/meditation.svg"
-      imageAlt="Two people seated calmly together in meditation"
+      imageSrc="/assets/welcome.svg"
+      imageAlt="Illustration welcoming a new user to Calmi"
       imageSide="left">
       <div class="mx-auto flex w-full max-w-md flex-col">
-        <h1 class="text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">Get Started with Calmi</h1>
-        <p class="mt-3 text-base leading-relaxed text-ink-soft">Pick the account type that matches how you'll use Calmi.</p>
+        <h1 appAnimateOnScroll style="--index:0" class="text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">Get Started with Calmi</h1>
+        <p appAnimateOnScroll style="--index:1" class="mt-3 text-base leading-relaxed text-ink-soft">Pick the account type that matches how you'll use Calmi.</p>
 
         <div class="mt-8 space-y-3" role="radiogroup" aria-label="Account type">
           @for (option of roleOptions; track option.value; let index = $index) {
             <button
               #roleButton
+              appAnimateOnScroll
+              [style.--index]="index + 2"
               type="button"
               role="radio"
               [attr.aria-checked]="selectedRole() === option.value"
@@ -33,25 +38,26 @@ interface RoleOption {
               (click)="selectRole(option.value, index)"
               (keydown)="onRoleKeydown($event, index)"
               class="flex w-full items-center gap-4 rounded-2xl border bg-surface p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-              [class.border-brand]="selectedRole() === option.value"
-              [class.bg-brand-soft\/10]="selectedRole() === option.value"
-              [class.border-hairline]="selectedRole() !== option.value">
-              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand-deep" aria-hidden="true">
-                @if (option.value === 'specialist') {
-                  <svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.7-3.4 3-5.2 6.5-5.2s5.8 1.8 6.5 5.2"/></svg>
-                } @else {
-                  <svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.7-3.4 3-5.2 6.5-5.2s5.8 1.8 6.5 5.2"/></svg>
-                }
+              [class]="selectedRole() === option.value ? 'border-brand bg-sunken' : 'border-hairline hover:bg-sunken'">
+              <span
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors"
+                [class]="selectedRole() === option.value
+                  ? 'bg-brand-deep text-white dark:bg-brand-soft dark:text-brand-night'
+                  : 'bg-brand-soft/25 text-brand-deep dark:bg-brand-soft/20 dark:text-brand-soft'"
+                aria-hidden="true">
+                <svg [lucideIcon]="option.icon" [size]="20" class="fill-none stroke-current"></svg>
               </span>
               <span class="min-w-0">
                 <span class="block text-base font-bold text-ink">{{ option.title }}</span>
-                <span class="mt-1 block text-sm text-ink-muted">If this is you, kindly select and proceed</span>
+                <span class="mt-1 block text-sm text-ink-muted">{{ option.description }}</span>
               </span>
             </button>
           }
         </div>
 
         <button
+          appAnimateOnScroll
+          [style.--index]="roleOptions.length + 2"
           type="button"
           [disabled]="!selectedRole()"
           [attr.aria-disabled]="!selectedRole() ? 'true' : null"
@@ -73,8 +79,8 @@ export class IdentificationComponent {
   @ViewChildren('roleButton') private readonly roleButtons!: QueryList<ElementRef<HTMLButtonElement>>;
 
   readonly roleOptions: readonly RoleOption[] = [
-    { value: 'specialist', title: 'Wellness Specialist', icon: 'specialist' },
-    { value: 'user', title: 'User', icon: 'user' },
+    { value: 'specialist', title: 'Wellness Specialist', description: 'I offer therapy or counselling sessions', icon: 'stethoscope' },
+    { value: 'user', title: 'User', description: 'I am here for my own wellbeing', icon: 'user' },
   ];
   readonly selectedRole = signal<AuthRole | null>(null);
   readonly focusedIndex = signal(0);

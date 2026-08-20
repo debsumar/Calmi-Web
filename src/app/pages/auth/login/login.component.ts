@@ -4,11 +4,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '@/core/services/auth.service';
 import { safeReturnUrl } from '@/core/routing/safe-return-url';
 import { AuthSplitCardComponent } from '@/shared/components/auth-split-card/auth-split-card.component';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-buttons/social-auth-buttons.component';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, AuthSplitCardComponent, SocialAuthButtonsComponent],
+  imports: [ReactiveFormsModule, RouterLink, AuthSplitCardComponent, AnimateOnScrollDirective, SocialAuthButtonsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-auth-split-card
@@ -16,14 +17,14 @@ import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-butt
       imageAlt="Two people seated calmly together in meditation"
       imageSide="right">
       <div class="mx-auto flex w-full max-w-md flex-col">
-        <h1 class="text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">Welcome Back!</h1>
-        <p class="mt-3 text-base leading-relaxed text-ink-soft">Ready to continue your healing journey?</p>
+        <h1 appAnimateOnScroll style="--index:0" class="text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">Welcome Back!</h1>
+        <p appAnimateOnScroll style="--index:1" class="mt-3 text-base leading-relaxed text-ink-soft">Ready to continue your healing journey?</p>
 
         @if (errorMessage()) {
-          <div class="mt-6 rounded-xl border border-danger bg-surface px-4 py-3 text-sm text-danger" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
+          <div appAnimateOnScroll style="--index:2" class="mt-6 rounded-xl border border-danger bg-surface px-4 py-3 text-sm text-danger" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
         }
 
-        <form class="mt-8 space-y-5" [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
+        <form appAnimateOnScroll style="--index:3" class="mt-8 space-y-5" [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
           <div>
             <label for="login-email" class="mb-2 block text-sm font-semibold text-ink">Email</label>
             <input id="login-email" type="email" autocomplete="email" formControlName="email" aria-describedby="login-email-error" [attr.aria-invalid]="loginForm.controls.email.touched && loginForm.controls.email.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus:ring-2 focus:ring-brand/20" />
@@ -60,9 +61,9 @@ import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-butt
           </button>
         </form>
 
-        <app-social-auth-buttons [disabled]="pending()" (failed)="errorMessage.set($event)"></app-social-auth-buttons>
+        <app-social-auth-buttons appAnimateOnScroll style="--index:4" [disabled]="pending()" (failed)="errorMessage.set($event)"></app-social-auth-buttons>
 
-        <p class="mt-8 text-center text-sm text-ink-soft">Don’t have an account? <a routerLink="/auth/signup" class="font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Sign up</a></p>
+        <p appAnimateOnScroll style="--index:5" class="mt-8 text-center text-sm text-ink-soft">Don’t have an account? <a routerLink="/auth/signup" class="font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Sign up</a></p>
       </div>
     </app-auth-split-card>
   `,

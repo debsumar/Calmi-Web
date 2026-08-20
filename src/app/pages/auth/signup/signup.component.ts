@@ -4,11 +4,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { safeReturnUrl } from '@/core/routing/safe-return-url';
 import { AuthService } from '@/core/services/auth.service';
 import { AuthSplitCardComponent } from '@/shared/components/auth-split-card/auth-split-card.component';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-buttons/social-auth-buttons.component';
 
 @Component({
   selector: 'app-signup',
-  imports: [ReactiveFormsModule, RouterLink, AuthSplitCardComponent, SocialAuthButtonsComponent],
+  imports: [ReactiveFormsModule, RouterLink, AuthSplitCardComponent, AnimateOnScrollDirective, SocialAuthButtonsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-auth-split-card
@@ -18,17 +19,17 @@ import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-butt
       <div class="mx-auto flex w-full max-w-md flex-col">
 
         @if (successMessage()) {
-          <div class="mt-6 rounded-xl border border-brand bg-brand-soft/10 px-4 py-3 text-sm text-brand-deep" role="status" aria-live="polite">{{ successMessage() }}</div>
+          <div appAnimateOnScroll style="--index:0" class="mt-6 rounded-xl border border-brand bg-brand-soft/10 px-4 py-3 text-sm text-brand-deep" role="status" aria-live="polite">{{ successMessage() }}</div>
         }
 
-        <h1 class="text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">Join Calmi Today!</h1>
-        <p class="mt-3 text-base leading-relaxed text-ink-soft">Together, let’s build a supportive wellness community.</p>
+        <h1 appAnimateOnScroll style="--index:1" class="text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">Join Calmi Today!</h1>
+        <p appAnimateOnScroll style="--index:2" class="mt-3 text-base leading-relaxed text-ink-soft">Together, let’s build a supportive wellness community.</p>
 
         @if (errorMessage()) {
-          <div class="mt-6 rounded-xl border border-danger bg-surface px-4 py-3 text-sm text-danger" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
+          <div appAnimateOnScroll style="--index:3" class="mt-6 rounded-xl border border-danger bg-surface px-4 py-3 text-sm text-danger" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
         }
 
-        <form class="mt-8 space-y-5" [formGroup]="signupForm" (ngSubmit)="submit()" novalidate>
+        <form appAnimateOnScroll style="--index:4" class="mt-8 space-y-5" [formGroup]="signupForm" (ngSubmit)="submit()" novalidate>
           <div>
             <label for="signup-name" class="mb-2 block text-sm font-semibold text-ink">Full Name</label>
             <input id="signup-name" type="text" autocomplete="name" formControlName="fullName" aria-describedby="signup-name-error" [attr.aria-invalid]="signupForm.controls.fullName.touched && signupForm.controls.fullName.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus:ring-2 focus:ring-brand/20" />
@@ -69,9 +70,9 @@ import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-butt
           </button>
         </form>
 
-        <app-social-auth-buttons [disabled]="pending()" (failed)="errorMessage.set($event)"></app-social-auth-buttons>
+        <app-social-auth-buttons appAnimateOnScroll style="--index:5" [disabled]="pending()" (failed)="errorMessage.set($event)"></app-social-auth-buttons>
 
-        <p class="mt-8 text-center text-sm text-ink-soft">Already have an account? <a routerLink="/auth/login" class="font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Login here</a></p>
+        <p appAnimateOnScroll style="--index:6" class="mt-8 text-center text-sm text-ink-soft">Already have an account? <a routerLink="/auth/login" class="font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Login here</a></p>
       </div>
     </app-auth-split-card>
   `,

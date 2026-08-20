@@ -3,10 +3,11 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@/core/services/auth.service';
 import { AuthSplitCardComponent } from '@/shared/components/auth-split-card/auth-split-card.component';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [ReactiveFormsModule, RouterLink, AuthSplitCardComponent],
+  imports: [ReactiveFormsModule, RouterLink, AuthSplitCardComponent, AnimateOnScrollDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-auth-split-card
@@ -14,14 +15,14 @@ import { AuthSplitCardComponent } from '@/shared/components/auth-split-card/auth
       imageAlt="Person sitting calmly with their head in their hand"
       imageSide="left">
       <div class="mx-auto flex w-full max-w-md flex-col">
-        <h1 class="text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">Trouble Logging In?</h1>
-        <p class="mt-3 text-base leading-relaxed text-ink-soft">Just enter your details and we’ll guide you back in.</p>
+        <h1 appAnimateOnScroll style="--index:0" class="text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">Trouble Logging In?</h1>
+        <p appAnimateOnScroll style="--index:1" class="mt-3 text-base leading-relaxed text-ink-soft">Just enter your details and we’ll guide you back in.</p>
 
         @if (confirmationMessage()) {
-          <div class="mt-6 rounded-xl border border-brand bg-brand-soft/10 px-4 py-3 text-sm text-brand-deep" role="status" aria-live="polite">{{ confirmationMessage() }}</div>
+          <div appAnimateOnScroll style="--index:2" class="mt-6 rounded-xl border border-brand bg-brand-soft/10 px-4 py-3 text-sm text-brand-deep" role="status" aria-live="polite">{{ confirmationMessage() }}</div>
         }
 
-        <form class="mt-8 space-y-5" [formGroup]="forgotForm" (ngSubmit)="submit()" novalidate>
+        <form appAnimateOnScroll style="--index:3" class="mt-8 space-y-5" [formGroup]="forgotForm" (ngSubmit)="submit()" novalidate>
           <div>
             <label for="forgot-email" class="sr-only">Email</label>
             <input id="forgot-email" type="email" autocomplete="email" placeholder="Email" formControlName="email" aria-label="Email" aria-describedby="forgot-email-error" [attr.aria-invalid]="forgotForm.controls.email.touched && forgotForm.controls.email.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus:ring-2 focus:ring-brand/20" />
@@ -35,7 +36,7 @@ import { AuthSplitCardComponent } from '@/shared/components/auth-split-card/auth
           </button>
         </form>
 
-        <p class="mt-8 text-center text-sm text-ink-soft"><a routerLink="/auth/login" class="font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Back to Login</a></p>
+        <p appAnimateOnScroll style="--index:4" class="mt-8 text-center text-sm text-ink-soft"><a routerLink="/auth/login" class="font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Back to Login</a></p>
       </div>
     </app-auth-split-card>
   `,
