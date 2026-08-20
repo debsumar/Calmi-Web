@@ -1,13 +1,12 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AppTopbar } from './app.topbar';
-import { LoginDialogComponent } from '@/shared/components/login-dialog/login-dialog.component';
 import { ChatWidgetComponent } from '@/features/chat/chat-widget.component';
 import { ScrollPositionService } from '@/core/services/scroll-position.service';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet, AppTopbar, LoginDialogComponent, ChatWidgetComponent],
+  imports: [RouterOutlet, AppTopbar, ChatWidgetComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div id="calmi-app-shell" class="min-h-screen flex flex-col bg-canvas">
@@ -17,7 +16,6 @@ import { ScrollPositionService } from '@/core/services/scroll-position.service';
       </main>
     </div>
     <app-chat-widget />
-    <app-login-dialog />
   `,
 })
 export class AppLayout {
