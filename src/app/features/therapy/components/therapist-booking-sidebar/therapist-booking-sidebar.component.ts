@@ -14,6 +14,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { LucideCircleAlert, LucideLock } from '@lucide/angular';
 import {
   AvailabilityState,
+  Therapist,
   TherapistAvailabilityDay,
 } from '@/features/therapy/data/therapist.data';
 
@@ -137,6 +138,43 @@ type DateMeta = { day: number; month: number; year: number };
       </div>
     </aside>
 
+    @if (reviewOpen()) {
+      <!-- Confirmation step: nothing is booked until the user approves these
+           details, so this dialog has explicit actions and no auto-dismiss. -->
+      <div #reviewBackdrop class="fixed inset-0 z-50 grid place-items-center bg-scrim p-4" (click)="cancelReview()">
+        <div #review role="dialog" aria-modal="true" aria-labelledby="booking-review-title"
+             tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="cancelReview()"
+             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-elevated/10 p-8 shadow-2xl backdrop-blur-sm dark:border-white/10">
+          <h3 id="booking-review-title" class="dialog-stagger-item text-center font-sans text-2xl font-bold text-white" style="--index: 0">
+            Confirm your booking?
+          </h3>
+          <p class="dialog-stagger-item mt-2 text-center text-sm tracking-wide text-white/80" style="--index: 1">
+            Please check these details before we reserve your slot.
+          </p>
+
+          <dl class="dialog-stagger-item mt-6 space-y-2 rounded-xl border border-white/20 bg-white/10 p-4 text-sm text-white dark:border-white/10" style="--index: 2">
+            @for (row of reviewRows(); track row.label) {
+              <div class="flex items-baseline justify-between gap-4">
+                <dt class="text-white/70">{{ row.label }}</dt>
+                <dd class="min-w-0 text-right font-semibold break-words">{{ row.value }}</dd>
+              </div>
+            }
+          </dl>
+
+          <div class="dialog-stagger-item mt-6 flex gap-3" style="--index: 3">
+            <button type="button" (click)="cancelReview()"
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-white/30 bg-white/10 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+              Go back
+            </button>
+            <button #confirmBookingButton type="button" (click)="confirmBooking()"
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+              Yes, book it
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
     @if (bookingSaved()) {
       <!-- Centred confirmation. Focus moves to the dialog and returns to the
            submit button on close; Escape, a backdrop click, or the short
@@ -192,7 +230,8 @@ type DateMeta = { day: number; month: number; year: number };
   `,
 })
 export class TherapistBookingSidebarComponent {
-  readonly availability = input.required<TherapistAvailabilityDay[]>();
+  readonly therapist = input.required<Therapist>();
+  readonly availability = computed(() => this.therapist().availability);
   readonly today = this.startOfDay(new Date());
   readonly selectedDate = signal<Date | null>(null);
   readonly selectedSlot = signal<string | null>(null);
@@ -200,6 +239,7 @@ export class TherapistBookingSidebarComponent {
   readonly phone = signal('');
   readonly message = signal('');
   readonly submitAttempted = signal(false);
+  readonly reviewOpen = signal(false);
   readonly bookingSaved = signal(false);
 
   readonly minDate = computed(() => this.today);
@@ -228,9 +268,24 @@ export class TherapistBookingSidebarComponent {
     const day = date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
     return slot ? `${day} at ${slot.label}` : day;
   });
+  readonly reviewRows = computed(() => {
+    const profile = this.therapist();
+    return [
+      { label: 'Therapist', value: profile.name },
+      { label: 'When', value: this.confirmationSummary() },
+      { label: 'Duration', value: profile.duration },
+      { label: 'Mode', value: profile.sessionMode },
+      { label: 'Session fee', value: `₹${profile.price}` },
+      { label: 'Name', value: this.name().trim() },
+      { label: 'Phone', value: this.phone().trim() },
+    ];
+  });
 
   private readonly confirmationEl = viewChild<ElementRef<HTMLElement>>('confirmation');
   private readonly backdropEl = viewChild<ElementRef<HTMLElement>>('backdrop');
+  private readonly reviewEl = viewChild<ElementRef<HTMLElement>>('review');
+  private readonly reviewBackdropEl = viewChild<ElementRef<HTMLElement>>('reviewBackdrop');
+  private readonly confirmBookingButton = viewChild<ElementRef<HTMLButtonElement>>('confirmBookingButton');
   private readonly submitButton = viewChild<ElementRef<HTMLButtonElement>>('submitButton');
   private closing = false;
   private dismissTimer: ReturnType<typeof setTimeout> | undefined;
@@ -290,23 +345,22 @@ export class TherapistBookingSidebarComponent {
     });
 
     afterRenderEffect(() => {
+      if (this.reviewOpen()) {
+        const panel = this.reviewEl()?.nativeElement;
+        this.animateIn(panel, this.reviewBackdropEl()?.nativeElement);
+        // Focus the affirmative action so keyboard users can confirm directly.
+        (this.confirmBookingButton()?.nativeElement ?? panel)?.focus();
+      }
+    });
+
+    afterRenderEffect(() => {
       if (!this.bookingSaved()) {
         return;
       }
 
       const panel = this.confirmationEl()?.nativeElement;
       panel?.focus();
-
-      if (panel && typeof panel.animate === 'function' && !this.prefersReducedMotion()) {
-        this.backdropEl()?.nativeElement.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: 'ease-out' });
-        panel.animate(
-          [
-            { opacity: 0, transform: 'scale(0.94) translateY(8px)' },
-            { opacity: 1, transform: 'scale(1) translateY(0)' },
-          ],
-          { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
-        );
-      }
+      this.animateIn(panel, this.backdropEl()?.nativeElement);
 
       // No dismiss button by design: it closes itself shortly after landing,
       // and Escape or a backdrop click closes it sooner.
@@ -340,8 +394,24 @@ export class TherapistBookingSidebarComponent {
       this.bookingSaved.set(false);
       return;
     }
-    // TODO: future authenticated endpoint, explicit consent/retention review, server-side field validation, and server-authoritative availability recheck.
-    this.bookingSaved.set(true);
+    // Nothing is booked yet: the user reviews the details first.
+    this.reviewOpen.set(true);
+  }
+
+  /** Approves the reviewed details and shows the success dialog. */
+  confirmBooking(): void {
+    this.animateOut(this.reviewEl()?.nativeElement, this.reviewBackdropEl()?.nativeElement, () => {
+      this.reviewOpen.set(false);
+      // TODO: future authenticated endpoint, explicit consent/retention review, server-side field validation, and server-authoritative availability recheck. Only show success once the server confirms.
+      this.bookingSaved.set(true);
+    });
+  }
+
+  cancelReview(): void {
+    this.animateOut(this.reviewEl()?.nativeElement, this.reviewBackdropEl()?.nativeElement, () => {
+      this.reviewOpen.set(false);
+      this.submitButton()?.nativeElement.focus();
+    });
   }
 
   closeConfirmation(): void {
@@ -362,18 +432,31 @@ export class TherapistBookingSidebarComponent {
       this.dismissTimer = undefined;
     }
 
-    const panel = this.confirmationEl()?.nativeElement;
-    const backdrop = this.backdropEl()?.nativeElement;
-    const finish = () => {
+    this.animateOut(this.confirmationEl()?.nativeElement, this.backdropEl()?.nativeElement, () => {
       this.closing = false;
       this.closeConfirmation();
-    };
+    });
+  }
 
+  private animateIn(panel: HTMLElement | undefined, backdrop: HTMLElement | undefined): void {
     if (!panel || typeof panel.animate !== 'function' || this.prefersReducedMotion()) {
-      finish();
       return;
     }
+    backdrop?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: 'ease-out' });
+    panel.animate(
+      [
+        { opacity: 0, transform: 'scale(0.94) translateY(8px)' },
+        { opacity: 1, transform: 'scale(1) translateY(0)' },
+      ],
+      { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+    );
+  }
 
+  private animateOut(panel: HTMLElement | undefined, backdrop: HTMLElement | undefined, done: () => void): void {
+    if (!panel || typeof panel.animate !== 'function' || this.prefersReducedMotion()) {
+      done();
+      return;
+    }
     backdrop?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, easing: 'ease-in', fill: 'both' });
     panel
       .animate(
@@ -383,7 +466,7 @@ export class TherapistBookingSidebarComponent {
         ],
         { duration: 180, easing: 'ease-in', fill: 'both' },
       )
-      .addEventListener('finish', finish, { once: true });
+      .addEventListener('finish', done, { once: true });
   }
 
   private prefersReducedMotion(): boolean {

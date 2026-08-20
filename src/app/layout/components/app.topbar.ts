@@ -28,7 +28,7 @@ const RIPPLE_DURATION_MS = 420;
   imports: [RouterLink, RouterLinkActive, LucideDynamicIcon],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <header class="h-16 flex items-center justify-between px-4 md:px-8 bg-glass backdrop-blur-md border-b border-gray-100 dark:border-white/5">
+    <header class="h-16 flex items-center justify-between px-4 md:px-8 bg-glass backdrop-blur-md border-b border-hairline">
       <a routerLink="/" class="flex items-center">
         <img src="assets/logo.avif" alt="Calmi" class="h-8 md:h-10">
       </a>
@@ -39,7 +39,7 @@ const RIPPLE_DURATION_MS = 420;
           <a [routerLink]="link.path" routerLinkActive="text-brand dark:text-brand-light"
              ariaCurrentWhenActive="page"
              [attr.data-nav-path]="link.path"
-             class="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-brand pb-1 transition-colors duration-200">
+             class="text-sm font-semibold text-ink-soft hover:text-brand pb-1 transition-colors duration-200">
             {{ link.label }}
           </a>
         }
@@ -51,14 +51,14 @@ const RIPPLE_DURATION_MS = 420;
       </nav>
 
       <div class="flex items-center gap-3">
-        <div class="hidden md:block w-px h-5 bg-gray-200 dark:bg-white/10"></div>
+        <div class="hidden md:block w-px h-5 bg-hairline"></div>
         <button (click)="themeService.toggle()"
-                class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
+                class="w-9 h-9 flex items-center justify-center rounded-full text-ink hover:bg-sunken"
                 [title]="'Theme: ' + themeService.mode()">
           @switch (themeService.mode()) {
-            @case ('light') { <svg [lucideIcon]="'moon'" [size]="20" class="text-gray-900 dark:text-gray-100"></svg> }
-            @case ('dark') { <svg [lucideIcon]="'sun'" [size]="20" class="text-gray-900 dark:text-gray-100"></svg> }
-            @case ('auto') { <span aria-hidden="true" class="w-5 h-5 flex items-center justify-center text-base font-bold leading-none text-gray-900 dark:text-gray-100">A</span> }
+            @case ('light') { <svg [lucideIcon]="'moon'" [size]="20" class="text-ink"></svg> }
+            @case ('dark') { <svg [lucideIcon]="'sun'" [size]="20" class="text-ink"></svg> }
+            @case ('auto') { <span aria-hidden="true" class="w-5 h-5 flex items-center justify-center text-base font-bold leading-none text-ink">A</span> }
           }
         </button>
 
@@ -66,7 +66,7 @@ const RIPPLE_DURATION_MS = 420;
           <div class="relative">
             <!-- Profile Trigger -->
             <button (click)="dropdownOpen.set(!dropdownOpen())" 
-                    class="w-9 h-9 flex items-center justify-center rounded-full overflow-hidden border border-gray-200 dark:border-white/10 hover:ring-2 hover:ring-brand/50 transition-all">
+                    class="w-9 h-9 flex items-center justify-center rounded-full overflow-hidden border border-hairline hover:ring-2 hover:ring-brand/50 transition-all">
               @if (user.user_metadata['avatar_url']) {
                 <img [src]="user.user_metadata['avatar_url']" alt="Avatar" class="w-full h-full object-cover">
               } @else {
@@ -81,17 +81,17 @@ const RIPPLE_DURATION_MS = 420;
               <!-- Click outside overlay to close -->
               <div class="fixed inset-0 z-10" (click)="dropdownOpen.set(false)"></div>
               
-              <div class="absolute right-0 mt-2 w-56 rounded-xl bg-elevated border border-gray-100 dark:border-white/5 p-2 shadow-xl z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div class="px-3 py-2 border-b border-gray-100 dark:border-white/5 mb-1">
-                  <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+              <div class="absolute right-0 mt-2 w-56 rounded-xl bg-elevated border border-hairline p-2 shadow-xl z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div class="px-3 py-2 border-b border-hairline mb-1">
+                  <p class="text-sm font-semibold text-ink truncate">
                     {{ user.user_metadata['full_name'] || 'User' }}
                   </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  <p class="text-xs text-ink-muted truncate">
                     {{ user.email }}
                   </p>
                 </div>
                 <button (click)="logout()" 
-                        class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors text-left">
+                        class="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-sunken rounded-lg transition-colors text-left">
                   <svg [lucideIcon]="'log-out'" [size]="16"></svg>
                   Logout
                 </button>
@@ -99,27 +99,48 @@ const RIPPLE_DURATION_MS = 420;
             }
           </div>
         } @else {
-          <button (click)="authService.openLogin()" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:scale-105 transition-all">
-            <svg [lucideIcon]="'user'" [size]="16"></svg>
-          </button>
+          <a routerLink="/auth/identify"
+             class="inline-flex items-center gap-2 rounded-full bg-brand-deep px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            <svg [lucideIcon]="'user'" [size]="16" aria-hidden="true"></svg>
+            Sign In
+          </a>
         }
 
         <!-- Mobile hamburger -->
-        <button (click)="mobileMenuOpen.set(!mobileMenuOpen())" class="md:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10">
-          <svg [lucideIcon]="mobileMenuOpen() ? 'x' : 'menu'" [size]="22" class="text-gray-900 dark:text-gray-100"></svg>
+        <button (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+                [attr.aria-label]="mobileMenuOpen() ? 'Close navigation menu' : 'Open navigation menu'"
+                [attr.aria-expanded]="mobileMenuOpen()"
+                aria-controls="mobile-menu"
+                class="md:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-sunken">
+          <svg [lucideIcon]="mobileMenuOpen() ? 'x' : 'menu'" [size]="22" class="text-ink"></svg>
         </button>
       </div>
     </header>
 
     <!-- Mobile menu overlay -->
     @if (mobileMenuOpen()) {
-      <div class="md:hidden fixed inset-0 top-16 z-40 bg-canvas p-6 flex flex-col gap-4 stagger-enter" style="--index:0">
+      <div id="mobile-menu" class="md:hidden fixed inset-0 top-16 z-40 bg-canvas p-6 flex flex-col gap-4 stagger-enter" style="--index:0">
         @for (link of navLinks(); track link.path; let i = $index) {
           <a [routerLink]="link.path" routerLinkActive="text-brand font-bold"
              (click)="mobileMenuOpen.set(false)"
-             class="stagger-enter text-lg font-semibold text-gray-800 dark:text-gray-200 hover:text-brand py-2 border-b border-gray-100 dark:border-white/10"
+             class="stagger-enter text-lg font-semibold text-ink hover:text-brand py-2 border-b border-hairline"
              [style.--index]="i + 1">
             {{ link.label }}
+          </a>
+        }
+        @if (authService.currentUser()) {
+          <button type="button" (click)="logout(); mobileMenuOpen.set(false)"
+                  class="stagger-enter mt-2 inline-flex items-center justify-center gap-2 rounded-full border border-hairline px-4 py-3 text-base font-semibold text-danger hover:bg-sunken"
+                  [style.--index]="navLinks().length + 1">
+            <svg [lucideIcon]="'log-out'" [size]="18" aria-hidden="true"></svg>
+            Logout
+          </button>
+        } @else {
+          <a routerLink="/auth/identify" (click)="mobileMenuOpen.set(false)"
+             class="stagger-enter mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-brand-deep px-4 py-3 text-base font-semibold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+             [style.--index]="navLinks().length + 1">
+            <svg [lucideIcon]="'user'" [size]="18" aria-hidden="true"></svg>
+            Sign In
           </a>
         }
       </div>
@@ -183,7 +204,7 @@ export class AppTopbar {
   }
 
   logout(): void {
-    this.authService.signOut();
+    void this.authService.logout().catch(() => undefined);
     this.dropdownOpen.set(false);
   }
 

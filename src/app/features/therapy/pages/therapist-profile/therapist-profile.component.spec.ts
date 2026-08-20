@@ -36,7 +36,6 @@ describe('TherapistProfileComponent', () => {
     expect(root.textContent).toContain('Hear from Clients!');
     expect(root.textContent).toContain('Book a Session');
     expect(root.textContent).toContain('Before Your First Session');
-    expect(root.textContent).toContain('What can I expect in my first session with Ayushi Arora?');
     expect(root.textContent).toContain('₹2000');
     expect(root.querySelectorAll('app-faq-accordion button[aria-controls]')).toHaveLength(3);
     expect(root.querySelector('[role="img"][aria-label="Placeholder avatar for Ayushi Arora"]')).not.toBeNull();

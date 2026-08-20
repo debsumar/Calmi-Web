@@ -13,7 +13,7 @@ describe('TherapistBookingSidebarComponent', () => {
     await TestBed.configureTestingModule({ imports: [TherapistBookingSidebarComponent] }).compileComponents();
     fixture = TestBed.createComponent(TherapistBookingSidebarComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('availability', THERAPISTS[0].availability);
+    fixture.componentRef.setInput('therapist', THERAPISTS[0]);
     fixture.detectChanges();
   });
 
@@ -73,6 +73,20 @@ describe('TherapistBookingSidebarComponent', () => {
     expect(component.formValid()).toBe(true);
     component.submitBooking(new Event('submit'));
     fixture.detectChanges();
+
+    // Step 1: nothing is booked yet, the details are shown for approval.
+    expect(component.reviewOpen()).toBe(true);
+    expect(component.bookingSaved()).toBe(false);
+    const review = fixture.nativeElement.querySelector('[role="dialog"][aria-modal="true"]') as HTMLElement;
+    expect(review.textContent).toContain('Confirm your booking?');
+    expect(review.textContent).toContain(THERAPISTS[0].name);
+    expect(review.textContent).toContain(`₹${THERAPISTS[0].price}`);
+    expect(review.querySelectorAll('button')).toHaveLength(2);
+
+    // Step 2: approving shows the success dialog.
+    component.confirmBooking();
+    fixture.detectChanges();
+    expect(component.reviewOpen()).toBe(false);
     expect(component.bookingSaved()).toBe(true);
     const dialog = fixture.nativeElement.querySelector('[role="dialog"][aria-modal="true"]') as HTMLElement;
     expect(dialog).not.toBeNull();
@@ -85,8 +99,21 @@ describe('TherapistBookingSidebarComponent', () => {
     fixture.detectChanges();
     expect(component.bookingSaved()).toBe(false);
     expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
-    const successIcon = fixture.nativeElement.querySelector('svg[lucideCircleCheck]');
-    expect(successIcon?.getAttribute('aria-hidden')).toBe('true');
-    expect(successIcon?.querySelector('path, line, circle, polyline, rect')).not.toBeNull();
+  });
+
+  it('cancels the review without booking', () => {
+    const first = THERAPISTS[0].availability.find((day) => day.state === 'available' && day.slots.length > 0);
+    component.name.set('Asha Rao');
+    component.phone.set('+919876543210');
+    component.onDateSelected(first ? new Date(`${first.date.slice(0, 4)}-${first.date.slice(5, 7)}-${first.date.slice(8, 10)}T00:00:00`) : null);
+    component.selectSlot(first?.slots[0]?.id ?? '');
+    component.submitBooking(new Event('submit'));
+    fixture.detectChanges();
+    expect(component.reviewOpen()).toBe(true);
+
+    component.cancelReview();
+    fixture.detectChanges();
+    expect(component.reviewOpen()).toBe(false);
+    expect(component.bookingSaved()).toBe(false);
   });
 });

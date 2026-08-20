@@ -1,7 +1,12 @@
 import { Routes } from '@angular/router';
+import { LegalPageComponent } from './pages/legal/legal-page.component';
 
 export const appRoutes: Routes = [
+  { path: 'terms', component: LegalPageComponent, data: { title: 'Terms of Service' } },
+  { path: 'privacy', component: LegalPageComponent, data: { title: 'Privacy Policy' } },
   {
+    // Browsing is public. Apply `authGuard` (core/guards/auth.guard.ts) per-route when a
+    // feature actually needs a signed-in user; the topbar CTA drives sign-in otherwise.
     path: '',
     loadComponent: () => import('@/layout/components/app.layout').then((m) => m.AppLayout),
     children: [
@@ -35,6 +40,9 @@ export const appRoutes: Routes = [
       { path: 'notfound', loadComponent: () => import('@/pages/notfound/notfound.component').then((m) => m.NotFoundComponent) },
     ],
   },
-  { path: 'auth', loadChildren: () => import('@/pages/auth/auth.routes').then((m) => m.authRoutes) },
+  {
+    path: 'auth',
+    loadChildren: () => import('@/pages/auth/auth.routes').then((m) => m.authRoutes),
+  },
   { path: '**', redirectTo: '/notfound' },
 ];

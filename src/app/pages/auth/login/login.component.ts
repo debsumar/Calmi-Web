@@ -1,42 +1,104 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '@/core/services/auth.service';
-import { Router } from '@angular/router';
+import { safeReturnUrl } from '@/core/routing/safe-return-url';
+import { AuthSplitCardComponent } from '@/shared/components/auth-split-card/auth-split-card.component';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
+import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-buttons/social-auth-buttons.component';
 
 @Component({
   selector: 'app-login',
-  imports: [],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [ReactiveFormsModule, RouterLink, AuthSplitCardComponent, AnimateOnScrollDirective, SocialAuthButtonsComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex items-center justify-center min-h-screen bg-canvas px-4">
-      <div class="p-8 w-full max-w-md bg-elevated border border-gray-100 dark:border-white/5 rounded-2xl shadow-xl">
-        <!-- Logo -->
-        <div class="flex justify-center mb-6">
-          <img src="assets/logo.avif" alt="Calmi" class="h-16 logo-pulse">
-        </div>
+    <app-auth-split-card
+      imageSrc="/assets/meditation.svg"
+      imageAlt="Two people seated calmly together in meditation"
+      imageSide="right">
+      <div class="mx-auto flex w-full max-w-md flex-col">
+        <h1 appAnimateOnScroll style="--index:0" class="text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">Welcome Back!</h1>
+        <p appAnimateOnScroll style="--index:1" class="mt-3 text-base leading-relaxed text-ink-soft">Ready to continue your healing journey?</p>
 
-        <!-- Heading -->
-        <h2 class="text-2xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">Welcome back</h2>
-        <p class="text-center text-gray-500 dark:text-gray-400 text-sm mb-8">Rejoin your space of calm</p>
+        @if (errorMessage()) {
+          <div appAnimateOnScroll style="--index:2" class="mt-6 rounded-xl border border-danger bg-surface px-4 py-3 text-sm text-danger" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
+        }
 
-        <!-- Google Sign In -->
-        <button (click)="onGoogleLogin()" class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 transition-all text-gray-700 dark:text-gray-100 font-semibold text-sm">
-          <!-- Google brand colors: sanctioned third-party vendor-mark exception; keep exact. -->
-          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-          Continue with Google
-        </button>
+        <form appAnimateOnScroll style="--index:3" class="mt-8 space-y-5" [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
+          <div>
+            <label for="login-email" class="mb-2 block text-sm font-semibold text-ink">Email</label>
+            <input id="login-email" type="email" autocomplete="email" formControlName="email" aria-describedby="login-email-error" [attr.aria-invalid]="loginForm.controls.email.touched && loginForm.controls.email.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus:ring-2 focus:ring-brand/20" />
+            <div id="login-email-error" class="mt-1 text-sm text-danger" aria-live="polite">
+              @if (loginForm.controls.email.touched && loginForm.controls.email.hasError('required')) { Email is required. }
+              @else if (loginForm.controls.email.touched && loginForm.controls.email.hasError('email')) { Enter a valid email address. }
+            </div>
+          </div>
+
+          <div>
+            <label for="login-password" class="mb-2 block text-sm font-semibold text-ink">Password</label>
+            <div class="relative">
+              <input id="login-password" [type]="showPassword() ? 'text' : 'password'" autocomplete="current-password" formControlName="password" aria-describedby="login-password-error" [attr.aria-invalid]="loginForm.controls.password.touched && loginForm.controls.password.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 pr-12 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus:ring-2 focus:ring-brand/20" />
+              <button type="button" class="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'" [attr.aria-pressed]="showPassword()" (click)="showPassword.update((visible) => !visible)">
+                @if (showPassword()) {
+                  <svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8" aria-hidden="true"><path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 5.2A10.7 10.7 0 0 1 12 5c5.2 0 8.7 4.4 9.8 7-.4 1-1.3 2.4-2.6 3.6M6.6 6.6C4.7 7.8 3.4 9.7 2.2 12c1.1 2.6 4.6 7 9.8 7 1.1 0 2.1-.2 3-.5"/></svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8" aria-hidden="true"><path d="M2.2 12c1.1-2.6 4.6-7 9.8-7s8.7 4.4 9.8 7c-1.1 2.6-4.6 7-9.8 7S3.3 14.6 2.2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                }
+              </button>
+            </div>
+            <div id="login-password-error" class="mt-1 text-sm text-danger" aria-live="polite">
+              @if (loginForm.controls.password.touched && loginForm.controls.password.hasError('required')) { Password is required. }
+              @else if (loginForm.controls.password.touched && loginForm.controls.password.hasError('minlength')) { Password must be at least 8 characters. }
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <a routerLink="/auth/forgot" class="text-sm font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Forgot Password?</a>
+          </div>
+
+          <button type="submit" [disabled]="loginForm.invalid || pending()" [attr.aria-busy]="pending()" class="flex w-full items-center justify-center gap-3 rounded-full bg-brand-deep px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-muted">
+            @if (pending()) { <span class="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true"></span><span>Signing in...</span> } @else { <span>Proceed</span><span class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-current" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current" stroke-width="2"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span> }
+          </button>
+        </form>
+
+        <app-social-auth-buttons appAnimateOnScroll style="--index:4" [disabled]="pending()" (failed)="errorMessage.set($event)"></app-social-auth-buttons>
+
+        <p appAnimateOnScroll style="--index:5" class="mt-8 text-center text-sm text-ink-soft">Don’t have an account? <a routerLink="/auth/signup" class="font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Sign up</a></p>
       </div>
-    </div>
+    </app-auth-split-card>
   `,
 })
 export class LoginComponent {
-  authService = inject(AuthService);
-  router = inject(Router);
+  readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly formBuilder = inject(NonNullableFormBuilder);
 
-  async onGoogleLogin(): Promise<void> {
+  readonly loginForm = this.formBuilder.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
+  });
+  readonly showPassword = signal(false);
+  readonly pending = signal(false);
+  readonly errorMessage = signal('');
+
+  async submit(): Promise<void> {
+    if (this.loginForm.invalid || this.pending()) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
+
+    this.pending.set(true);
+    this.errorMessage.set('');
+    const { email, password } = this.loginForm.getRawValue();
     try {
-      await this.authService.signInWithGoogle();
-    } catch (err) {
-      console.error('Google Sign-in failed', err);
+      await this.authService.login(email, password);
+      const returnUrl = safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl')) ?? '/home';
+      await this.router.navigateByUrl(returnUrl);
+    } catch {
+      this.errorMessage.set('We couldn’t sign you in. Check your email and password and try again.');
+    } finally {
+      this.pending.set(false);
     }
   }
 }
