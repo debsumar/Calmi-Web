@@ -90,9 +90,14 @@ const RIPPLE_DURATION_MS = 420;
                     {{ user.email }}
                   </p>
                 </div>
-                <button (click)="logout()" 
+                <button type="button" (click)="viewProfile()" aria-label="View Profile"
+                        class="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-sunken rounded-lg transition-colors text-left">
+                  <svg [lucideIcon]="'user-circle'" [size]="16" aria-hidden="true"></svg>
+                  View Profile
+                </button>
+                <button type="button" (click)="logout()" 
                         class="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-sunken rounded-lg transition-colors text-left">
-                  <svg [lucideIcon]="'log-out'" [size]="16"></svg>
+                  <svg [lucideIcon]="'log-out'" [size]="16" aria-hidden="true"></svg>
                   Logout
                 </button>
               </div>
@@ -201,6 +206,11 @@ export class AppTopbar {
   @HostListener('window:resize')
   onWindowResize(): void {
     this.moveIndicator(true);
+  }
+
+  viewProfile(): void {
+    this.dropdownOpen.set(false);
+    void this.router.navigate(['/profile']);
   }
 
   logout(): void {
