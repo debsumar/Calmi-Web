@@ -1,0 +1,230 @@
+<!-- Mockup only: static, no backend, data is fake. Four treatments of the Personal information / Credentials cards. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calmi profile - account detail card variations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--p-primary-200:#d2c6e0;--p-primary-300:#beadd2;--p-primary-400:#aa94c4;--p-primary-500:#967bb6;--p-primary-600:#80699b;--p-primary-700:#69567f;--p-success-700:#2e7d32;--p-danger-700:#c62828;--color-brand:var(--p-primary-500);--color-brand-light:var(--p-primary-300);--color-brand-dark:var(--p-primary-700);--color-brand-soft:var(--p-primary-400);--color-brand-deep:var(--p-primary-600);--canvas:color-mix(in srgb,var(--color-brand) 5%,white);--surface:#fff;--sunken:color-mix(in srgb,var(--color-brand) 10%,white);--sunken-alt:color-mix(in srgb,var(--color-brand) 15%,white);--hairline:color-mix(in srgb,var(--color-brand) 12%,white);--glass:color-mix(in srgb,white 60%,transparent);--ink:color-mix(in srgb,var(--color-brand) 10%,black);--ink-soft:color-mix(in srgb,var(--ink) 72%,white);--success:var(--p-success-700);--danger:var(--p-danger-700);--accent:var(--color-brand-deep);--shadow:0 4px 4px 0 rgb(0 0 0/.25);--font-sans:'Bricolage Grotesque',sans-serif}
+:root.app-dark{--canvas:color-mix(in srgb,var(--color-brand) 7%,black);--surface:color-mix(in srgb,var(--color-brand) 32%,black);--sunken:color-mix(in srgb,var(--color-brand) 19%,black);--sunken-alt:color-mix(in srgb,var(--color-brand) 13%,black);--hairline:color-mix(in srgb,var(--color-brand) 40%,black);--glass:color-mix(in srgb,var(--color-brand) 13%,black);--ink:color-mix(in srgb,var(--color-brand) 6%,white);--ink-soft:color-mix(in srgb,var(--color-brand) 18%,white);--success:#81c784;--danger:#ef9a9a;--accent:var(--color-brand-light);--shadow:0 4px 4px 0 rgb(0 0 0/.5)}
+*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font-sans);font-size:16px;line-height:1.5}
+button,a{font:inherit;color:inherit}a{text-decoration:none}:focus-visible{outline:3px solid var(--color-brand);outline-offset:3px}
+.topbar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;min-height:64px;padding:0 clamp(1rem,4vw,2rem);background:var(--glass);backdrop-filter:blur(14px);border-bottom:1px solid var(--hairline)}
+.logo{font-size:1.25rem;font-weight:800;letter-spacing:-.03em}
+.theme{background:var(--surface);border:1px solid var(--hairline);border-radius:999px;padding:.55rem .85rem;font-size:.875rem;font-weight:700;cursor:pointer}
+.shell{max-width:1180px;margin:auto;padding:2rem 1rem 5rem}
+.eyebrow{margin:0;color:var(--color-brand-dark);font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+:root.app-dark .eyebrow{color:var(--color-brand-light)}
+h1{font-size:clamp(2rem,5vw,2.75rem);line-height:1.1;letter-spacing:-.04em;margin:.25rem 0}
+h2{font-size:1.125rem;margin:0}h3{font-size:1rem;margin:0}
+.lede{margin:.25rem 0 0;color:var(--ink-soft);max-width:75ch}
+.tiny{font-size:.75rem;color:var(--ink-soft)}
+.note{margin:.35rem 0 .85rem;color:var(--ink-soft);font-size:.875rem;max-width:70ch}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem;margin-top:1.5rem}
+.variant{min-width:0}
+.variant>header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.25rem 1rem}
+.card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--hairline);border-radius:1.25rem;box-shadow:var(--shadow);padding:1.25rem;min-width:0;height:100%}
+.link{font-weight:700;color:var(--color-brand-dark);text-decoration:underline;text-underline-offset:4px}
+:root.app-dark .link{color:var(--color-brand-light)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.badge{display:inline-flex;align-items:center;gap:.3rem;border-radius:999px;background:var(--sunken);padding:.15rem .55rem;font-size:.6875rem;font-weight:700}
+.badge.ok{color:var(--success)}
+
+/* A - definition rows (currently implemented) */
+.rows{display:flex;flex:1;flex-direction:column;justify-content:space-between;margin:1.15rem 0 0}
+.rows>div{display:grid;grid-template-columns:9rem minmax(0,1fr);gap:1rem;padding:.7rem 0;border-top:1px solid var(--hairline)}
+.rows>div:first-child{border-top:0;padding-top:0}
+.rows dt{font-size:.75rem;font-weight:700;color:var(--ink-soft);margin:0}
+.rows dd{margin:0;word-break:break-word}
+
+/* B - two-column pairs */
+.pairs{display:grid;flex:1;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1.15rem}
+.pair{background:var(--sunken);border-radius:.9rem;padding:.8rem .9rem;min-width:0}
+.pair dt{margin:0;font-size:.6875rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
+.pair dd{margin:.2rem 0 0;font-weight:700;word-break:break-word}
+
+/* C - identity header plus chips */
+.identity{display:flex;align-items:center;gap:.9rem;margin-top:1.15rem;padding-bottom:1rem;border-bottom:1px solid var(--hairline)}
+.avatar{width:56px;height:56px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--color-brand-soft);color:#fff;font-weight:800;font-size:1.125rem}
+.identity b{display:block;font-size:1.125rem;letter-spacing:-.02em}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1rem}
+.chip{display:inline-flex;align-items:baseline;gap:.4rem;border:1px solid var(--hairline);border-radius:999px;background:var(--surface);padding:.3rem .7rem;font-size:.8125rem;min-width:0}
+.chip span{color:var(--ink-soft);font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.chip b{font-weight:700}
+
+/* D - editable list with per-row actions */
+.editable{display:flex;flex:1;flex-direction:column;gap:.5rem;margin-top:1.15rem}
+.erow{display:flex;align-items:center;gap:1rem;background:var(--sunken);border-radius:.9rem;padding:.75rem .9rem;min-width:0}
+.erow .body{min-width:0;flex:1}
+.erow dt{margin:0;font-size:.6875rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
+.erow dd{margin:.1rem 0 0;font-weight:700;word-break:break-word}
+.ghost{border:2px solid var(--color-brand);background:var(--surface);border-radius:999px;padding:.4rem .9rem;font-size:.8125rem;font-weight:700;min-height:36px;cursor:pointer;white-space:nowrap}
+:root.app-dark .ghost{border-color:var(--color-brand-light)}
+
+/* security list shared by the variants */
+.sec{display:flex;flex:1;flex-direction:column;justify-content:space-between;gap:.6rem;margin-top:1.15rem}
+.sec li{display:flex;align-items:center;gap:.75rem;background:var(--sunken);border-radius:.9rem;padding:.75rem .9rem;min-width:0;list-style:none}
+.sec .ico{width:20px;height:20px;flex:none;color:var(--accent)}
+.sec .ico svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sec .body{min-width:0;flex:1}
+.sec p{margin:.1rem 0 0;font-size:.8125rem;color:var(--ink-soft)}
+ul{padding:0;margin:0}
+@media(max-width:920px){.grid2{grid-template-columns:1fr}}
+@media(max-width:560px){.rows>div{grid-template-columns:1fr;gap:.15rem}.pairs{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="topbar"><span class="logo">calmi</span><button class="theme" type="button" aria-pressed="false">Theme</button></header>
+<main class="shell">
+  <header>
+    <p class="eyebrow">My space</p>
+    <h1>Account detail card variations</h1>
+    <p class="lede">Four treatments of the Personal information card, each paired with the matching Credentials and security card. No variant renders a secret, and every one fills its card height instead of leaving dead space at the bottom.</p>
+  </header>
+
+  <div class="grid2">
+
+    <!-- A -->
+    <section class="variant" aria-labelledby="a-title">
+      <header><h2 id="a-title">A - Definition rows <span class="tiny">(currently implemented)</span></h2><span class="tiny">label left, value right</span></header>
+      <p class="note">A quiet ledger with a fixed label column. Predictable and the easiest to extend; long values wrap in a narrow column and the layout reads as read-only.</p>
+      <div class="card">
+        <h3>Personal information</h3>
+        <dl class="rows">
+          <div><dt>Name</dt><dd>Debanjan</dd></div>
+          <div><dt>Email</dt><dd>junesumar0106@gmail.com</dd></div>
+          <div><dt>Time zone</dt><dd>Asia/Kolkata</dd></div>
+          <div><dt>Reminders</dt><dd>A gentle nudge at 8:00 PM</dd></div>
+          <div><dt>Language</dt><dd>English</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="variant" aria-labelledby="a2-title">
+      <header><h2 id="a2-title">A - matching security card</h2><span class="tiny">status per row</span></header>
+      <p class="note">Sign-in method reads from the identity, and the password row exposes a change route without showing any value.</p>
+      <div class="card">
+        <h3>Credentials and security</h3>
+        <ul class="sec">
+          <li>
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 4v5c0 4.4-3 8.3-7 9-4-0.7-7-4.6-7-9V7l7-4Z"/><path d="M9.5 12.5l1.8 1.8 3.4-3.6"/></svg></span>
+            <div class="body"><h3>Sign-in method</h3><p>Google</p></div>
+            <span class="badge ok">Connected</span>
+          </li>
+          <li>
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+            <div class="body"><h3>Password</h3><p>Last changed 12 Jun</p></div>
+            <a class="link" href="#">Change</a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- B -->
+    <section class="variant" aria-labelledby="b-title">
+      <header><h2 id="b-title">B - Field tiles</h2><span class="tiny">2 x 3 grid</span></header>
+      <p class="note">Each field becomes a small sunken tile, so the card fills naturally and values get their own width. Uses more vertical space per field and works badly with very long values.</p>
+      <div class="card">
+        <h3>Personal information</h3>
+        <dl class="pairs">
+          <div class="pair"><dt>Name</dt><dd>Debanjan</dd></div>
+          <div class="pair"><dt>Time zone</dt><dd>Asia/Kolkata</dd></div>
+          <div class="pair" style="grid-column:1/-1"><dt>Email</dt><dd>junesumar0106@gmail.com</dd></div>
+          <div class="pair"><dt>Reminders</dt><dd>8:00 PM</dd></div>
+          <div class="pair"><dt>Language</dt><dd>English</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="variant" aria-labelledby="b2-title">
+      <header><h2 id="b2-title">B - matching security card</h2><span class="tiny">tiles with actions</span></header>
+      <p class="note">The same tile rhythm as the fields, so the pair of cards reads as one system.</p>
+      <div class="card">
+        <h3>Credentials and security</h3>
+        <dl class="pairs">
+          <div class="pair"><dt>Sign-in</dt><dd>Google <span class="badge ok">Connected</span></dd></div>
+          <div class="pair"><dt>Password</dt><dd>Last changed 12 Jun<br><a class="link" href="#">Change</a></dd></div>
+          <div class="pair" style="grid-column:1/-1"><dt>Session</dt><dd>This device, active now</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- C -->
+    <section class="variant" aria-labelledby="c-title">
+      <header><h2 id="c-title">C - Identity header plus chips</h2><span class="tiny">warmest</span></header>
+      <p class="note">Leads with who you are, then reduces the remaining fields to inline chips. Friendliest and most compact; chips suit short values only, so email stays on its own line.</p>
+      <div class="card">
+        <h3>Personal information</h3>
+        <div class="identity">
+          <span class="avatar" role="img" aria-label="Avatar for Debanjan">D</span>
+          <div><b>Debanjan</b><span class="tiny">junesumar0106@gmail.com</span></div>
+        </div>
+        <div class="chips">
+          <span class="chip"><span>Zone</span><b>Asia/Kolkata</b></span>
+          <span class="chip"><span>Reminders</span><b>8:00 PM</b></span>
+          <span class="chip"><span>Language</span><b>English</b></span>
+          <span class="chip"><span>Member since</span><b>Jun 2026</b></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="variant" aria-labelledby="c2-title">
+      <header><h2 id="c2-title">C - matching security card</h2><span class="tiny">provider first</span></header>
+      <p class="note">Mirrors the identity header by leading with the provider mark, then lists protection state.</p>
+      <div class="card">
+        <h3>Credentials and security</h3>
+        <div class="identity">
+          <span class="avatar" style="background:var(--sunken-alt);color:var(--ink)" aria-hidden="true">G</span>
+          <div><b>Google sign-in</b><span class="tiny">Connected since 08 Jun 2026</span></div>
+        </div>
+        <div class="chips">
+          <span class="chip"><span>Password</span><b>Changed 12 Jun</b></span>
+          <span class="chip"><span>Recovery</span><b>Email verified</b></span>
+          <span class="chip"><a class="link" href="#">Change password</a></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- D -->
+    <section class="variant" aria-labelledby="d-title">
+      <header><h2 id="d-title">D - Editable rows</h2><span class="tiny">needs a backend</span></header>
+      <p class="note">Every field carries its own Edit control, which is the honest shape once an account service exists. Do not ship it before saving works, or each button is a dead end.</p>
+      <div class="card">
+        <h3>Personal information</h3>
+        <dl class="editable">
+          <div class="erow"><div class="body"><dt>Name</dt><dd>Debanjan</dd></div><button class="ghost" type="button">Edit</button></div>
+          <div class="erow"><div class="body"><dt>Email</dt><dd>junesumar0106@gmail.com</dd></div><span class="badge ok">Verified</span></div>
+          <div class="erow"><div class="body"><dt>Time zone</dt><dd>Asia/Kolkata</dd></div><button class="ghost" type="button">Edit</button></div>
+          <div class="erow"><div class="body"><dt>Reminders</dt><dd>A gentle nudge at 8:00 PM</dd></div><button class="ghost" type="button">Edit</button></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="variant" aria-labelledby="d2-title">
+      <header><h2 id="d2-title">D - matching security card</h2><span class="tiny">actions per row</span></header>
+      <p class="note">Same row shape, with the destructive action kept out of this card entirely.</p>
+      <div class="card">
+        <h3>Credentials and security</h3>
+        <dl class="editable">
+          <div class="erow"><div class="body"><dt>Sign-in method</dt><dd>Google</dd></div><span class="badge ok">Connected</span></div>
+          <div class="erow"><div class="body"><dt>Password</dt><dd>Last changed 12 Jun</dd></div><button class="ghost" type="button">Change</button></div>
+          <div class="erow"><div class="body"><dt>Active session</dt><dd>This device, active now</dd></div><button class="ghost" type="button">Review</button></div>
+        </dl>
+      </div>
+    </section>
+
+  </div>
+</main>
+<script>
+  const root = document.documentElement, theme = document.querySelector('.theme');
+  theme.addEventListener('click', () => {
+    const dark = root.classList.toggle('app-dark');
+    theme.setAttribute('aria-pressed', String(dark));
+    theme.textContent = dark ? 'Light mode' : 'Theme';
+  });
+</script>
+</body></html>

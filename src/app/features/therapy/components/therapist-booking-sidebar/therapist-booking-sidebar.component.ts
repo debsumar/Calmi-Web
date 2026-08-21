@@ -485,12 +485,12 @@ export class TherapistBookingSidebarComponent {
 
   dateStateMarker(meta: DateMeta): string {
     const state = this.dateMetaState(meta);
-    return state === 'available' ? 'Â·' : state === 'past' ? 'â€“' : 'Ã—';
+    return state === 'available' ? '.' : state === 'past' ? '-' : 'x';
   }
 
   dateLabel(meta: DateMeta): string {
     const state = this.dateMetaState(meta);
-    return `${meta.day}, ${state === 'available' ? 'Available' : state === 'past' ? 'Past â€” booking closed' : 'Unavailable'}`;
+    return `${meta.day}, ${state === 'available' ? 'Available' : state === 'past' ? 'Past, booking closed' : 'Unavailable'}`;
   }
 
   isSelectedMeta(meta: DateMeta): boolean {

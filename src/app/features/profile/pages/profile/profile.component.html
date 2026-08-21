@@ -2,7 +2,7 @@
   <div class="mx-auto max-w-6xl">
     <!-- Page header, kept separate from the bento grid -->
     <header class="flex flex-col gap-5 border-b border-hairline pb-8 sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
+      <div class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
         @if (showAvatarImage()) {
           <img
             [src]="avatarUrl()"
@@ -22,18 +22,18 @@
           </div>
         }
         <div class="min-w-0">
-          <p class="text-xs font-semibold text-ink-soft">My pace</p>
-          <h1 id="profile-title" class="font-sans text-3xl font-bold leading-tight text-ink md:text-5xl">
+          <p class="text-xs font-semibold text-ink-soft">My space</p>
+          <h1 id="profile-title" class="break-words font-sans text-3xl font-bold leading-tight text-ink md:text-5xl">
             {{ displayName() }}
           </h1>
           <p class="mt-1 break-words text-base text-ink-soft">{{ email() }}</p>
         </div>
       </div>
-      <div class="flex flex-col gap-3 sm:items-end">
+      <div class="flex min-w-0 flex-col gap-3 sm:items-end">
         <div class="sm:text-right">
           <p class="text-xs font-semibold uppercase tracking-wide text-ink-soft">Current plan</p>
-          <p class="mt-1 text-lg font-bold text-ink">Calmi {{ dashboard().subscription.name }}</p>
-          <p class="text-base text-ink-soft">
+          <p class="mt-1 break-words text-lg font-bold text-ink">Calmi {{ dashboard().subscription.name }}</p>
+          <p class="break-words text-base text-ink-soft">
             {{ dashboard().subscription.cadence }} &middot; {{ dashboard().subscription.renewal }}
           </p>
         </div>
@@ -47,27 +47,28 @@
     </header>
 
     <div class="mt-8 grid grid-flow-row-dense gap-4 md:grid-cols-2 lg:grid-cols-6">
-      <!-- Featured Rumi AI allowance tile -->
+      <!-- Rumi AI allowance dial -->
       @if (chatQuota(); as chat) {
         <section
           aria-labelledby="chat-usage-title"
-          class="rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 md:p-8 lg:col-span-4">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <h2 id="chat-usage-title" class="text-lg font-bold text-ink">Rumi AI usage this month</h2>
-          </div>
+          class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
+          <h2 id="chat-usage-title" class="flex items-center gap-2 text-lg font-bold text-ink">
+            <svg lucideSparkles class="h-5 w-5 shrink-0 text-brand dark:text-brand-light" aria-hidden="true" />
+            {{ chat.shortLabel }}
+          </h2>
 
-          <div class="mt-6 flex flex-wrap items-center justify-between gap-6">
-            <div class="min-w-0">
-              <p class="flex flex-wrap items-baseline gap-2">
-                <span class="text-4xl font-bold leading-none text-ink">{{ chat.used }}</span>
-                <span class="text-base text-ink-soft">of {{ chat.limit }} {{ chat.unit }}</span>
-              </p>
-              <p class="mt-2 text-base text-ink-soft">{{ chat.label }} used</p>
-            </div>
-
-            <!-- Circular progress: the percentage is also stated in text below -->
+          <!-- Ring carries the proportion and the meter value; no separate bar -->
+          <div class="mt-4 flex flex-1 flex-wrap items-center gap-5">
             <div class="relative h-28 w-28 shrink-0">
-              <svg viewBox="0 0 96 96" class="h-28 w-28 -rotate-90" aria-hidden="true">
+              <svg
+                viewBox="0 0 96 96"
+                class="h-28 w-28 -rotate-90"
+                role="meter"
+                [attr.aria-label]="chat.label + ' used this month'"
+                [attr.aria-valuemin]="0"
+                [attr.aria-valuemax]="chat.limit"
+                [attr.aria-valuenow]="chat.used"
+                [attr.aria-valuetext]="chat.valueText">
                 <circle cx="48" cy="48" r="42" fill="none" stroke-width="8" class="stroke-sunken-alt" />
                 <circle
                   cx="48"
@@ -76,59 +77,59 @@
                   fill="none"
                   stroke-width="8"
                   stroke-linecap="round"
-                  [class.stroke-accent-coral]="chat.nearLimit"
-                  [class.stroke-brand]="!chat.nearLimit"
+                  [attr.class]="chat.arcStroke"
                   [attr.stroke-dasharray]="ringCircumference"
                   [attr.stroke-dashoffset]="chat.ringOffset" />
               </svg>
-              <span class="absolute inset-0 flex items-center justify-center text-lg font-bold text-ink">
-                {{ chat.percentage }}%
+              <span class="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
+                <span class="text-lg font-bold leading-none text-ink">{{ chat.percentage }}%</span>
+                <span class="mt-0.5 text-xs font-semibold text-ink-soft">used</span>
               </span>
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <p class="flex flex-wrap items-baseline gap-1">
+                <span class="text-4xl font-bold leading-none tracking-tight text-ink md:text-5xl">{{ chat.used }}</span>
+                <span class="text-base font-semibold text-ink-soft">/ {{ chat.limit }}</span>
+              </p>
+              <p class="mt-2 break-words text-base text-ink-soft">{{ chat.percentage }}% used</p>
+              <p class="mt-1 break-words text-base text-ink-soft">{{ chat.renewal }}</p>
             </div>
           </div>
 
-          <div
-            class="mt-6 h-3 overflow-hidden rounded-full bg-sunken-alt"
-            role="meter"
-            [attr.aria-label]="chat.label + ' used this month'"
-            [attr.aria-valuemin]="0"
-            [attr.aria-valuemax]="chat.limit"
-            [attr.aria-valuenow]="chat.used"
-            [attr.aria-valuetext]="chat.valueText">
-            <span
-              class="block h-full rounded-full"
-              [class.bg-accent-coral]="chat.nearLimit"
-              [class.bg-brand]="!chat.nearLimit"
-              [style.width.%]="chat.percentage"></span>
-          </div>
+          <div class="mt-auto flex flex-col gap-2 pt-5">
+            @if (chat.nearLimit) {
+              <p class="flex items-start gap-2 text-base font-bold text-danger" aria-live="polite">
+                <svg lucideTriangleAlert class="mt-0.5 h-5 w-5 shrink-0 text-danger" aria-hidden="true" />
+                <span>Approaching limit. {{ chat.remaining }} {{ chat.unit }} remain.</span>
+              </p>
+            } @else {
+              <p class="flex items-start gap-2 text-base text-ink-soft" aria-live="polite">
+                <svg lucideCircleCheck class="mt-0.5 h-5 w-5 shrink-0 text-brand dark:text-brand-light" aria-hidden="true" />
+                <span>{{ chat.remaining }} {{ chat.unit }} remain.</span>
+              </p>
+            }
 
-          @if (chat.nearLimit) {
-            <p class="mt-4 flex items-start gap-2 rounded-2xl bg-sunken p-4 text-base text-ink" aria-live="polite">
-              <svg lucideCircleAlert class="mt-0.5 h-5 w-5 shrink-0 text-danger" aria-hidden="true" />
-              <span>
-                <span class="font-bold">Approaching limit.</span>
-                {{ chat.remaining }} {{ chat.unit }} remain before the allowance renews.
-              </span>
-            </p>
-          } @else {
-            <p class="mt-4 flex items-start gap-2 text-base text-ink-soft" aria-live="polite">
-              <svg lucideCircleCheck class="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
-              <span>{{ chat.remaining }} {{ chat.unit }} remain. {{ chat.renewal }}</span>
-            </p>
-          }
+            <a
+              routerLink="/pricing"
+              class="inline-flex min-h-11 items-center justify-center gap-1.5 self-stretch rounded-full px-1 text-center text-base font-semibold text-brand-dark underline decoration-2 underline-offset-4 transition-colors hover:text-brand-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface dark:text-brand-light sm:self-end">
+              Upgrade plan for unlimited chats
+              <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
+            </a>
+          </div>
         </section>
       }
 
       <!-- Sleep sounds listening summary -->
       <section
         aria-labelledby="audio-title"
-        class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-2 lg:row-span-2">
-        <div class="flex items-start gap-3">
-          <svg lucideMoon class="mt-1 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
-          <div class="min-w-0">
-            <h2 id="audio-title" class="text-lg font-bold text-ink">Sleep sounds</h2>
-            <p class="mt-1 text-base text-ink-soft">What you played most over the {{ dashboard().audio.rangeLabel }}.</p>
-          </div>
+        class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 id="audio-title" class="flex items-center gap-2 text-lg font-bold text-ink">
+            <svg lucideMoon class="h-5 w-5 shrink-0 text-brand dark:text-brand-light" aria-hidden="true" />
+            Sleep sounds
+          </h2>
+          <p class="text-xs text-ink-soft">What you played most over the {{ dashboard().audio.rangeLabel }}.</p>
         </div>
 
         <p class="mt-5 flex flex-wrap items-baseline gap-2">
@@ -139,148 +140,173 @@
           Across {{ dashboard().audio.nightsWithAudio }} nights with audio playing.
         </p>
 
-        <ul class="mt-5 space-y-4">
-          @for (track of audioTracks(); track track.id) {
-            <li>
-              <div class="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 class="text-base font-bold text-ink">{{ track.title }}</h3>
-                <span class="text-xs font-semibold text-ink">{{ track.minutes }} min</span>
-              </div>
-              <div class="mt-2 h-2 overflow-hidden rounded-full bg-sunken-alt" aria-hidden="true">
-                <span class="block h-full rounded-full bg-brand" [style.width.%]="track.share"></span>
-              </div>
-              <p class="mt-1 text-xs text-ink-soft">{{ track.plays }} plays</p>
-            </li>
-          }
-        </ul>
+        @if (audioDonut().segments.length > 0) {
+          <div class="mt-5 flex flex-1 flex-col items-center gap-5 sm:flex-row sm:items-center">
+            <!-- Composition donut; exact minutes and shares are listed in the key -->
+            <svg
+              viewBox="0 0 96 96"
+              class="h-32 w-32 shrink-0"
+              role="img"
+              [attr.aria-label]="'Share of listening minutes: ' + audioDonut().label">
+              <circle cx="48" cy="48" r="42" fill="none" stroke-width="12" class="stroke-sunken-alt" />
+              @for (segment of audioDonut().segments; track segment.id) {
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="42"
+                  fill="none"
+                  stroke-width="12"
+                  [attr.class]="segment.stroke"
+                  [attr.stroke-dasharray]="segment.dash + ' ' + segment.gap"
+                  [attr.transform]="'rotate(' + segment.rotation + ' 48 48)'" />
+              }
+            </svg>
+
+            <ul class="w-full min-w-0 flex-1 space-y-2.5 sm:w-auto">
+              @for (segment of audioDonut().segments; track segment.id) {
+                <li class="flex min-w-0 items-center gap-2.5">
+                  <span class="h-3 w-3 shrink-0 rounded-sm" [ngClass]="segment.swatch" aria-hidden="true"></span>
+                  <span class="min-w-0 flex-1 break-words text-base font-bold text-ink">{{ segment.title }}</span>
+                  <span class="shrink-0 text-xs font-semibold text-ink-soft">
+                    {{ segment.minutes }} min · {{ segment.share }}%
+                  </span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
       </section>
 
-      <!-- Guided sessions, shown like the other stat cards -->
-      @for (quota of supportingQuotas(); track quota.id) {
-        <section
-          [attr.aria-labelledby]="'quota-' + quota.id"
-          class="flex flex-col justify-between rounded-3xl border border-hairline bg-elevated p-5 lg:col-span-1">
-          <div>
-            <p class="flex flex-wrap items-baseline gap-1.5">
-              <span class="text-3xl font-bold leading-none text-brand-dark">{{ quota.used }}</span>
-              <span class="text-base text-ink-soft">of {{ quota.limit }}</span>
-            </p>
-            <h2 [id]="'quota-' + quota.id" class="mt-2 text-lg font-bold text-ink">{{ quota.label }}</h2>
-            <p class="mt-1 text-base text-ink-soft">{{ quota.renewal }}</p>
-          </div>
-          <div
-            class="mt-4 h-2 overflow-hidden rounded-full bg-sunken-alt"
-            role="meter"
-            [attr.aria-label]="quota.label + ' used this month'"
-            [attr.aria-valuemin]="0"
-            [attr.aria-valuemax]="quota.limit"
-            [attr.aria-valuenow]="quota.used"
-            [attr.aria-valuetext]="quota.valueText">
-            <span class="block h-full rounded-full bg-brand" [style.width.%]="quota.percentage"></span>
-          </div>
-        </section>
-      }
-
-      <!-- Small-win tiles -->
-      @for (kpi of dashboard().kpis; track kpi.id) {
-        <section
-          [attr.aria-labelledby]="'kpi-' + kpi.id"
-          class="rounded-3xl border border-hairline bg-elevated p-5 lg:col-span-1">
-          <p class="text-3xl font-bold leading-tight text-brand-dark">{{ kpi.value }}</p>
-          <h2 [id]="'kpi-' + kpi.id" class="mt-2 text-lg font-bold text-ink">{{ kpi.label }}</h2>
-          <p class="mt-1 text-base text-ink-soft">{{ kpi.description }}</p>
-        </section>
-      }
-
-      <!-- Session calendar, sharing the therapist profile availability data -->
+      <!-- Next available sessions, from the same therapist availability data -->
       <section
         aria-labelledby="sessions-title"
-        class="rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-6">
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start">
-          <div class="min-w-0">
-            <h2 id="sessions-title" class="text-lg font-bold text-ink">Sessions</h2>
-            <p class="mt-2 text-base text-ink-soft">
-              {{ openSessionDays }} open days in {{ sessionMonthLabel }}, matching your therapist's availability.
-            </p>
+        class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
+        <h2 id="sessions-title" class="text-lg font-bold text-ink">Sessions</h2>
+        <p class="mt-1 text-base text-ink-soft">
+          Next available with {{ therapistName }} · {{ therapistSession }}
+        </p>
 
-            <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft">
-              <span class="inline-flex items-center gap-2">
-                <span class="h-4 w-7 rounded-full border border-hairline bg-sunken" aria-hidden="true"></span>Past
-              </span>
-              <span class="inline-flex items-center gap-2">
-                <span class="h-2 w-2 rounded-full bg-success" aria-hidden="true"></span>Available
-              </span>
-              <span class="inline-flex items-center gap-2">
-                <span class="h-2 w-2 rounded-full bg-danger" aria-hidden="true"></span>Unavailable
-              </span>
-            </div>
+        @if (nextSessionDays.length > 0) {
+          <ul class="mt-4 flex-1 divide-y divide-hairline">
+            @for (day of nextSessionDays; track day.key) {
+              <li class="flex flex-col items-stretch gap-3 py-3 sm:flex-row sm:items-center">
+                <span
+                  class="flex w-14 shrink-0 break-words flex-col items-center rounded-xl bg-sunken px-2 py-1.5"
+                  aria-hidden="true">
+                  <span class="text-lg font-bold leading-tight text-ink">{{ day.dayNumber }}</span>
+                  <span class="text-xs font-semibold text-ink-soft">{{ day.weekday }}</span>
+                </span>
 
-            <a
-              routerLink="/therapy"
-              class="mt-5 inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-brand bg-surface px-5 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface">
-              Book a session
-              <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
-            </a>
-          </div>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-base font-bold text-ink">{{ day.relativeLabel }}</span>
+                  <span class="mt-1 flex flex-wrap gap-1.5">
+                    @for (slot of day.slots; track slot.id) {
+                      <span
+                        class="rounded-full border border-hairline bg-surface px-2.5 py-0.5 break-words text-xs font-semibold text-ink">
+                        {{ slot.label }}
+                      </span>
+                    }
+                  </span>
+                </span>
 
-          <table class="w-full table-fixed border-collapse rounded-2xl bg-sunken p-2">
-            <caption class="sr-only">Session availability for {{ sessionMonthLabel }}</caption>
-            <thead>
-              <tr>
-                @for (weekday of weekdayLabels; track weekday) {
-                  <th scope="col" class="pb-2 pt-3 text-center text-xs font-semibold text-ink-soft">{{ weekday }}</th>
+                <a
+                  [routerLink]="['/therapy', therapistId]"
+                  class="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-brand bg-surface dark:border-brand-light px-4 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:w-auto"
+                  [attr.aria-label]="'Book a session on ' + day.relativeLabel + ', ' + day.weekday + ' ' + day.dayNumber">
+                  Book
+                  <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
+                </a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="mt-4 rounded-2xl bg-sunken p-4 text-base text-ink-soft">
+            No open days right now. Availability usually reopens within a week.
+          </p>
+        }
+
+        <p class="mt-auto pt-4 text-xs text-ink-soft">
+          @if (nextClosedDayLabel) {
+            {{ nextClosedDayLabel }} is unavailable.
+          }
+          {{ openSessionDays }} open days remain in {{ sessionMonthLabel }}.
+        </p>
+      </section>
+
+      <!-- KPI signal strip: one comparative rail, shared baseline, hairline dividers -->
+      <section
+        aria-labelledby="signals-title"
+        class="flex flex-col overflow-hidden rounded-3xl border border-hairline shadow-card md:col-span-2 lg:col-span-3">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-surface px-5 pb-3 pt-5">
+          <h2 id="signals-title" class="text-lg font-bold text-ink">This month</h2>
+          <p class="text-xs text-ink-soft">Compared with your own history, never with other people.</p>
+        </div>
+
+        <!-- gap-px over a hairline background draws dividers at every breakpoint -->
+        <div class="grid flex-1 gap-px bg-hairline sm:grid-cols-3">
+          @for (signal of signals(); track signal.id) {
+            <article class="flex min-w-0 flex-col bg-surface p-5">
+              <h3 class="text-base font-bold text-ink-soft">{{ signal.label }}</h3>
+              <p class="mt-1 flex flex-wrap items-baseline gap-1.5">
+                <span class="text-3xl font-bold leading-none tracking-tight text-ink">{{ signal.value }}</span>
+                @if (signal.unit) {
+                  <span class="text-base font-semibold text-ink-soft">{{ signal.unit }}</span>
                 }
-              </tr>
-            </thead>
-            <tbody>
-              @for (week of sessionWeeks; track $index) {
-                <tr>
-                  @for (day of week; track $index) {
-                    <td class="p-1 text-center">
-                      @if (day) {
-                        <span
-                          class="relative mx-auto flex h-9 w-9 items-center justify-center rounded-lg text-xs font-semibold"
-                          [class.bg-sunken-alt]="day.state === 'past'"
-                          [class.text-ink-soft]="day.state === 'past'"
-                          [class.bg-surface]="day.state !== 'past'"
-                          [class.text-ink]="day.state !== 'past'">
-                          {{ day.day }}
-                          @if (day.state === 'available') {
-                            <span class="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true"></span>
-                          } @else if (day.state === 'unavailable') {
-                            <span class="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-danger" aria-hidden="true"></span>
-                          }
-                          <span class="sr-only">{{ day.label }}</span>
-                        </span>
-                      }
-                    </td>
-                  }
-                </tr>
-              }
-            </tbody>
-          </table>
+              </p>
+              <span
+                class="mt-2 inline-flex max-w-full items-center gap-1 self-start truncate rounded-full bg-sunken px-2.5 py-0.5 text-xs font-semibold"
+                [class.text-success]="signal.comparison.direction === 'up'"
+                [class.text-danger]="signal.comparison.direction === 'down'"
+                [class.text-ink-soft]="signal.comparison.direction === 'flat'">
+                @if (signal.comparison.direction === 'up') {
+                  <svg lucideTrendingUp class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                } @else if (signal.comparison.direction === 'down') {
+                  <svg lucideTrendingDown class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                } @else {
+                  <svg lucideMinus class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                }
+                {{ signal.comparison.label }}
+              </span>
+              <svg
+                class="mt-3 aspect-[10/7] w-full text-brand-deep dark:text-brand-light"
+                viewBox="0 0 200 140"
+                preserveAspectRatio="none"
+                role="img"
+                [attr.aria-label]="signal.sparkLabel">
+                <path d="M 4 134 L 196 134" class="stroke-hairline" stroke-width="2" fill="none" />
+                <path
+                  [attr.d]="signal.sparkPath"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+              <p class="mt-auto pt-2 text-xs text-ink-soft">{{ signal.description }}</p>
+            </article>
+          }
+
         </div>
       </section>
 
       <!-- Personal information tile -->
       <section
         aria-labelledby="personal-title"
-        class="rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
+        class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
         <h2 id="personal-title" class="text-lg font-bold text-ink">Personal information</h2>
-        <p class="mt-2 text-base text-ink-soft">Your preferences, ready for a connected account service.</p>
-        <dl class="mt-5 divide-y divide-hairline">
-          <div class="grid gap-1 py-3 first:pt-0 sm:grid-cols-[9rem_1fr] sm:gap-4">
-            <dt class="text-xs font-semibold text-ink-soft">Name</dt>
-            <dd class="text-base text-ink">{{ displayName() }}</dd>
+        <dl class="mt-5 flex flex-1 flex-col justify-between divide-y divide-hairline">
+          <div class="grid gap-1 py-3 first:pt-0 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+            <dt class="break-words text-xs font-semibold text-ink-soft">Name</dt>
+            <dd class="break-words text-base text-ink">{{ displayName() }}</dd>
           </div>
-          <div class="grid gap-1 py-3 sm:grid-cols-[9rem_1fr] sm:gap-4">
-            <dt class="text-xs font-semibold text-ink-soft">Email</dt>
+          <div class="grid gap-1 py-3 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+            <dt class="break-words text-xs font-semibold text-ink-soft">Email</dt>
             <dd class="break-words text-base text-ink">{{ email() }}</dd>
           </div>
           @for (preference of dashboard().preferences; track preference.id) {
-            <div class="grid gap-1 py-3 last:pb-0 sm:grid-cols-[9rem_1fr] sm:gap-4">
-              <dt class="text-xs font-semibold text-ink-soft">{{ preference.label }}</dt>
-              <dd class="text-base text-ink">{{ preference.value }}</dd>
+            <div class="grid gap-1 py-3 last:pb-0 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+              <dt class="break-words text-xs font-semibold text-ink-soft">{{ preference.label }}</dt>
+              <dd class="min-w-0 break-words text-base text-ink">{{ preference.value }}</dd>
             </div>
           }
         </dl>
@@ -289,17 +315,17 @@
       <!-- Security tile -->
       <section
         aria-labelledby="security-title"
-        class="rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
+        class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2"
+        [ngClass]="chatQuota() ? 'lg:col-span-3' : 'lg:col-span-6'">
         <h2 id="security-title" class="text-lg font-bold text-ink">Credentials and security</h2>
-        <p class="mt-2 text-base text-ink-soft">A clear view of protection, without displaying secrets.</p>
-        <ul class="mt-5 space-y-3">
+        <ul class="mt-5 flex flex-1 flex-col justify-between gap-3">
           <!-- Sign-in method, from the authenticated identity -->
           <li class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-sunken p-4">
             <div class="flex min-w-0 items-center gap-3">
-              <svg lucideShieldCheck class="h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
+              <svg lucideShieldCheck class="h-5 w-5 shrink-0 text-brand dark:text-brand-light" aria-hidden="true" />
               <div class="min-w-0">
                 <h3 class="text-lg font-bold text-ink">Sign-in method</h3>
-                <p class="mt-1 flex items-center gap-2 text-base text-ink-soft">
+                <p class="mt-1 flex min-w-0 items-center gap-2 break-words text-base text-ink-soft">
                   @if (signInProvider().logo) {
                     <img [src]="signInProvider().logo" alt="" aria-hidden="true" class="h-4 w-4 shrink-0" />
                   }
@@ -309,7 +335,7 @@
             </div>
             <p class="inline-flex items-center gap-1.5 text-xs font-semibold text-ink">
               @if (signInProvider().connected) {
-                <svg lucideCircleCheck class="h-4 w-4 text-brand" aria-hidden="true" />
+                <svg lucideCircleCheck class="h-4 w-4 text-brand dark:text-brand-light" aria-hidden="true" />
                 Connected
               } @else {
                 <svg lucideCircleAlert class="h-4 w-4 text-danger" aria-hidden="true" />
@@ -321,22 +347,22 @@
           @for (item of dashboard().security; track item.id) {
             <li class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-sunken p-4">
               <div class="flex min-w-0 items-center gap-3">
-                <svg lucideLock class="h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
+                <svg lucideLock class="h-5 w-5 shrink-0 text-brand dark:text-brand-light" aria-hidden="true" />
                 <div class="min-w-0">
-                  <h3 class="text-lg font-bold text-ink">{{ item.label }}</h3>
-                  <p class="mt-1 text-base text-ink-soft">{{ item.value }}</p>
+                  <h3 class="break-words text-lg font-bold text-ink">{{ item.label }}</h3>
+                  <p class="mt-1 break-words text-base text-ink-soft">{{ item.value }}</p>
                 </div>
               </div>
               <div class="flex flex-wrap items-center gap-3">
                 <p class="inline-flex items-center gap-1.5 text-xs font-semibold text-ink">
-                  <svg lucideCircleCheck class="h-4 w-4 text-brand" aria-hidden="true" />
+                  <svg lucideCircleCheck class="h-4 w-4 text-brand dark:text-brand-light" aria-hidden="true" />
                   {{ item.status }}
                 </p>
                 @if (item.action; as action) {
                   <a
                     [routerLink]="action.route"
                     [attr.aria-label]="action.label + ' ' + item.label"
-                    class="inline-flex min-h-11 items-center rounded-full border-2 border-brand bg-surface px-5 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-sunken">
+                    class="inline-flex min-h-11 items-center rounded-full border-2 border-brand bg-surface dark:border-brand-light px-5 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-sunken">
                     {{ action.label }}
                   </a>
                 }
@@ -397,7 +423,7 @@
               </button>
               <button
                 type="button"
-                class="inline-flex min-h-11 items-center justify-center rounded-full border-2 border-brand bg-surface px-5 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-11 items-center justify-center rounded-full border-2 border-brand bg-surface dark:border-brand-light px-5 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 (click)="cancelClosure()">
                 Keep my account
               </button>

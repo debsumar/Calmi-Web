@@ -14,7 +14,10 @@ export interface SubscriptionSummary {
 
 export interface QuotaRecord {
   readonly id: string;
+  /** Full name, used for ARIA labels and value text. */
   readonly label: string;
+  /** Short name for headings, where an icon already carries the context. */
+  readonly shortLabel: string;
   readonly used: number;
   readonly limit: number;
   readonly unit: string;
@@ -23,11 +26,20 @@ export interface QuotaRecord {
   readonly source: PreviewSource;
 }
 
+/** Direction of a KPI compared with the person's own previous period. */
+export type TrendDirection = 'up' | 'down' | 'flat';
+
 export interface KpiRecord {
   readonly id: string;
   readonly value: string;
+  /** Unit shown beside the value, e.g. "days". Empty when the label carries it. */
+  readonly unit: string;
   readonly label: string;
   readonly description: string;
+  /** Oldest-to-newest plot points for the sparkline. Same period spacing per KPI. */
+  readonly trend: readonly number[];
+  readonly trendRangeLabel: string;
+  readonly comparison: { readonly label: string; readonly direction: TrendDirection };
   readonly source: PreviewSource;
 }
 
@@ -106,6 +118,7 @@ export class ProfileDashboardService {
       {
         id: 'support-messages',
         label: 'Rumi AI conversations',
+        shortLabel: 'Rumi AI',
         used: 28,
         limit: 30,
         unit: 'conversations',
@@ -116,6 +129,7 @@ export class ProfileDashboardService {
       {
         id: 'therapy-sessions',
         label: 'Guided sessions',
+        shortLabel: 'Guided sessions',
         used: 3,
         limit: 4,
         unit: 'sessions',
@@ -129,28 +143,41 @@ export class ProfileDashboardService {
       {
         id: 'check-ins',
         value: '12',
-        label: 'Check-ins completed',
+        unit: 'days',
+        label: 'Check-ins',
         description: 'Small steps count.',
+        // TODO(backend): Replace with real weekly aggregates.
+        trend: [5, 7, 6, 9, 8, 11, 12],
+        trendRangeLabel: 'the last 7 weeks',
+        comparison: { label: '+3 vs July', direction: 'up' },
         source: PREVIEW_SOURCE,
       },
       {
         id: 'calm-minutes',
         value: '118',
+        unit: 'min',
         label: 'Calm minutes',
         description: 'Time made for yourself.',
+        trend: [64, 78, 71, 92, 86, 104, 118],
+        trendRangeLabel: 'the last 7 weeks',
+        comparison: { label: '+22 vs July', direction: 'up' },
         source: PREVIEW_SOURCE,
       },
       {
         id: 'streak',
-        value: '6 days',
-        label: 'Current streak',
+        value: '6',
+        unit: 'days',
+        label: 'Gentle streak',
         description: 'No pressure to keep it.',
+        trend: [2, 3, 4, 5, 6, 5, 6],
+        trendRangeLabel: 'the last 7 weeks',
+        comparison: { label: 'Your own pace', direction: 'flat' },
         source: PREVIEW_SOURCE,
       },
     ],
     kpisSource: PREVIEW_SOURCE,
     audio: {
-      rangeLabel: 'Last 30 days',
+      rangeLabel: 'last 30 days',
       totalMinutes: 412,
       nightsWithAudio: 19,
       tracks: [

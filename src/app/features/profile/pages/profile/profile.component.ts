@@ -6,37 +6,48 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { NgClass } from '@angular/common';
 import {
   LucideArrowRight,
   LucideCircleAlert,
+  LucideTriangleAlert,
   LucideCircleCheck,
   LucideLock,
+  LucideMinus,
   LucideMoon,
   LucideShieldCheck,
+  LucideSparkles,
+  LucideTrendingDown,
+  LucideTrendingUp,
 } from '@lucide/angular';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@/core/services/auth.service';
-import { THERAPISTS, type AvailabilityState } from '@/features/therapy/data/therapist.data';
+import { THERAPISTS, type TherapistSessionSlot } from '@/features/therapy/data/therapist.data';
 import { ProfileDashboardService } from '../../services/profile-dashboard.service';
-
-type SessionDayState = AvailabilityState | 'past';
 
 interface SessionDay {
   readonly key: string;
-  readonly day: number;
-  readonly label: string;
-  readonly state: SessionDayState;
+  readonly dayNumber: number;
+  readonly weekday: string;
+  readonly relativeLabel: string;
+  readonly slots: readonly TherapistSessionSlot[];
 }
 
 @Component({
   selector: 'app-profile',
   imports: [
+    NgClass,
     LucideArrowRight,
     LucideCircleAlert,
+    LucideTriangleAlert,
     LucideCircleCheck,
     LucideLock,
+    LucideMinus,
     LucideMoon,
     LucideShieldCheck,
+    LucideSparkles,
+    LucideTrendingDown,
+    LucideTrendingUp,
     RouterLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,10 +65,28 @@ export class ProfileComponent {
   readonly closureStatus = signal('');
   readonly avatarFailed = signal(false);
 
+  /** Display name from the signed-in identity, falling back through provider fields. */
   readonly displayName = computed(() => {
-    const metadata = this.user()?.user_metadata as Record<string, unknown> | undefined;
-    const fullName = metadata?.['full_name'];
-    return typeof fullName === 'string' && fullName.trim() ? fullName.trim() : 'Calmi member';
+    const user = this.user();
+    const sources: Record<string, unknown>[] = [
+      (user?.user_metadata ?? {}) as Record<string, unknown>,
+      ...(user?.identities ?? []).map((identity) => (identity.identity_data ?? {}) as Record<string, unknown>),
+    ];
+
+    for (const source of sources) {
+      const read = (key: string) => {
+        const value = source[key];
+        return typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : '';
+      };
+      const name =
+        read('full_name') ||
+        read('name') ||
+        [read('given_name'), read('family_name')].filter(Boolean).join(' ') ||
+        read('preferred_username');
+      if (name) return name;
+    }
+
+    return 'Calmi member';
   });
 
   readonly email = computed(() => this.user()?.email ?? 'Email unavailable');
@@ -83,13 +112,17 @@ export class ProfileComponent {
     return words.slice(0, 2).map((word) => word[0]).join('').toUpperCase() || 'CM';
   });
 
-  readonly quotas = computed(() => this.dashboard().quotas.map((quota) => ({
-    ...quota,
-    percentage: this.meterPercentage(quota.used, quota.limit),
-    valueText: `${quota.used} of ${quota.limit} ${quota.unit} used`,
-  })));
+  readonly quotas = computed(() => this.dashboard().quotas.map((quota) => {
+    const percentage = this.meterPercentage(quota.used, quota.limit);
+    return {
+      ...quota,
+      percentage,
+      valueText: `${quota.used} of ${quota.limit} ${quota.unit} used`,
+      remaining: Math.max(0, quota.limit - quota.used),
+    };
+  }));
 
-  /** Radius 42 ring in a 96x96 viewBox: 2 * PI * 42. */
+  /** Radius 42 ring in a 96x96 viewBox: 2 * PI * 42. Used by the listening donut. */
   readonly ringCircumference = Math.round(2 * Math.PI * 42 * 100) / 100;
 
   /** Chat allowance is the featured metric, shown as a circular progress ring. */
@@ -101,21 +134,51 @@ export class ProfileComponent {
     return {
       ...quota,
       nearLimit,
-      remaining: Math.max(0, quota.limit - quota.used),
+      // Ring geometry and a scheme-aware arc colour, resolved once here.
       ringOffset: Math.round(this.ringCircumference * (1 - quota.percentage / 100) * 100) / 100,
+      arcStroke: nearLimit ? 'stroke-accent-coral' : 'stroke-brand dark:stroke-brand-light',
     };
   });
 
-  readonly supportingQuotas = computed(() => this.quotas().filter((quota) => quota.id !== 'support-messages'));
+  /** Guided-session allowance, now surfaced as text inside the sessions card. */
+  readonly sessionsQuota = computed(() => this.quotas().find((item) => item.id === 'therapy-sessions') ?? null);
 
-  /** Listening shares are relative to the most played track, for bar width only. */
-  readonly audioTracks = computed(() => {
+  /**
+   * Donut of listening composition: each track's share of total minutes. Slices are
+   * a sequential brand ramp and every slice is also written out in the key, so no
+   * value depends on colour.
+   */
+  readonly audioDonut = computed(() => {
     const tracks = this.dashboard().audio.tracks;
-    const busiest = tracks.reduce((max, track) => Math.max(max, track.minutes), 0);
-    return tracks.map((track) => ({
-      ...track,
-      share: busiest > 0 ? Math.round((track.minutes / busiest) * 100) : 0,
-    }));
+    const total = tracks.reduce((sum, track) => sum + track.minutes, 0);
+    const ramp = [
+      { stroke: 'stroke-brand-deep dark:stroke-brand-light', swatch: 'bg-brand-deep' },
+      { stroke: 'stroke-brand dark:stroke-brand-light', swatch: 'bg-brand' },
+      { stroke: 'stroke-brand-soft dark:stroke-brand-light', swatch: 'bg-brand-soft' },
+      { stroke: 'stroke-brand-light dark:stroke-brand-light', swatch: 'bg-brand-light' },
+    ];
+
+    let cumulative = 0;
+    const segments = tracks.map((track, index) => {
+      const share = total > 0 ? Math.round((track.minutes / total) * 100) : 0;
+      const dash = Math.round(this.ringCircumference * (share / 100) * 100) / 100;
+      const rotation = Math.round((-90 + cumulative * 3.6) * 100) / 100;
+      cumulative += share;
+      return {
+        ...track,
+        share,
+        dash,
+        gap: Math.round((this.ringCircumference - dash) * 100) / 100,
+        rotation,
+        ...ramp[index % ramp.length],
+      };
+    });
+
+    return {
+      total,
+      segments,
+      label: segments.map((segment) => `${segment.title} ${segment.share} percent`).join(', '),
+    };
   });
 
   /** Sign-in method taken from the authenticated identity, not from preview data. */
@@ -132,46 +195,112 @@ export class ProfileComponent {
     }
   });
 
+  /**
+   * KPI signal strip: each metric keeps its exact value, a labelled delta, and a
+   * sparkline path derived from its own plot points.
+   */
+  readonly signals = computed(() =>
+    this.dashboard().kpis.map((kpi) => ({
+      ...kpi,
+      sparkPath: this.sparklinePath(kpi.trend),
+      sparkLabel: `${kpi.label} trend across ${kpi.trendRangeLabel}, ${this.trendWording(kpi.trend)}`,
+    })),
+  );
+
+  /**
+   * Maps plot points into the 200x140 sparkline viewBox. Flat series render on the
+   * mid-line rather than collapsing to the baseline.
+   */
+  private sparklinePath(points: readonly number[]): string {
+    if (points.length === 0) return '';
+    if (points.length === 1) return `M 4 72 L 196 72`;
+
+    const max = Math.max(...points);
+    const min = Math.min(...points);
+    const span = max - min;
+    const step = 192 / (points.length - 1);
+
+    return points
+      .map((value, index) => {
+        const x = Math.round((4 + index * step) * 100) / 100;
+        const y = span === 0 ? 72 : Math.round((134 - ((value - min) / span) * 126) * 100) / 100;
+        return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
+      })
+      .join(' ');
+  }
+
+  private trendWording(points: readonly number[]): string {
+    if (points.length < 2) return 'no trend yet';
+    const change = points[points.length - 1] - points[0];
+    if (change > 0) return 'rising overall';
+    if (change < 0) return 'easing overall';
+    return 'holding steady';
+  }
+
   readonly closureIsValid = computed(() => this.closureConfirmation().trim().toUpperCase() === 'CLOSE');
 
   /**
    * Session availability comes from the same dataset the therapist profile
    * calendar renders, so both screens agree on which days are open.
    */
-  private readonly availability = THERAPISTS[0]?.availability ?? [];
-  readonly weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+  private readonly therapist = THERAPISTS[0];
+  private readonly availability = this.therapist?.availability ?? [];
+  readonly therapistId = this.therapist?.id ?? '';
+  readonly therapistName = this.therapist?.name ?? '';
+  readonly therapistSession: string;
   readonly sessionMonthLabel: string;
-  readonly sessionWeeks: readonly (readonly (SessionDay | null)[])[];
   readonly openSessionDays: number;
+  /** Next few bookable days with their real times, newest first. */
+  readonly nextSessionDays: readonly SessionDay[];
+  readonly nextClosedDayLabel: string | null;
 
   constructor() {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const year = today.getFullYear();
     const month = today.getMonth();
-    const availabilityByKey = new Map(this.availability.map((day) => [day.date, day.state]));
+    const year = today.getFullYear();
 
     this.sessionMonthLabel = today.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    this.therapistSession = this.therapist
+      ? `${this.therapist.duration} · ${this.therapist.sessionMode}`
+      : '';
 
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const cells: (SessionDay | null)[] = Array.from({ length: new Date(year, month, 1).getDay() }, () => null);
+    const upcoming = this.availability
+      .map((day) => ({ day, date: this.parseDateKey(day.date) }))
+      .filter((entry) => entry.date >= today);
 
-    for (let day = 1; day <= daysInMonth; day += 1) {
-      const date = new Date(year, month, day);
-      const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const state: SessionDayState = date < today ? 'past' : (availabilityByKey.get(key) ?? 'unavailable');
-      cells.push({
-        key,
-        day,
-        state,
-        label: `${date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}, ${state}`,
-      });
-    }
+    this.openSessionDays = this.availability.filter((day) => {
+      const date = this.parseDateKey(day.date);
+      return date >= today && date.getMonth() === month && date.getFullYear() === year && day.state === 'available';
+    }).length;
 
-    while (cells.length % 7 !== 0) cells.push(null);
+    this.nextSessionDays = upcoming
+      .filter((entry) => entry.day.state === 'available' && entry.day.slots.length > 0)
+      .slice(0, 3)
+      .map((entry) => ({
+        key: entry.day.date,
+        dayNumber: entry.date.getDate(),
+        weekday: entry.date.toLocaleDateString(undefined, { weekday: 'short' }),
+        relativeLabel: this.relativeDayLabel(entry.date, today),
+        slots: entry.day.slots,
+      }));
 
-    this.sessionWeeks = Array.from({ length: cells.length / 7 }, (_, week) => cells.slice(week * 7, week * 7 + 7));
-    this.openSessionDays = cells.filter((cell) => cell?.state === 'available').length;
+    const closed = upcoming.find((entry) => entry.day.state === 'unavailable');
+    this.nextClosedDayLabel = closed
+      ? closed.date.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })
+      : null;
+  }
+
+  private parseDateKey(key: string): Date {
+    const [year, month, day] = key.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  private relativeDayLabel(date: Date, today: Date): string {
+    const days = Math.round((date.getTime() - today.getTime()) / 86_400_000);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Tomorrow';
+    return date.toLocaleDateString(undefined, { weekday: 'long' });
   }
 
   onAvatarError(): void {
