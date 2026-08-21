@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calmi auth polish — variant mockups</title>
+<style>
+  /* ---- Calmi tokens, copied from src/tailwind.css (light) ---- */
+  :root {
+    --brand: #967bb6;               /* --p-primary-500 */
+    --brand-dark: #69567f;          /* --p-primary-700 */
+    --brand-soft: #aa94c4;          /* --p-primary-400 */
+    --brand-deep: #80699b;          /* --p-primary-600 */
+    --brand-night: color-mix(in srgb, var(--brand) 28%, black);
+
+    --canvas: color-mix(in srgb, var(--brand) 5%, white);
+    --surface: white;
+    --sunken: color-mix(in srgb, var(--brand) 10%, white);
+    --hairline: color-mix(in srgb, var(--brand) 12%, white);
+    --ink: color-mix(in srgb, var(--brand) 10%, black);
+    --ink-soft: color-mix(in srgb, var(--ink) 72%, white);
+    --ink-muted: color-mix(in srgb, var(--ink) 56%, white);
+    --shadow-card: 0 4px 4px 0 rgb(0 0 0 / .25);
+  }
+  /* ---- dark values ---- */
+  .dark {
+    --canvas: color-mix(in srgb, var(--brand) 7%, black);
+    --surface: color-mix(in srgb, var(--brand) 32%, black);
+    --sunken: color-mix(in srgb, var(--brand) 19%, black);
+    --hairline: color-mix(in srgb, var(--brand) 40%, black);
+    --ink: color-mix(in srgb, var(--brand) 6%, white);
+    --ink-soft: color-mix(in srgb, var(--brand) 18%, white);
+    --ink-muted: color-mix(in srgb, var(--brand) 34%, white);
+    --shadow-card: 0 4px 4px 0 rgb(0 0 0 / .5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 24px 80px;
+    background: var(--canvas); color: var(--ink);
+    font: 400 15px/1.5 "Segoe UI", system-ui, sans-serif;
+  }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 40px 0 4px; }
+  .lead, .note { color: var(--ink-soft); font-size: 14px; margin: 0 0 18px; }
+  .note { font-size: 13px; color: var(--ink-muted); }
+  code { background: var(--sunken); padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
+
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+  .demo {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 18px; padding: 16px; box-shadow: var(--shadow-card);
+  }
+  .demo h3 { font-size: 14px; margin: 0 0 2px; }
+  .demo p { font-size: 12.5px; color: var(--ink-muted); margin: 0 0 14px; }
+  .stage {
+    border-radius: 14px; padding: 14px; min-height: 92px;
+    display: flex; align-items: flex-start; justify-content: flex-end; position: relative; overflow: hidden;
+  }
+  .stage.on-white { background: var(--surface); border: 1px dashed var(--hairline); }
+  .stage.on-purple { background: var(--brand-deep); }
+
+  /* ================= 1..5 CLOSE BUTTON VARIANTS ================= */
+  .btn-base {
+    height: 40px; width: 40px; border: 0; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 999px; transition: all .22s ease; text-decoration: none;
+  }
+  .btn-base:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  /* v0 current — plain outline */
+  .v-current { background: var(--surface); border: 1px solid var(--hairline); color: var(--ink-soft); }
+  .v-current:hover { background: var(--sunken); color: var(--ink); }
+
+  /* v1 glass on purple panel (RECOMMENDED) */
+  .v-glass {
+    background: rgb(255 255 255 / .15); border: 1px solid rgb(255 255 255 / .25);
+    color: #fff; backdrop-filter: blur(8px);
+  }
+  .v-glass:hover { background: rgb(255 255 255 / .28); transform: scale(1.06); }
+
+  /* v2 expand-on-hover pill */
+  .v-pill {
+    width: 40px; padding: 0 11px; gap: 0; overflow: hidden; white-space: nowrap;
+    background: var(--surface); border: 1px solid var(--hairline); color: var(--ink-soft);
+  }
+  .v-pill .label { max-width: 0; opacity: 0; transition: all .25s ease; font-size: 13px; font-weight: 600; }
+  .v-pill:hover { width: 152px; background: var(--sunken); color: var(--ink); }
+  .v-pill:hover .label { max-width: 110px; opacity: 1; margin-left: 8px; }
+
+  /* v3 micro-interaction */
+  .v-micro { background: var(--surface); border: 1px solid var(--hairline); color: var(--ink-soft); }
+  .v-micro:hover { transform: rotate(90deg) scale(1.08); color: var(--brand-deep); border-color: var(--brand-soft); }
+  .v-micro:active { transform: rotate(90deg) scale(.94); }
+
+  /* v4 text back-link */
+  .v-link {
+    width: auto; padding: 0 14px; gap: 8px; font-size: 13.5px; font-weight: 600;
+    background: transparent; color: var(--ink-soft);
+  }
+  .v-link:hover { background: var(--sunken); color: var(--ink); }
+
+  /* v5 icon-chip family (matches role-card chips) */
+  .v-chip { background: color-mix(in srgb, var(--brand-soft) 25%, transparent); color: var(--brand-deep); border: 0; }
+  .dark .v-chip { background: color-mix(in srgb, var(--brand-soft) 20%, transparent); color: var(--brand-soft); }
+  .v-chip:hover { background: var(--brand-deep); color: #fff; }
+  .dark .v-chip:hover { background: var(--brand-soft); color: var(--brand-night); }
+
+  /* ================= 6..10 PANEL TREATMENTS ================= */
+  .panel {
+    position: relative; overflow: hidden; border-radius: 14px; min-height: 190px;
+    background: var(--brand-deep);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .panel .art { width: 96px; height: 96px; position: relative; z-index: 2; }
+  .panel .art svg { width: 100%; height: 100%; }
+
+  /* v6 gradient + blurred blobs */
+  .p-gradient { background: linear-gradient(160deg, var(--brand-deep), var(--brand-night)); }
+  .p-gradient .blob { position: absolute; border-radius: 999px; filter: blur(38px); z-index: 1; }
+  .p-gradient .blob.a { width: 150px; height: 150px; background: color-mix(in srgb, var(--brand-soft) 55%, transparent); top: -40px; left: -30px; }
+  .p-gradient .blob.b { width: 130px; height: 130px; background: color-mix(in srgb, var(--brand) 45%, transparent); bottom: -40px; right: -20px; }
+
+  /* v7 pattern overlay */
+  .p-pattern::after {
+    content: ""; position: absolute; inset: 0; z-index: 1; opacity: .5;
+    background-image:
+      radial-gradient(circle at 12px 12px, rgb(255 255 255 / .18) 2px, transparent 2.5px),
+      radial-gradient(circle at 36px 36px, rgb(255 255 255 / .12) 2px, transparent 2.5px);
+    background-size: 48px 48px;
+  }
+
+  /* v8 floating art + ground shadow */
+  .p-float .art { animation: float 6s ease-in-out infinite; }
+  .p-float .ground {
+    position: absolute; bottom: 34px; left: 50%; translate: -50% 0;
+    width: 92px; height: 14px; border-radius: 999px;
+    background: rgb(0 0 0 / .28); filter: blur(7px); z-index: 1;
+    animation: groundPulse 6s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-11px); } }
+  @keyframes groundPulse { 0%,100% { transform: scale(1); opacity: .3; } 50% { transform: scale(.86); opacity: .18; } }
+  @media (prefers-reduced-motion: reduce) {
+    .p-float .art, .p-float .ground { animation: none; }
+    .btn-base { transition: none; }
+  }
+
+  /* v9 testimonial / trust row */
+  .p-copy { flex-direction: column; gap: 14px; padding: 20px; text-align: center; }
+  .p-copy .quote { color: #fff; font-size: 13.5px; line-height: 1.5; max-width: 210px; }
+  .p-copy .dots { display: flex; gap: 6px; }
+  .p-copy .dots i { width: 6px; height: 6px; border-radius: 999px; background: rgb(255 255 255 / .35); }
+  .p-copy .dots i.on { width: 18px; background: #fff; }
+  .p-copy .trust { display: flex; gap: 10px; color: rgb(255 255 255 / .8); font-size: 11px; }
+
+  /* v10 wordmark on panel */
+  .p-mark .wordmark {
+    position: absolute; left: 16px; bottom: 14px; z-index: 3;
+    color: #fff; font-weight: 700; letter-spacing: .01em; font-size: 15px;
+    display: flex; align-items: center; gap: 7px; opacity: .92;
+  }
+
+  /* ================= 11..14 FRAME + ROLE CARD ================= */
+  .frame-demo { border-radius: 14px; padding: 18px; }
+  .f-flat { background: var(--canvas); }
+  .f-radial { background: radial-gradient(120% 100% at 50% 0%, color-mix(in srgb, var(--brand) 14%, var(--canvas)), var(--canvas) 70%); }
+  .mini-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; height: 74px; box-shadow: var(--shadow-card); }
+  .mini-card.layered {
+    border-radius: 22px; border-color: transparent;
+    box-shadow: 0 1px 0 0 var(--hairline), 0 18px 40px -20px rgb(0 0 0 / .35), 0 2px 6px -2px rgb(0 0 0 / .12);
+  }
+
+  .role {
+    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 13px 14px;
+    color: var(--ink); font: inherit; transition: all .2s ease; margin-bottom: 10px;
+  }
+  .role:hover { background: var(--sunken); }
+  .role .chip {
+    width: 44px; height: 44px; flex: 0 0 auto; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center; position: relative;
+    background: color-mix(in srgb, var(--brand-soft) 25%, transparent); color: var(--brand-deep);
+  }
+  .dark .role .chip { background: color-mix(in srgb, var(--brand-soft) 20%, transparent); color: var(--brand-soft); }
+  .role .t { font-weight: 700; font-size: 14.5px; }
+  .role .d { font-size: 12.5px; color: var(--ink-muted); margin-top: 2px; }
+  .role .tail { margin-left: auto; color: var(--ink-muted); display: flex; align-items: center; }
+  .radio-dot { width: 20px; height: 20px; border-radius: 999px; border: 2px solid var(--hairline); }
+
+  /* selected states */
+  .role.sel-current { border-color: var(--brand); background: var(--sunken); }
+  .role.sel-rich { border-color: transparent; background: var(--sunken); box-shadow: 0 0 0 2px var(--brand); }
+  .role.sel-rich .chip { background: var(--brand-deep); color: #fff; }
+  .dark .role.sel-rich .chip { background: var(--brand-soft); color: var(--brand-night); }
+  .role.sel-rich .chip .badge {
+    position: absolute; right: -3px; bottom: -3px; width: 18px; height: 18px; border-radius: 999px;
+    background: var(--brand-deep); color: #fff; border: 2px solid var(--surface);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .role.sel-rich .radio-dot { border-color: var(--brand); background: radial-gradient(circle, var(--brand) 45%, transparent 47%); }
+
+  .cta {
+    width: 100%; margin-top: 6px; height: 50px; border: 0; border-radius: 999px; cursor: not-allowed;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-size: 15px; font-weight: 600;
+  }
+  .cta-dead { background: var(--sunken); color: var(--ink-muted); }
+  .cta-waiting { background: color-mix(in srgb, var(--brand-soft) 20%, transparent); color: var(--ink-muted); }
+  .cta .ring { width: 30px; height: 30px; border-radius: 999px; border: 2px solid currentColor; display: flex; align-items: center; justify-content: center; }
+
+  /* ================= RECOMMENDED COMBO ================= */
+  .combo-wrap { padding: 26px; border-radius: 26px; background: radial-gradient(120% 100% at 50% 0%, color-mix(in srgb, var(--brand) 12%, var(--canvas)), var(--canvas) 70%); }
+  .combo {
+    display: flex; overflow: hidden; border-radius: 24px; background: var(--surface); max-width: 880px; margin: 0 auto;
+    box-shadow: 0 1px 0 0 var(--hairline), 0 30px 60px -30px rgb(0 0 0 / .45), 0 3px 8px -3px rgb(0 0 0 / .12);
+  }
+  .combo .left { flex: 1 1 46%; position: relative; min-height: 400px; }
+  .combo .left .art { width: 190px; height: 190px; }
+  .combo .right { flex: 1 1 54%; padding: 30px; display: flex; flex-direction: column; }
+  .combo .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .combo h4 { font-size: 30px; line-height: 1.15; margin: 0 0 8px; letter-spacing: -.02em; }
+  .combo .sub { color: var(--ink-soft); font-size: 14px; margin: 0 0 22px; }
+  .combo .close-slot { position: absolute; top: 16px; right: 16px; z-index: 5; }
+  .logo-dot { width: 34px; height: 34px; border-radius: 10px; background: var(--brand-deep); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+
+  .bar { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+  .toggle { border: 1px solid var(--hairline); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 8px 16px; font: inherit; font-size: 13.5px; cursor: pointer; }
+  .toggle:hover { background: var(--sunken); }
+  .pick { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--brand-deep); background: color-mix(in srgb, var(--brand-soft) 22%, transparent); padding: 3px 8px; border-radius: 999px; margin-left: 6px; vertical-align: 2px; }
+  .dark .pick { color: var(--brand-soft); }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1 style="flex:1 1 auto">Calmi auth — polish variants</h1>
+  <button class="toggle" id="mode">Toggle dark mode</button>
+  <button class="toggle" id="motion">Toggle motion</button>
+</div>
+<p class="lead">Mockup only — nothing here is wired into the app. Numbering matches the chat list. Every colour uses the real Calmi tokens from <code>src/tailwind.css</code>, so dark mode behaves like production.</p>
+
+<!-- =============== CLOSE BUTTON =============== -->
+<h2>Close button — variants 1–5</h2>
+<p class="note">Hover each one. Dashed frame = white content pane, purple frame = illustration panel.</p>
+<div class="grid">
+
+  <div class="demo">
+    <h3>0 · Current (shipped)</h3>
+    <p>Outline circle, top-right of content pane.</p>
+    <div class="stage on-white">
+      <button class="btn-base v-current" aria-label="Close and return to home">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>1 · Glass on purple panel <span class="pick">pick</span></h3>
+    <p>Frosted white/15, sits over the art. Frees the content pane so the logo keeps its spot.</p>
+    <div class="stage on-purple">
+      <button class="btn-base v-glass" aria-label="Close and return to home">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>2 · Expand-on-hover pill</h3>
+    <p>Icon-only at rest, widens to a labelled pill on hover/focus.</p>
+    <div class="stage on-white">
+      <button class="btn-base v-pill" aria-label="Close and return to home">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:0 0 auto"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <span class="label">Back to home</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>3 · Micro-interaction only</h3>
+    <p>Rotate 90° + scale on hover, press-in on click. Two classes, no layout change.</p>
+    <div class="stage on-white">
+      <button class="btn-base v-micro" aria-label="Close and return to home">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>4 · Text back-link</h3>
+    <p>Softer metaphor than a hard dismiss. Would sit top-left.</p>
+    <div class="stage on-white" style="justify-content:flex-start">
+      <a href="#" class="btn-base v-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Back to home
+      </a>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>5 · Icon-chip family</h3>
+    <p>Same chip treatment as the role icons already on the page.</p>
+    <div class="stage on-white">
+      <button class="btn-base v-chip" aria-label="Close and return to home">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- =============== PANEL =============== -->
+<h2>Illustration panel — variants 6–10</h2>
+<p class="note">Left one is today's flat <code>bg-brand-deep</code> for comparison.</p>
+<div class="grid">
+
+  <div class="demo">
+    <h3>0 · Current (flat)</h3>
+    <p>Single solid brand-deep fill.</p>
+    <div class="panel">
+      <div class="art"><svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="24" cy="20" r="8"/><path d="M10 54c1.8-9 7.4-14 14-14s12.2 5 14 14"/><circle cx="46" cy="26" r="6"/><path d="M38 54c1.2-6.6 4.6-11 8-11s6.8 4.4 8 11"/></svg></div>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>6 · Gradient + blurred blobs <span class="pick">pick</span></h3>
+    <p>brand-deep → brand-night, two soft light pools. No assets.</p>
+    <div class="panel p-gradient">
+      <span class="blob a"></span><span class="blob b"></span>
+      <div class="art"><svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="24" cy="20" r="8"/><path d="M10 54c1.8-9 7.4-14 14-14s12.2 5 14 14"/><circle cx="46" cy="26" r="6"/><path d="M38 54c1.2-6.6 4.6-11 8-11s6.8 4.4 8 11"/></svg></div>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>7 · Pattern overlay</h3>
+    <p>Repeating motif at ~6% white. Kills the dead purple field.</p>
+    <div class="panel p-pattern">
+      <div class="art" style="position:relative;z-index:2"><svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="24" cy="20" r="8"/><path d="M10 54c1.8-9 7.4-14 14-14s12.2 5 14 14"/><circle cx="46" cy="26" r="6"/><path d="M38 54c1.2-6.6 4.6-11 8-11s6.8 4.4 8 11"/></svg></div>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>8 · Floating art + ground shadow <span class="pick">pick</span></h3>
+    <p>6s float, blurred ellipse beneath. Disabled under reduced-motion.</p>
+    <div class="panel p-gradient p-float">
+      <span class="blob a"></span><span class="blob b"></span>
+      <span class="ground"></span>
+      <div class="art"><svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="24" cy="20" r="8"/><path d="M10 54c1.8-9 7.4-14 14-14s12.2 5 14 14"/><circle cx="46" cy="26" r="6"/><path d="M38 54c1.2-6.6 4.6-11 8-11s6.8 4.4 8 11"/></svg></div>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>9 · Testimonial + trust row</h3>
+    <p>Fills the empty lower half with something that sells.</p>
+    <div class="panel p-gradient p-copy">
+      <span class="blob a"></span><span class="blob b"></span>
+      <div class="art" style="width:64px;height:64px"><svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="32" cy="22" r="9"/><path d="M14 56c2.4-11 9.6-17 18-17s15.6 6 18 17"/></svg></div>
+      <p class="quote">“Ten minutes a night and I finally sleep through.”</p>
+      <div class="dots"><i class="on"></i><i></i><i></i></div>
+      <div class="trust"><span>Licensed</span><span>·</span><span>10k+ sessions</span><span>·</span><span>Private</span></div>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>10 · Wordmark on panel</h3>
+    <p>Logo moves here in white; content pane header then holds only the X.</p>
+    <div class="panel p-gradient p-mark">
+      <span class="blob a"></span><span class="blob b"></span>
+      <div class="art"><svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="24" cy="20" r="8"/><path d="M10 54c1.8-9 7.4-14 14-14s12.2 5 14 14"/><circle cx="46" cy="26" r="6"/><path d="M38 54c1.2-6.6 4.6-11 8-11s6.8 4.4 8 11"/></svg></div>
+      <span class="wordmark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c2 3.4 3 6.6 3 9.6 0 3.4-1.2 6.2-3 8.4-1.8-2.2-3-5-3-8.4C9 8.6 10 5.4 12 2Z"/><path d="M5 9c2.2 1 3.6 2.6 4.3 4.6.7 2.2.5 4.4-.3 6.4-2-.9-3.4-2.5-4.2-4.6C4 13.3 4.2 11 5 9Z" opacity=".7"/><path d="M19 9c.8 2 1 4.3.2 6.4-.8 2.1-2.2 3.7-4.2 4.6-.8-2-1-4.2-.3-6.4C15.4 11.6 16.8 10 19 9Z" opacity=".7"/></svg>
+        Calmi
+      </span>
+    </div>
+  </div>
+
+</div>
+
+<!-- =============== FRAME + ROLE CARDS =============== -->
+<h2>Page frame &amp; role cards — variants 11–14</h2>
+<div class="grid">
+
+  <div class="demo">
+    <h3>11 · Canvas: flat vs radial tint</h3>
+    <p>Faint brand radial lifts the white card off the background.</p>
+    <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+      <div class="frame-demo f-flat"><div class="mini-card"></div><p class="note" style="margin:8px 0 0">flat</p></div>
+      <div class="frame-demo f-radial"><div class="mini-card"></div><p class="note" style="margin:8px 0 0">radial tint</p></div>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>12 · Card shadow: single vs layered</h3>
+    <p>Bigger radius + ambient/key shadow pair.</p>
+    <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+      <div class="frame-demo f-flat"><div class="mini-card"></div><p class="note" style="margin:8px 0 0">current</p></div>
+      <div class="frame-demo f-flat"><div class="mini-card layered"></div><p class="note" style="margin:8px 0 0">layered</p></div>
+    </div>
+  </div>
+
+  <div class="demo">
+    <h3>13 · Role card selection <span class="pick">pick</span></h3>
+    <p>Top = shipped. Bottom = brand ring, filled chip, check badge, radio dot.</p>
+    <button class="role sel-current">
+      <span class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 3v6a5 5 0 0 0 10 0V3"/><path d="M9 14v3a4 4 0 0 0 8 0v-1"/><circle cx="19" cy="11" r="2"/></svg></span>
+      <span><span class="t">Wellness Specialist</span><span class="d">I offer therapy or counselling sessions</span></span>
+    </button>
+    <button class="role sel-rich">
+      <span class="chip">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 3v6a5 5 0 0 0 10 0V3"/><path d="M9 14v3a4 4 0 0 0 8 0v-1"/><circle cx="19" cy="11" r="2"/></svg>
+        <span class="badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M4 12.5 9.5 18 20 7"/></svg></span>
+      </span>
+      <span><span class="t">Wellness Specialist</span><span class="d">I offer therapy or counselling sessions</span></span>
+      <span class="tail"><span class="radio-dot"></span></span>
+    </button>
+    <button class="role">
+      <span class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20c.8-3.6 3.2-5.4 6.5-5.4s5.7 1.8 6.5 5.4"/></svg></span>
+      <span><span class="t">User</span><span class="d">I am here for my own wellbeing</span></span>
+      <span class="tail"><span class="radio-dot"></span></span>
+    </button>
+  </div>
+
+  <div class="demo">
+    <h3>14 · Disabled CTA</h3>
+    <p>Grey reads broken; brand-tinted reads waiting.</p>
+    <button class="cta cta-dead" disabled>Proceed <span class="ring"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button>
+    <p class="note" style="margin:6px 0 12px">current — <code>bg-sunken</code></p>
+    <button class="cta cta-waiting" disabled>Proceed <span class="ring"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button>
+    <p class="note" style="margin:6px 0 0">proposed — brand-tinted</p>
+  </div>
+
+</div>
+
+<!-- =============== COMBO =============== -->
+<h2>Recommended combo — 1 + 6 + 8 + 13 (+ 11, 12)</h2>
+<p class="note">Full identify screen with glass close on the panel, gradient + blobs, floating art, richer selection state.</p>
+<div class="combo-wrap">
+  <div class="combo">
+    <div class="left p-gradient p-float panel">
+      <span class="blob a"></span><span class="blob b"></span>
+      <span class="ground"></span>
+      <div class="close-slot">
+        <button class="btn-base v-glass" aria-label="Close and return to home">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="art"><svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="24" cy="20" r="8"/><path d="M10 54c1.8-9 7.4-14 14-14s12.2 5 14 14"/><circle cx="46" cy="26" r="6"/><path d="M38 54c1.2-6.6 4.6-11 8-11s6.8 4.4 8 11"/></svg></div>
+    </div>
+    <div class="right">
+      <div class="head">
+        <span class="logo-dot">C</span>
+      </div>
+      <h4>Get Started with Calmi</h4>
+      <p class="sub">Pick the account type that matches how you'll use Calmi.</p>
+
+      <button class="role sel-rich">
+        <span class="chip">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 3v6a5 5 0 0 0 10 0V3"/><path d="M9 14v3a4 4 0 0 0 8 0v-1"/><circle cx="19" cy="11" r="2"/></svg>
+          <span class="badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M4 12.5 9.5 18 20 7"/></svg></span>
+        </span>
+        <span><span class="t">Wellness Specialist</span><span class="d">I offer therapy or counselling sessions</span></span>
+        <span class="tail"><span class="radio-dot"></span></span>
+      </button>
+      <button class="role">
+        <span class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20c.8-3.6 3.2-5.4 6.5-5.4s5.7 1.8 6.5 5.4"/></svg></span>
+        <span><span class="t">User</span><span class="d">I am here for my own wellbeing</span></span>
+        <span class="tail"><span class="radio-dot"></span></span>
+      </button>
+
+      <button class="cta" style="background:var(--brand-deep);color:#fff;cursor:pointer">Proceed <span class="ring"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('mode').addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    document.body.classList.toggle('dark');
+  });
+  let motionOff = false;
+  document.getElementById('motion').addEventListener('click', (e) => {
+    motionOff = !motionOff;
+    document.querySelectorAll('.p-float .art, .p-float .ground').forEach(el => {
+      el.style.animationPlayState = motionOff ? 'paused' : 'running';
+    });
+    e.currentTarget.textContent = motionOff ? 'Resume motion' : 'Toggle motion';
+  });
+</script>
+</body>
+</html>
