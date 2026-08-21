@@ -21,6 +21,8 @@ import {
   LucideTrendingUp,
 } from '@lucide/angular';
 import { RouterLink } from '@angular/router';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
+import { DrawOnScrollDirective } from '@/shared/directives/draw-on-scroll.directive';
 import { AuthService } from '@/core/services/auth.service';
 import { THERAPISTS, type TherapistSessionSlot } from '@/features/therapy/data/therapist.data';
 import { ProfileDashboardService } from '../../services/profile-dashboard.service';
@@ -49,9 +51,64 @@ interface SessionDay {
     LucideTrendingDown,
     LucideTrendingUp,
     RouterLink,
+    AnimateOnScrollDirective,
+    DrawOnScrollDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile.component.html',
+  styles: `
+    /* Draw-in for the data graphics. Each holds an empty state only while the
+       DrawOnScroll directive is waiting for the reader to scroll, then sweeps to
+       the value the markup already carries. stroke-dashoffset repaints the path
+       only; it never triggers layout. Without the directive, with reduced motion,
+       or with JavaScript disabled, the graphic renders at its value immediately. */
+    .draw-idle.ring-arc {
+      stroke-dashoffset: var(--ring-full);
+    }
+    .draw-run.ring-arc {
+      animation: ringSweep 2.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes ringSweep {
+      from { stroke-dashoffset: var(--ring-full); }
+      to { stroke-dashoffset: var(--ring-offset); }
+    }
+
+    .draw-idle.donut-arc {
+      stroke-dashoffset: var(--seg-dash);
+    }
+    .draw-run.donut-arc {
+      animation: donutSweep 1.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+      /* Segments follow one another so the composition builds up. */
+      animation-delay: calc(var(--index, 0) * 260ms);
+    }
+    @keyframes donutSweep {
+      from { stroke-dashoffset: var(--seg-dash); }
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* pathLength="1" normalises the length, so one keyframe fits every sparkline. */
+    .draw-idle.spark-line {
+      stroke-dashoffset: 1;
+    }
+    .draw-run.spark-line {
+      animation: sparkDraw 3.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: calc(var(--index, 0) * 320ms);
+    }
+    @keyframes sparkDraw {
+      from { stroke-dashoffset: 1; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      /* Never animate, and never hold an empty state. */
+      .ring-arc,
+      .donut-arc,
+      .spark-line {
+        animation: none;
+        stroke-dashoffset: revert-layer;
+      }
+    }
+  `,
 })
 export class ProfileComponent {
   private readonly authService = inject(AuthService);

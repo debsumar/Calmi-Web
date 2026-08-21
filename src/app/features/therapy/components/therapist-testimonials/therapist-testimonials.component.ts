@@ -9,11 +9,12 @@ import {
   viewChild,
 } from '@angular/core';
 import { LucideArrowLeft, LucideArrowRight, LucideMessageSquareQuote, LucideStar } from '@lucide/angular';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { TherapistTestimonial } from '@/features/therapy/data/therapist.data';
 
 @Component({
   selector: 'app-therapist-testimonials',
-  imports: [LucideStar, LucideArrowRight, LucideArrowLeft, LucideMessageSquareQuote],
+  imports: [LucideStar, LucideArrowRight, LucideArrowLeft, LucideMessageSquareQuote, AnimateOnScrollDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="min-w-0 pt-10 md:pt-14" aria-labelledby="testimonials-heading">
@@ -21,7 +22,7 @@ import { TherapistTestimonial } from '@/features/therapy/data/therapist.data';
         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand" aria-hidden="true">
           <svg lucideMessageSquareQuote [size]="20" aria-hidden="true"></svg>
         </span>
-        <h2 id="testimonials-heading" class="font-sans text-xl font-bold text-ink md:text-2xl">Hear from Clients!</h2>
+        <h2 appAnimateOnScroll style="--index:0" id="testimonials-heading" class="font-sans text-xl font-bold text-ink md:text-2xl">Hear from Clients!</h2>
       </div>
 
       <!-- Stack wrapper: the two layers behind are decorative depth only, so the

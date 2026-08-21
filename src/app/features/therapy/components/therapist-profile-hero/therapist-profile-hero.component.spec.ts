@@ -21,6 +21,9 @@ describe('TherapistProfileHeroComponent', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect(root.textContent).toContain('Areas of Expertise');
     expect(root.textContent).toContain('Anxiety & Stress');
+    const name = root.querySelector('h1[appAnimateOnScroll]') as HTMLElement;
+    expect(name?.style.getPropertyValue('--index')).toBe('0');
+    expect(name?.classList.contains('stagger-enter')).toBe(true);
     const icons = root.querySelectorAll('svg[lucideArrowLeft], svg[lucideMedal], svg[lucideBriefcaseBusiness], svg[lucideTarget]');
     expect(icons.length).toBe(4);
     icons.forEach((icon) => expect(icon.querySelector('path, line, circle, polyline, rect')).not.toBeNull());

@@ -6,11 +6,12 @@ import {
   LucideMedal,
   LucideTarget,
 } from '@lucide/angular';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { Therapist } from '@/features/therapy/data/therapist.data';
 
 @Component({
   selector: 'app-therapist-profile-hero',
-  imports: [RouterLink, LucideArrowLeft, LucideTarget, LucideBriefcaseBusiness, LucideMedal],
+  imports: [RouterLink, LucideArrowLeft, LucideTarget, LucideBriefcaseBusiness, LucideMedal, AnimateOnScrollDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="w-full bg-brand-deep text-on-brand">
@@ -38,9 +39,9 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
           </div>
 
           <div class="min-w-0">
-            <h1 id="therapist-name" class="font-sans text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">{{ profile().name }}</h1>
-            <p class="mt-3 text-base text-ink-soft">{{ profile().subtitle }}</p>
-            <div class="mt-6 grid gap-3 text-xs font-semibold text-ink-soft" aria-label="Professional experience">
+            <h1 appAnimateOnScroll id="therapist-name" style="--index:0" class="font-sans text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">{{ profile().name }}</h1>
+            <p appAnimateOnScroll style="--index:1" class="mt-3 text-base text-ink-soft">{{ profile().subtitle }}</p>
+            <div appAnimateOnScroll style="--index:2" class="mt-6 grid gap-3 text-xs font-semibold text-ink-soft" aria-label="Professional experience">
               <div class="flex items-center gap-3">
                 <span class="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
                   <svg lucideMedal [size]="18" class="fill-current text-ink-soft"></svg>
@@ -61,7 +62,7 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
               <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand" aria-hidden="true">
                 <svg lucideTarget [size]="20" aria-hidden="true"></svg>
               </span>
-              <h2 id="expertise-heading" class="font-sans text-xl font-bold leading-tight whitespace-nowrap text-ink md:text-2xl">Areas of Expertise</h2>
+              <h2 appAnimateOnScroll style="--index:3" id="expertise-heading" class="font-sans text-xl font-bold leading-tight whitespace-nowrap text-ink md:text-2xl">Areas of Expertise</h2>
             </div>
             <div class="mt-6 flex flex-wrap gap-3">
               @for (specialty of profile().specialties; track specialty) {

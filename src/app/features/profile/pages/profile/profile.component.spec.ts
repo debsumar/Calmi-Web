@@ -71,7 +71,7 @@ describe('ProfileComponent', () => {
     expect(root.querySelectorAll('h2')).toHaveLength(7);
     expect(root.textContent).toContain('Sam Calmi');
     expect(root.textContent).toContain('My space');
-    expect(root.textContent).toContain('Calmi Student Premium');
+    expect(root.textContent).toContain('Calmi (Free)');
     expect(root.textContent).not.toContain('Signed in with');
     // Preview/backend notices are intentionally not surfaced in the UI.
     expect(root.textContent).not.toContain('Preview data');
@@ -81,8 +81,8 @@ describe('ProfileComponent', () => {
   it('shows the plan in the header, not in the Rumi AI tile', () => {
     const root = fixture.nativeElement as HTMLElement;
     const header = root.querySelector('header');
-    expect(header?.textContent).toContain('Calmi Student Premium');
-    expect(root.querySelector('[aria-labelledby="chat-usage-title"]')?.textContent).not.toContain('Student Premium');
+    expect(header?.textContent).toContain('Calmi (Free)');
+    expect(root.querySelector('[aria-labelledby="chat-usage-title"]')?.textContent).not.toContain('Calmi (Free)');
 
     const upgrade = header?.querySelector<HTMLAnchorElement>('a');
     expect(upgrade?.textContent?.trim()).toBe('Upgrade plan');
@@ -98,8 +98,8 @@ describe('ProfileComponent', () => {
     expect(tile?.querySelector('h2')?.textContent?.trim()).toBe('Rumi AI');
     expect(tile?.querySelector('h2 svg')).not.toBeNull();
     expect(tile?.querySelector('h2 svg')?.getAttribute('aria-hidden')).toBe('true');
-    expect(tile?.textContent).toContain('/ 30');
-    expect(tile?.textContent).toContain('93% used');
+    expect(tile?.textContent).toContain('/ 10');
+    expect(tile?.textContent).toContain('90% used');
     expect(tile?.textContent).toContain('Approaching limit');
     // Warning is plain danger text, not a filled container.
     const warning = Array.from(tile!.querySelectorAll('p')).find((p) => p.textContent?.includes('Approaching limit'));
@@ -116,11 +116,13 @@ describe('ProfileComponent', () => {
 
     const meter = tile?.querySelector('[role="meter"]');
     expect(meter?.getAttribute('aria-label')).toBe('Rumi AI conversations used this month');
-    expect(meter?.getAttribute('aria-valuenow')).toBe('28');
-    expect(meter?.getAttribute('aria-valuemax')).toBe('30');
-    expect(meter?.getAttribute('aria-valuetext')).toBe('28 of 30 conversations used');
-    // Near the limit the arc switches to the coral accent.
-    expect(arcs[0].getAttribute('class')).toBe('stroke-accent-coral');
+    expect(meter?.getAttribute('aria-valuenow')).toBe('9');
+    expect(meter?.getAttribute('aria-valuemax')).toBe('10');
+    expect(meter?.getAttribute('aria-valuetext')).toBe('9 of 10 conversations used');
+    // Near the limit the arc switches to the coral accent, and it draws itself in.
+    expect(arcs[0].classList.contains('stroke-accent-coral')).toBe(true);
+    expect(arcs[0].classList.contains('ring-arc')).toBe(true);
+    expect(arcs[0].getAttribute('style')).toContain('--ring-offset');
     // The percentage inside the ring is decorative; the meter carries the value.
     expect(tile?.querySelector('svg + span')?.getAttribute('aria-hidden')).toBe('true');
 
@@ -150,6 +152,10 @@ describe('ProfileComponent', () => {
     expect(slices).toHaveLength(5);
     expect(slices[1].getAttribute('stroke-dasharray')).toMatch(/^\d+(\.\d+)? \d+(\.\d+)?$/);
     expect(slices[1].getAttribute('transform')).toBe('rotate(-90 48 48)');
+    // Each slice draws itself in, staggered after the ring.
+    expect(slices[1].classList.contains('donut-arc')).toBe(true);
+    expect(slices[1].getAttribute('style')).toContain('--seg-dash');
+    expect(slices[4].getAttribute('style')).toContain('--index: 3');
 
     // Shares sum to the whole and each row states minutes and percentage as text.
     const rows = tile!.querySelectorAll('li');
@@ -431,6 +437,73 @@ describe('ProfileComponent', () => {
     const emptySecurity = emptyRoot.querySelector<HTMLElement>('[aria-labelledby="security-title"]');
     expect(emptySecurity?.classList.contains('lg:col-span-6')).toBe(true);
     expect(emptySecurity?.classList.contains('lg:col-span-3')).toBe(false);
+  });
+
+  it('applies capped home stagger to every bento tile', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const tiles = Array.from(root.querySelectorAll<HTMLElement>('section[aria-labelledby]'));
+
+    expect(tiles.map((tile) => tile.hasAttribute('appAnimateOnScroll'))).toEqual([
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+    ]);
+    expect(tiles.map((tile) => tile.style.getPropertyValue('--index'))).toEqual(['0', '1', '2', '3', '4', '5', '5']);
+    expect(tiles.every((tile) => tile.classList.contains('stagger-enter'))).toBe(true);
+  });
+
+  it('staggers content inside each bento tile but leaves the graphs to their own animation', () => {
+    const root = fixture.nativeElement as HTMLElement;
+
+    // Inner text elements opt into the shared stagger with their own local index.
+    const rumi = root.querySelector<HTMLElement>('[aria-labelledby="chat-usage-title"]');
+    expect(rumi?.querySelector('h2')?.hasAttribute('appanimateonscroll')).toBe(true);
+    expect(rumi!.querySelectorAll('[appanimateonscroll]').length).toBeGreaterThanOrEqual(4);
+
+    // Graphs are excluded from the shared stagger: they carry dedicated draw-in classes.
+    // SVG attribute names are case-sensitive, so these queries use the authored case.
+    const ring = rumi?.querySelector('svg[role="meter"]');
+    expect(ring?.hasAttribute('appAnimateOnScroll')).toBe(false);
+    const arc = rumi?.querySelector('.ring-arc');
+    expect(arc).not.toBeNull();
+    expect(arc?.hasAttribute('appDrawOnScroll')).toBe(true);
+
+    const audio = root.querySelector<HTMLElement>('[aria-labelledby="audio-title"]');
+    const donut = audio?.querySelector('svg[role="img"]');
+    expect(donut?.hasAttribute('appAnimateOnScroll')).toBe(false);
+    const segments = audio!.querySelectorAll('.donut-arc');
+    expect(segments).toHaveLength(4);
+    segments.forEach((segment) => expect(segment.hasAttribute('appDrawOnScroll')).toBe(true));
+
+    // Sparklines draw themselves in; pathLength normalises the dash math.
+    const strip = root.querySelector<HTMLElement>('[aria-labelledby="signals-title"]');
+    strip?.querySelectorAll('svg[role="img"]').forEach((spark) => {
+      expect(spark.hasAttribute('appAnimateOnScroll')).toBe(false);
+    });
+    const lines = strip!.querySelectorAll('.spark-line');
+    expect(lines).toHaveLength(3);
+    lines.forEach((line) => {
+      // These wait for the reader to scroll, unlike the ring and donut.
+      expect(line.getAttribute('appDrawOnScroll')).toBe('scroll');
+      expect(line.getAttribute('pathLength')).toBe('1');
+      expect(line.getAttribute('stroke-dasharray')).toBe('1');
+    });
+    // Ring and donut keep the default trigger, so they draw on load.
+    expect(arc?.getAttribute('appDrawOnScroll')).toBe('');
+    segments.forEach((segment) => expect(segment.getAttribute('appDrawOnScroll')).toBe(''));
+    expect(strip!.querySelectorAll('article[appanimateonscroll]')).toHaveLength(3);
+
+    // Every tile still staggers its own rows.
+    const sessions = root.querySelector<HTMLElement>('[aria-labelledby="sessions-title"]');
+    expect(sessions!.querySelectorAll('li[appanimateonscroll]').length).toBeGreaterThan(0);
+    const personal = root.querySelector<HTMLElement>('[aria-labelledby="personal-title"]');
+    expect(personal!.querySelectorAll('div[appanimateonscroll]').length).toBeGreaterThanOrEqual(3);
+    const security = root.querySelector<HTMLElement>('[aria-labelledby="security-title"]');
+    expect(security!.querySelectorAll('li[appanimateonscroll]').length).toBeGreaterThanOrEqual(2);
   });
 
   it('uses semantic token utilities and avoids forbidden view literals', () => {
