@@ -16,9 +16,18 @@ interface ForegroundChoice {
   replaced: boolean;
 }
 
+const THEME_STORAGE_KEY = 'calmi-theme';
+const THEME_MODES: readonly ThemeMode[] = ['light', 'dark', 'auto'];
+
+/** Falls back to the operating system preference until the user picks a mode. */
+function storedMode(): ThemeMode {
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  return THEME_MODES.includes(stored as ThemeMode) ? (stored as ThemeMode) : 'auto';
+}
+
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private readonly _mode = signal<ThemeMode>((localStorage.getItem('calmi-theme') as ThemeMode) || 'light');
+  private readonly _mode = signal<ThemeMode>(storedMode());
   readonly mode = this._mode.asReadonly();
 
   darkTheme = computed(() => {
@@ -34,8 +43,8 @@ export class ThemeService {
       this.applyDarkMode(isDark);
     });
 
-    // Persist mode
-    effect(() => localStorage.setItem('calmi-theme', this.mode()));
+    // Persist the user's explicit choice.
+    effect(() => localStorage.setItem(THEME_STORAGE_KEY, this.mode()));
 
     // Apply primary color on startup
     this.applyTheme();
