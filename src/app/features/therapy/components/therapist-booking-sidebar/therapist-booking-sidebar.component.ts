@@ -17,18 +17,22 @@ import {
   Therapist,
   TherapistAvailabilityDay,
 } from '@/features/therapy/data/therapist.data';
+import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 
 type DateMeta = { day: number; month: number; year: number };
 
+/** Support-message cap, mirrored by the textarea maxlength and the visible hint. */
+const MESSAGE_MAX = 200;
+
 @Component({
   selector: 'app-therapist-booking-sidebar',
-  imports: [DatePicker, FormsModule, LucideCircleAlert, LucideLock],
+  imports: [DatePicker, FormsModule, LucideCircleAlert, LucideLock, AnimateOnScrollDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <aside class="min-w-0 rounded-2xl border border-hairline bg-surface shadow-card lg:sticky lg:top-6" aria-labelledby="booking-heading">
       <header class="rounded-t-2xl bg-brand-deep p-8 text-center text-on-brand">
-        <h2 id="booking-heading" class="font-sans text-2xl font-bold leading-tight md:text-3xl">Book a Session</h2>
-        <p class="mt-2 text-base">Choose your preferred date and time</p>
+        <h2 appAnimateOnScroll style="--index:0" id="booking-heading" class="font-sans text-2xl font-bold leading-tight md:text-3xl">Book a Session</h2>
+        <p appAnimateOnScroll style="--index:1" class="mt-2 text-base">Choose your preferred date and time</p>
       </header>
 
       <div class="min-w-0 space-y-6 p-5 md:p-6">
@@ -119,12 +123,12 @@ type DateMeta = { day: number; month: number; year: number };
           </div>
           <div>
             <label for="booking-message" class="sr-only">What would you like support with?</label>
-            <textarea id="booking-message" name="message" autocomplete="off" placeholder="What would you like support with?" rows="4" maxlength="1000" [value]="message()" (input)="setMessage($event)"
+            <textarea id="booking-message" name="message" autocomplete="off" placeholder="What would you like support with?" rows="4" maxlength="200" [value]="message()" (input)="setMessage($event)"
                       [attr.aria-invalid]="messageInvalid() ? 'true' : null" [attr.aria-describedby]="messageInvalid() ? 'booking-message-error' : 'booking-message-help'"
                       class="w-full resize-y rounded-lg border bg-surface px-4 py-3 text-base text-ink outline-none placeholder:text-ink-muted focus-visible:ring-2 focus-visible:ring-brand"
                       [class.border-danger]="messageInvalid()" [class.border-hairline]="!messageInvalid()"></textarea>
-            @if (messageInvalid()) { <p id="booking-message-error" class="mt-1 flex items-center gap-2 text-xs text-danger" role="alert"><svg lucideCircleAlert [size]="15" class="text-danger" aria-hidden="true"></svg>Keep your message under 1,000 characters.</p> }
-            @if (!messageInvalid()) { <p id="booking-message-help" class="mt-1 text-xs text-ink-soft">Up to 1,000 characters.</p> }
+            @if (messageInvalid()) { <p id="booking-message-error" class="mt-1 flex items-center gap-2 text-xs text-danger" role="alert"><svg lucideCircleAlert [size]="15" class="text-danger" aria-hidden="true"></svg>Keep your message under 200 characters.</p> }
+            @if (!messageInvalid()) { <p id="booking-message-help" class="mt-1 text-xs text-ink-soft" aria-live="polite">{{ messageRemaining() }} of 200 characters left.</p> }
           </div>
           <button #submitButton type="submit" [disabled]="!formValid()"
                   class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-deep px-5 py-3 text-base font-semibold text-on-brand transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
@@ -257,8 +261,10 @@ export class TherapistBookingSidebarComponent {
   readonly phoneInvalid = computed(() => this.submitAttempted() && !this.isPhoneValid());
   readonly dateInvalid = computed(() => this.submitAttempted() && !this.isDateValid());
   readonly slotInvalid = computed(() => this.submitAttempted() && !this.isSlotValid());
-  readonly messageInvalid = computed(() => this.submitAttempted() && this.message().length > 1000);
-  readonly formValid = computed(() => this.isNameValid() && this.isPhoneValid() && this.isDateValid() && this.isSlotValid() && this.message().length <= 1000);
+  readonly messageInvalid = computed(() => this.submitAttempted() && this.message().length > MESSAGE_MAX);
+  /** Remaining allowance, so the cap is visible before it is hit. */
+  readonly messageRemaining = computed(() => Math.max(0, MESSAGE_MAX - this.message().length));
+  readonly formValid = computed(() => this.isNameValid() && this.isPhoneValid() && this.isDateValid() && this.isSlotValid() && this.message().length <= MESSAGE_MAX);
   readonly confirmationSummary = computed(() => {
     const date = this.selectedDate();
     const slot = this.availableSlots().find((item) => item.id === this.selectedSlot());

@@ -109,9 +109,9 @@ export class ProfileDashboardService {
   // TODO(backend): Replace preview snapshot with typed profile, quota, listening, and security API data.
   private readonly snapshot = signal<ProfileDashboardSnapshot>({
     subscription: {
-      name: 'Student Premium',
-      cadence: 'Monthly plan',
-      renewal: 'Renews 01 Sep',
+      name: 'Free',
+      cadence: 'Free forever',
+      renewal: 'Allowances reset 01 Sep',
       source: PREVIEW_SOURCE,
     },
     quotas: [
@@ -119,10 +119,11 @@ export class ProfileDashboardService {
         id: 'support-messages',
         label: 'Rumi AI conversations',
         shortLabel: 'Rumi AI',
-        used: 28,
-        limit: 30,
+        // Free tier: "Limited Rumi AI Conversations" per the pricing page.
+        used: 9,
+        limit: 10,
         unit: 'conversations',
-        renewal: '2 conversations remain · renews 01 Sep',
+        renewal: '1 conversation remains, resets 01 Sep',
         status: 'Approaching limit',
         source: PREVIEW_SOURCE,
       },
@@ -130,11 +131,11 @@ export class ProfileDashboardService {
         id: 'therapy-sessions',
         label: 'Guided sessions',
         shortLabel: 'Guided sessions',
-        used: 3,
-        limit: 4,
+        used: 1,
+        limit: 1,
         unit: 'sessions',
-        renewal: '1 session available · renews 01 Sep',
-        status: 'Steady',
+        renewal: 'Resets 01 Sep',
+        status: 'Fully booked',
         source: PREVIEW_SOURCE,
       },
     ],
