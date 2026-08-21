@@ -37,6 +37,10 @@ export const appRoutes: Routes = [
         path: 'pricing',
         loadComponent: () => import('@/features/pricing/pages/pricing/pricing.component').then((m) => m.PricingComponent),
       },
+      {
+        path: 'profile',
+        loadChildren: () => import('@/features/profile/profile.routes').then((m) => m.profileRoutes),
+      },
       { path: 'notfound', loadComponent: () => import('@/pages/notfound/notfound.component').then((m) => m.NotFoundComponent) },
     ],
   },

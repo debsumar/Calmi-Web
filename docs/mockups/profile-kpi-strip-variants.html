@@ -1,0 +1,195 @@
+<!-- Mockup only: static, no backend, data is fake. Four treatments of the profile KPI strip, stacked for comparison. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calmi profile — KPI strip variants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--p-primary-50:#faf8fb;--p-primary-100:#e6dfed;--p-primary-200:#d2c6e0;--p-primary-300:#beadd2;--p-primary-400:#aa94c4;--p-primary-500:#967bb6;--p-primary-600:#80699b;--p-primary-700:#69567f;--p-primary-800:#534464;--p-primary-900:#3c3149;--p-primary-950:#261f2e;--p-coral-500:#e8724a;--p-gold-500:#f5b731;--p-pink-500:#f2a0b0;--p-success-700:#2e7d32;--p-danger-700:#c62828;--color-brand:var(--p-primary-500);--color-brand-light:var(--p-primary-300);--color-brand-dark:var(--p-primary-700);--color-brand-soft:var(--p-primary-400);--color-brand-deep:var(--p-primary-600);--canvas:color-mix(in srgb,var(--color-brand) 5%,white);--surface:#fff;--elevated:#fff;--sunken:color-mix(in srgb,var(--color-brand) 10%,white);--sunken-alt:color-mix(in srgb,var(--color-brand) 15%,white);--hairline:color-mix(in srgb,var(--color-brand) 12%,white);--glass:color-mix(in srgb,white 60%,transparent);--ink:color-mix(in srgb,var(--color-brand) 10%,black);--ink-soft:color-mix(in srgb,var(--ink) 72%,white);--success:var(--p-success-700);--danger:var(--p-danger-700);--graph:var(--color-brand-deep);--shadow:0 4px 4px 0 rgb(0 0 0/.25);--font-sans:'Bricolage Grotesque',sans-serif}
+:root.app-dark{--canvas:color-mix(in srgb,var(--color-brand) 7%,black);--surface:color-mix(in srgb,var(--color-brand) 32%,black);--elevated:color-mix(in srgb,var(--color-brand) 13%,black);--sunken:color-mix(in srgb,var(--color-brand) 19%,black);--sunken-alt:color-mix(in srgb,var(--color-brand) 13%,black);--hairline:color-mix(in srgb,var(--color-brand) 40%,black);--glass:color-mix(in srgb,var(--elevated) 55%,transparent);--ink:color-mix(in srgb,var(--color-brand) 6%,white);--ink-soft:color-mix(in srgb,var(--color-brand) 18%,white);--success:#81c784;--danger:#ef9a9a;--graph:var(--color-brand-light);--shadow:0 4px 4px 0 rgb(0 0 0/.5)}
+*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font-sans);font-size:16px;line-height:1.5}
+a,button{font:inherit;color:inherit}:focus-visible{outline:3px solid var(--color-brand);outline-offset:3px}
+.topbar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;min-height:64px;padding:0 clamp(1rem,4vw,2rem);background:var(--glass);backdrop-filter:blur(14px);border-bottom:1px solid var(--hairline)}
+.logo{font-size:1.25rem;font-weight:800;letter-spacing:-.03em}
+.theme{background:var(--surface);border:1px solid var(--hairline);border-radius:999px;padding:.55rem .85rem;font-size:.875rem;font-weight:700;cursor:pointer}
+.shell{max-width:1120px;margin:auto;padding:2rem 1rem 5rem}
+.eyebrow{margin:0;color:var(--color-brand-dark);font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+:root.app-dark .eyebrow{color:var(--color-brand-light)}
+h1{font-size:clamp(2rem,5vw,2.75rem);line-height:1.1;letter-spacing:-.04em;margin:.25rem 0}
+h2{font-size:1.125rem;margin:0}h3{font-size:1rem;margin:0}
+.lede{margin:.25rem 0 0;color:var(--ink-soft)}
+.tiny{font-size:.75rem;color:var(--ink-soft)}
+.variant{margin-top:2.5rem}
+.variant>header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.25rem 1rem;margin-bottom:.75rem}
+.note{margin:.25rem 0 .75rem;color:var(--ink-soft);font-size:.875rem;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--hairline);border-radius:1.25rem;box-shadow:var(--shadow);overflow:hidden}
+.card-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.25rem 1rem;padding:1.15rem 1.25rem .75rem;background:var(--surface)}
+.chip{display:inline-flex;align-items:center;gap:.3rem;align-self:flex-start;border-radius:999px;padding:.2rem .55rem;font-size:.75rem;font-weight:700;background:var(--sunken);color:var(--ink)}
+.chip.up{color:var(--success)}.chip.flat{color:var(--ink-soft)}
+.value{font-size:2rem;line-height:1.1;letter-spacing:-.03em;font-weight:800;margin:.15rem 0 0}
+.value small{font-size:.875rem;font-weight:700;color:var(--ink-soft);letter-spacing:0}
+.label{font-size:.9375rem;font-weight:700;color:var(--ink-soft)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* S1 — dividers via a hairline background showing through a 1px grid gap. */
+.rail{display:grid;gap:1px;background:var(--hairline);grid-template-columns:repeat(4,minmax(0,1fr))}
+.rail>article{display:flex;flex-direction:column;background:var(--surface);padding:1.25rem;min-width:0}
+.spark{width:100%;height:40px;margin-top:.75rem;color:var(--graph)}
+.spark path{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.spark .base{stroke:var(--hairline);stroke-width:2}
+.bar{height:8px;margin-top:1rem;background:var(--sunken-alt);border-radius:999px;overflow:hidden}
+.bar span{display:block;height:100%;border-radius:inherit;background:var(--color-brand-deep)}
+
+/* S2 — discrete columns: seven countable bars instead of a continuous line. */
+.cols{display:flex;align-items:flex-end;gap:4px;height:44px;margin-top:.75rem}
+.cols i{flex:1;background:var(--color-brand-light);border-radius:.25rem .25rem 0 0;display:block}
+.cols i.now{background:var(--graph)}
+
+/* S3 — ledger rows: calmest and densest, no chart at all. */
+.ledger{display:grid}
+.ledger>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:1rem;padding:1rem 1.25rem;border-top:1px solid var(--hairline)}
+.ledger>div:first-child{border-top:0}
+.ledger .num{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;text-align:right;white-space:nowrap}
+.ledger .num small{font-size:.8125rem;font-weight:700;color:var(--ink-soft);letter-spacing:0}
+.track{width:120px;height:6px;background:var(--sunken-alt);border-radius:999px;overflow:hidden}
+.track span{display:block;height:100%;background:var(--graph);border-radius:inherit}
+
+/* S4 — dot weeks: one dot per day, activity depth by fill. */
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--hairline)}
+.tiles>article{background:var(--surface);padding:1.25rem;display:flex;gap:1rem;align-items:flex-start;min-width:0}
+.tiles .body{min-width:0;flex:1}
+.dots{display:flex;gap:5px;margin-top:.7rem}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--sunken-alt);display:block}
+.dots i[data-on="1"]{background:var(--color-brand-light)}
+.dots i[data-on="2"]{background:var(--graph)}
+.ring{width:64px;height:64px;flex:none}
+.ring circle{fill:none;stroke-width:9}
+.ring .t{stroke:var(--sunken-alt)}
+.ring .a{stroke:var(--graph);stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
+.ring text{font-family:var(--font-sans);font-weight:800;font-size:24px;fill:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;padding:.85rem 1.25rem;border-top:1px solid var(--hairline);background:var(--surface);font-size:.75rem;color:var(--ink-soft);align-items:center}
+.key{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:.35rem;vertical-align:-1px}
+@media(max-width:900px){.rail{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.rail,.tiles{grid-template-columns:1fr}.ledger>div{grid-template-columns:minmax(0,1fr) auto;row-gap:.5rem}.track{grid-column:1/-1;width:100%}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="topbar"><span class="logo">calmi</span><button class="theme" type="button" aria-pressed="false">Theme</button></header>
+<main class="shell">
+  <header>
+    <p class="eyebrow">My pace</p>
+    <h1>KPI strip variants</h1>
+    <p class="lede">Four treatments of the same four metrics. Every variant keeps the exact number in text, so no meaning depends on a chart or a colour.</p>
+  </header>
+
+  <!-- S1 -->
+  <section class="variant" aria-labelledby="s1-title">
+    <header><h2 id="s1-title">S1 · Sparkline rail <span class="tiny">(currently implemented)</span></h2><span class="tiny">4 columns · hairline dividers</span></header>
+    <p class="note">Continuous trend lines over a shared baseline. Best for direction over time; the line implies data between points, which weekly aggregates do not really have.</p>
+    <div class="card">
+      <div class="card-head"><h3>This month</h3><span class="tiny">Compared with your own history</span></div>
+      <div class="rail">
+        <article><span class="label">Check-ins</span><p class="value">12 <small>days</small></p><span class="chip up">↗ +3 vs July</span>
+          <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none" role="img" aria-label="Check-ins trend across the last 7 weeks, rising overall"><path class="base" d="M4 36 H196"/><path d="M4 36 36 25.7 68 29.1 100 18.9 132 22.3 164 12 196 8.6"/></svg>
+        </article>
+        <article><span class="label">Calm minutes</span><p class="value">118 <small>min</small></p><span class="chip up">↗ +22 vs July</span>
+          <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none" role="img" aria-label="Calm minutes trend across the last 7 weeks, rising overall"><path class="base" d="M4 36 H196"/><path d="M4 36 36 28.5 68 32.4 100 22.1 132 25.6 164 17.3 196 8"/></svg>
+        </article>
+        <article><span class="label">Gentle streak</span><p class="value">6 <small>days</small></p><span class="chip flat">→ Your own pace</span>
+          <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none" role="img" aria-label="Streak across the last 7 weeks, holding steady"><path class="base" d="M4 36 H196"/><path d="M4 36 36 29 68 22 100 15 132 8 164 15 196 8"/></svg>
+        </article>
+        <article><span class="label">Guided sessions</span><p class="value">3 <small>of 4</small></p><span class="chip flat">1 left</span>
+          <div class="bar" role="meter" aria-label="Guided sessions used this month" aria-valuemin="0" aria-valuemax="4" aria-valuenow="3" aria-valuetext="3 of 4 sessions used"><span style="width:75%"></span></div>
+          <p class="tiny" style="margin:.5rem 0 0">Renews 01 Sep</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- S2 -->
+  <section class="variant" aria-labelledby="s2-title">
+    <header><h2 id="s2-title">S2 · Column rail</h2><span class="tiny">4 columns · discrete bars</span></header>
+    <p class="note">Same rail, but each week is a countable column and the current week is emphasised. Honest about discrete data and easier to read at a glance than a thin line; comparing slopes is harder.</p>
+    <div class="card">
+      <div class="card-head"><h3>This month</h3><span class="tiny">Last 7 weeks · current week highlighted</span></div>
+      <div class="rail">
+        <article><span class="label">Check-ins</span><p class="value">12 <small>days</small></p><span class="chip up">↗ +3 vs July</span>
+          <div class="cols" role="img" aria-label="Check-ins by week: 5, 7, 6, 9, 8, 11, 12 days"><i style="height:42%"></i><i style="height:58%"></i><i style="height:50%"></i><i style="height:75%"></i><i style="height:67%"></i><i style="height:92%"></i><i class="now" style="height:100%"></i></div>
+        </article>
+        <article><span class="label">Calm minutes</span><p class="value">118 <small>min</small></p><span class="chip up">↗ +22 vs July</span>
+          <div class="cols" role="img" aria-label="Calm minutes by week: 64, 78, 71, 92, 86, 104, 118"><i style="height:54%"></i><i style="height:66%"></i><i style="height:60%"></i><i style="height:78%"></i><i style="height:73%"></i><i style="height:88%"></i><i class="now" style="height:100%"></i></div>
+        </article>
+        <article><span class="label">Gentle streak</span><p class="value">6 <small>days</small></p><span class="chip flat">→ Your own pace</span>
+          <div class="cols" role="img" aria-label="Streak by week: 2, 3, 4, 5, 6, 5, 6 days"><i style="height:33%"></i><i style="height:50%"></i><i style="height:66%"></i><i style="height:83%"></i><i style="height:100%"></i><i style="height:83%"></i><i class="now" style="height:100%"></i></div>
+        </article>
+        <article><span class="label">Guided sessions</span><p class="value">3 <small>of 4</small></p><span class="chip flat">1 left</span>
+          <div class="bar" role="meter" aria-label="Guided sessions used this month" aria-valuemin="0" aria-valuemax="4" aria-valuenow="3" aria-valuetext="3 of 4 sessions used"><span style="width:75%"></span></div>
+          <p class="tiny" style="margin:.5rem 0 0">Renews 01 Sep</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- S3 -->
+  <section class="variant" aria-labelledby="s3-title">
+    <header><h2 id="s3-title">S3 · Ledger rows</h2><span class="tiny">1 column · no charts</span></header>
+    <p class="note">Quietest option and the strongest on small screens: one row per metric, value right-aligned on a shared axis, a thin bounded track instead of a chart. Trend detail is sacrificed for calm and legibility.</p>
+    <div class="card">
+      <div class="card-head"><h3>This month</h3><span class="tiny">Cycle 01–31 Aug</span></div>
+      <div class="ledger">
+        <div><span class="label">Check-ins</span><p class="num">12 <small>of 31 days</small></p><div class="track" role="meter" aria-label="Check-ins this month" aria-valuemin="0" aria-valuemax="31" aria-valuenow="12" aria-valuetext="12 of 31 days"><span style="width:39%"></span></div></div>
+        <div><span class="label">Calm minutes</span><p class="num">118 <small>min · +22 vs July</small></p><div class="track" role="meter" aria-label="Calm minutes this month" aria-valuemin="0" aria-valuemax="240" aria-valuenow="118" aria-valuetext="118 of 240 minutes"><span style="width:49%"></span></div></div>
+        <div><span class="label">Gentle streak</span><p class="num">6 <small>days</small></p><div class="track" role="meter" aria-label="Streak length this week" aria-valuemin="0" aria-valuemax="7" aria-valuenow="6" aria-valuetext="6 of 7 days"><span style="width:86%"></span></div></div>
+        <div><span class="label">Guided sessions</span><p class="num">3 <small>of 4</small></p><div class="track" role="meter" aria-label="Guided sessions used this month" aria-valuemin="0" aria-valuemax="4" aria-valuenow="3" aria-valuetext="3 of 4 sessions used"><span style="width:75%"></span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S4 -->
+  <section class="variant" aria-labelledby="s4-title">
+    <header><h2 id="s4-title">S4 · Ring and dot-week tiles</h2><span class="tiny">2×2 · one dot per day</span></header>
+    <p class="note">Warmest of the four: a small ring carries the bounded share and seven dots show the week day by day. Costs the most vertical space and only suits metrics that genuinely have a denominator.</p>
+    <div class="card">
+      <div class="card-head"><h3>This month</h3><span class="tiny">Rings show share of the stated bound</span></div>
+      <div class="tiles">
+        <article>
+          <svg class="ring" viewBox="0 0 100 100" role="meter" aria-label="Check-ins this month" aria-valuemin="0" aria-valuemax="31" aria-valuenow="12" aria-valuetext="12 of 31 days"><circle class="t" cx="50" cy="50" r="42"/><circle class="a" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="161.8"/><text x="50" y="59" text-anchor="middle">12</text></svg>
+          <div class="body"><h3>Check-ins</h3><p class="tiny">12 of 31 days · +3 vs July</p>
+            <div class="dots" role="img" aria-label="This week: none, light, light, full, full, none, light"><i data-on="0"></i><i data-on="1"></i><i data-on="1"></i><i data-on="2"></i><i data-on="2"></i><i data-on="0"></i><i data-on="1"></i></div>
+          </div>
+        </article>
+        <article>
+          <svg class="ring" viewBox="0 0 100 100" role="meter" aria-label="Calm minutes this month" aria-valuemin="0" aria-valuemax="240" aria-valuenow="118" aria-valuetext="118 of 240 minutes"><circle class="t" cx="50" cy="50" r="42"/><circle class="a" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="134.6"/><text x="50" y="59" text-anchor="middle" font-size="21">118</text></svg>
+          <div class="body"><h3>Calm minutes</h3><p class="tiny">118 of 240 min · +22 vs July</p>
+            <div class="dots" role="img" aria-label="This week: light, full, none, light, full, full, light"><i data-on="1"></i><i data-on="2"></i><i data-on="0"></i><i data-on="1"></i><i data-on="2"></i><i data-on="2"></i><i data-on="1"></i></div>
+          </div>
+        </article>
+        <article>
+          <svg class="ring" viewBox="0 0 100 100" role="meter" aria-label="Streak length this week" aria-valuemin="0" aria-valuemax="7" aria-valuenow="6" aria-valuetext="6 of 7 days"><circle class="t" cx="50" cy="50" r="42"/><circle class="a" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="37.7"/><text x="50" y="59" text-anchor="middle">6</text></svg>
+          <div class="body"><h3>Gentle streak</h3><p class="tiny">6 of 7 days · no pressure to keep it</p>
+            <div class="dots" role="img" aria-label="This week: full, full, full, full, full, full, pending"><i data-on="2"></i><i data-on="2"></i><i data-on="2"></i><i data-on="2"></i><i data-on="2"></i><i data-on="2"></i><i data-on="0"></i></div>
+          </div>
+        </article>
+        <article>
+          <svg class="ring" viewBox="0 0 100 100" role="meter" aria-label="Guided sessions used this month" aria-valuemin="0" aria-valuemax="4" aria-valuenow="3" aria-valuetext="3 of 4 sessions used"><circle class="t" cx="50" cy="50" r="42"/><circle class="a" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="65.97"/><text x="50" y="59" text-anchor="middle">3</text></svg>
+          <div class="body"><h3>Guided sessions</h3><p class="tiny">3 of 4 booked · renews 01 Sep</p>
+            <div class="dots" role="img" aria-label="Next session Tuesday 2:30 PM"><i data-on="2"></i><i data-on="0"></i><i data-on="2"></i><i data-on="0"></i><i data-on="2"></i><i data-on="0"></i><i data-on="0"></i></div>
+          </div>
+        </article>
+      </div>
+      <div class="legend"><span><i class="key" style="background:var(--sunken-alt)"></i>No activity</span><span><i class="key" style="background:var(--color-brand-light)"></i>Light</span><span><i class="key" style="background:var(--graph)"></i>Full</span><span>Dots and rings are labelled; exact values are in text.</span></div>
+    </div>
+  </section>
+</main>
+<script>
+  const root = document.documentElement, theme = document.querySelector('.theme');
+  theme.addEventListener('click', () => {
+    const dark = root.classList.toggle('app-dark');
+    theme.setAttribute('aria-pressed', String(dark));
+    theme.textContent = dark ? 'Light mode' : 'Theme';
+  });
+</script>
+</body></html>

@@ -1,0 +1,436 @@
+<main class="bg-canvas px-4 py-10 text-ink sm:px-6 md:px-8 md:py-14">
+  <div class="mx-auto max-w-6xl">
+    <!-- Page header, kept separate from the bento grid -->
+    <header class="flex flex-col gap-5 border-b border-hairline pb-8 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
+        @if (showAvatarImage()) {
+          <img
+            [src]="avatarUrl()"
+            alt=""
+            aria-hidden="true"
+            referrerpolicy="no-referrer"
+            decoding="async"
+            width="64"
+            height="64"
+            class="h-16 w-16 shrink-0 rounded-full border border-hairline bg-sunken object-cover"
+            (error)="onAvatarError()" />
+        } @else {
+          <div
+            class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand text-xl font-bold text-on-brand"
+            aria-hidden="true">
+            {{ initials() }}
+          </div>
+        }
+        <div class="min-w-0">
+          <p class="text-xs font-semibold text-ink-soft">My space</p>
+          <h1 id="profile-title" class="break-words font-sans text-3xl font-bold leading-tight text-ink md:text-5xl">
+            {{ displayName() }}
+          </h1>
+          <p class="mt-1 break-words text-base text-ink-soft">{{ email() }}</p>
+        </div>
+      </div>
+      <div class="flex min-w-0 flex-col gap-3 sm:items-end">
+        <div class="sm:text-right">
+          <p class="text-xs font-semibold uppercase tracking-wide text-ink-soft">Current plan</p>
+          <p class="mt-1 break-words text-lg font-bold text-ink">Calmi {{ dashboard().subscription.name }}</p>
+          <p class="break-words text-base text-ink-soft">
+            {{ dashboard().subscription.cadence }} &middot; {{ dashboard().subscription.renewal }}
+          </p>
+        </div>
+        <a
+          routerLink="/pricing"
+          class="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand-deep px-5 py-2 text-base font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
+          Upgrade plan
+          <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
+        </a>
+      </div>
+    </header>
+
+    <div class="mt-8 grid grid-flow-row-dense gap-4 md:grid-cols-2 lg:grid-cols-6">
+      <!-- Rumi AI allowance dial -->
+      @if (chatQuota(); as chat) {
+        <section
+          aria-labelledby="chat-usage-title"
+          class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
+          <h2 id="chat-usage-title" class="flex items-center gap-2 text-lg font-bold text-ink">
+            <svg lucideSparkles class="h-5 w-5 shrink-0 text-brand dark:text-brand-light" aria-hidden="true" />
+            {{ chat.shortLabel }}
+          </h2>
+
+          <!-- Ring carries the proportion and the meter value; no separate bar -->
+          <div class="mt-4 flex flex-1 flex-wrap items-center gap-5">
+            <div class="relative h-28 w-28 shrink-0">
+              <svg
+                viewBox="0 0 96 96"
+                class="h-28 w-28 -rotate-90"
+                role="meter"
+                [attr.aria-label]="chat.label + ' used this month'"
+                [attr.aria-valuemin]="0"
+                [attr.aria-valuemax]="chat.limit"
+                [attr.aria-valuenow]="chat.used"
+                [attr.aria-valuetext]="chat.valueText">
+                <circle cx="48" cy="48" r="42" fill="none" stroke-width="8" class="stroke-sunken-alt" />
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="42"
+                  fill="none"
+                  stroke-width="8"
+                  stroke-linecap="round"
+                  [attr.class]="chat.arcStroke"
+                  [attr.stroke-dasharray]="ringCircumference"
+                  [attr.stroke-dashoffset]="chat.ringOffset" />
+              </svg>
+              <span class="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
+                <span class="text-lg font-bold leading-none text-ink">{{ chat.percentage }}%</span>
+                <span class="mt-0.5 text-xs font-semibold text-ink-soft">used</span>
+              </span>
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <p class="flex flex-wrap items-baseline gap-1">
+                <span class="text-4xl font-bold leading-none tracking-tight text-ink md:text-5xl">{{ chat.used }}</span>
+                <span class="text-base font-semibold text-ink-soft">/ {{ chat.limit }}</span>
+              </p>
+              <p class="mt-2 break-words text-base text-ink-soft">{{ chat.percentage }}% used</p>
+              <p class="mt-1 break-words text-base text-ink-soft">{{ chat.renewal }}</p>
+            </div>
+          </div>
+
+          <div class="mt-auto flex flex-col gap-2 pt-5">
+            @if (chat.nearLimit) {
+              <p class="flex items-start gap-2 text-base font-bold text-danger" aria-live="polite">
+                <svg lucideTriangleAlert class="mt-0.5 h-5 w-5 shrink-0 text-danger" aria-hidden="true" />
+                <span>Approaching limit. {{ chat.remaining }} {{ chat.unit }} remain.</span>
+              </p>
+            } @else {
+              <p class="flex items-start gap-2 text-base text-ink-soft" aria-live="polite">
+                <svg lucideCircleCheck class="mt-0.5 h-5 w-5 shrink-0 text-brand dark:text-brand-light" aria-hidden="true" />
+                <span>{{ chat.remaining }} {{ chat.unit }} remain.</span>
+              </p>
+            }
+
+            <a
+              routerLink="/pricing"
+              class="inline-flex min-h-11 items-center justify-center gap-1.5 self-stretch rounded-full px-1 text-center text-base font-semibold text-brand-dark underline decoration-2 underline-offset-4 transition-colors hover:text-brand-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface dark:text-brand-light sm:self-end">
+              Upgrade plan for unlimited chats
+              <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
+            </a>
+          </div>
+        </section>
+      }
+
+      <!-- Sleep sounds listening summary -->
+      <section
+        aria-labelledby="audio-title"
+        class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 id="audio-title" class="flex items-center gap-2 text-lg font-bold text-ink">
+            <svg lucideMoon class="h-5 w-5 shrink-0 text-brand dark:text-brand-light" aria-hidden="true" />
+            Sleep sounds
+          </h2>
+          <p class="text-xs text-ink-soft">What you played most over the {{ dashboard().audio.rangeLabel }}.</p>
+        </div>
+
+        <p class="mt-5 flex flex-wrap items-baseline gap-2">
+          <span class="text-3xl font-bold leading-none text-ink">{{ dashboard().audio.totalMinutes }}</span>
+          <span class="text-base text-ink-soft">minutes listened</span>
+        </p>
+        <p class="mt-1 text-base text-ink-soft">
+          Across {{ dashboard().audio.nightsWithAudio }} nights with audio playing.
+        </p>
+
+        @if (audioDonut().segments.length > 0) {
+          <div class="mt-5 flex flex-1 flex-col items-center gap-5 sm:flex-row sm:items-center">
+            <!-- Composition donut; exact minutes and shares are listed in the key -->
+            <svg
+              viewBox="0 0 96 96"
+              class="h-32 w-32 shrink-0"
+              role="img"
+              [attr.aria-label]="'Share of listening minutes: ' + audioDonut().label">
+              <circle cx="48" cy="48" r="42" fill="none" stroke-width="12" class="stroke-sunken-alt" />
+              @for (segment of audioDonut().segments; track segment.id) {
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="42"
+                  fill="none"
+                  stroke-width="12"
+                  [attr.class]="segment.stroke"
+                  [attr.stroke-dasharray]="segment.dash + ' ' + segment.gap"
+                  [attr.transform]="'rotate(' + segment.rotation + ' 48 48)'" />
+              }
+            </svg>
+
+            <ul class="w-full min-w-0 flex-1 space-y-2.5 sm:w-auto">
+              @for (segment of audioDonut().segments; track segment.id) {
+                <li class="flex min-w-0 items-center gap-2.5">
+                  <span class="h-3 w-3 shrink-0 rounded-sm" [ngClass]="segment.swatch" aria-hidden="true"></span>
+                  <span class="min-w-0 flex-1 break-words text-base font-bold text-ink">{{ segment.title }}</span>
+                  <span class="shrink-0 text-xs font-semibold text-ink-soft">
+                    {{ segment.minutes }} min · {{ segment.share }}%
+                  </span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </section>
+
+      <!-- Next available sessions, from the same therapist availability data -->
+      <section
+        aria-labelledby="sessions-title"
+        class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
+        <h2 id="sessions-title" class="text-lg font-bold text-ink">Sessions</h2>
+        <p class="mt-1 text-base text-ink-soft">
+          Next available with {{ therapistName }} · {{ therapistSession }}
+        </p>
+
+        @if (nextSessionDays.length > 0) {
+          <ul class="mt-4 flex-1 divide-y divide-hairline">
+            @for (day of nextSessionDays; track day.key) {
+              <li class="flex flex-col items-stretch gap-3 py-3 sm:flex-row sm:items-center">
+                <span
+                  class="flex w-14 shrink-0 break-words flex-col items-center rounded-xl bg-sunken px-2 py-1.5"
+                  aria-hidden="true">
+                  <span class="text-lg font-bold leading-tight text-ink">{{ day.dayNumber }}</span>
+                  <span class="text-xs font-semibold text-ink-soft">{{ day.weekday }}</span>
+                </span>
+
+                <span class="min-w-0 flex-1">
+                  <span class="block text-base font-bold text-ink">{{ day.relativeLabel }}</span>
+                  <span class="mt-1 flex flex-wrap gap-1.5">
+                    @for (slot of day.slots; track slot.id) {
+                      <span
+                        class="rounded-full border border-hairline bg-surface px-2.5 py-0.5 break-words text-xs font-semibold text-ink">
+                        {{ slot.label }}
+                      </span>
+                    }
+                  </span>
+                </span>
+
+                <a
+                  [routerLink]="['/therapy', therapistId]"
+                  class="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-brand bg-surface dark:border-brand-light px-4 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:w-auto"
+                  [attr.aria-label]="'Book a session on ' + day.relativeLabel + ', ' + day.weekday + ' ' + day.dayNumber">
+                  Book
+                  <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
+                </a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="mt-4 rounded-2xl bg-sunken p-4 text-base text-ink-soft">
+            No open days right now. Availability usually reopens within a week.
+          </p>
+        }
+
+        <p class="mt-auto pt-4 text-xs text-ink-soft">
+          @if (nextClosedDayLabel) {
+            {{ nextClosedDayLabel }} is unavailable.
+          }
+          {{ openSessionDays }} open days remain in {{ sessionMonthLabel }}.
+        </p>
+      </section>
+
+      <!-- KPI signal strip: one comparative rail, shared baseline, hairline dividers -->
+      <section
+        aria-labelledby="signals-title"
+        class="flex flex-col overflow-hidden rounded-3xl border border-hairline shadow-card md:col-span-2 lg:col-span-3">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-surface px-5 pb-3 pt-5">
+          <h2 id="signals-title" class="text-lg font-bold text-ink">This month</h2>
+          <p class="text-xs text-ink-soft">Compared with your own history, never with other people.</p>
+        </div>
+
+        <!-- gap-px over a hairline background draws dividers at every breakpoint -->
+        <div class="grid flex-1 gap-px bg-hairline sm:grid-cols-3">
+          @for (signal of signals(); track signal.id) {
+            <article class="flex min-w-0 flex-col bg-surface p-5">
+              <h3 class="text-base font-bold text-ink-soft">{{ signal.label }}</h3>
+              <p class="mt-1 flex flex-wrap items-baseline gap-1.5">
+                <span class="text-3xl font-bold leading-none tracking-tight text-ink">{{ signal.value }}</span>
+                @if (signal.unit) {
+                  <span class="text-base font-semibold text-ink-soft">{{ signal.unit }}</span>
+                }
+              </p>
+              <span
+                class="mt-2 inline-flex max-w-full items-center gap-1 self-start truncate rounded-full bg-sunken px-2.5 py-0.5 text-xs font-semibold"
+                [class.text-success]="signal.comparison.direction === 'up'"
+                [class.text-danger]="signal.comparison.direction === 'down'"
+                [class.text-ink-soft]="signal.comparison.direction === 'flat'">
+                @if (signal.comparison.direction === 'up') {
+                  <svg lucideTrendingUp class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                } @else if (signal.comparison.direction === 'down') {
+                  <svg lucideTrendingDown class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                } @else {
+                  <svg lucideMinus class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                }
+                {{ signal.comparison.label }}
+              </span>
+              <svg
+                class="mt-3 aspect-[10/7] w-full text-brand-deep dark:text-brand-light"
+                viewBox="0 0 200 140"
+                preserveAspectRatio="none"
+                role="img"
+                [attr.aria-label]="signal.sparkLabel">
+                <path d="M 4 134 L 196 134" class="stroke-hairline" stroke-width="2" fill="none" />
+                <path
+                  [attr.d]="signal.sparkPath"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+              <p class="mt-auto pt-2 text-xs text-ink-soft">{{ signal.description }}</p>
+            </article>
+          }
+
+        </div>
+      </section>
+
+      <!-- Personal information tile -->
+      <section
+        aria-labelledby="personal-title"
+        class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
+        <h2 id="personal-title" class="text-lg font-bold text-ink">Personal information</h2>
+        <dl class="mt-5 flex flex-1 flex-col justify-between divide-y divide-hairline">
+          <div class="grid gap-1 py-3 first:pt-0 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+            <dt class="break-words text-xs font-semibold text-ink-soft">Name</dt>
+            <dd class="break-words text-base text-ink">{{ displayName() }}</dd>
+          </div>
+          <div class="grid gap-1 py-3 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+            <dt class="break-words text-xs font-semibold text-ink-soft">Email</dt>
+            <dd class="break-words text-base text-ink">{{ email() }}</dd>
+          </div>
+          @for (preference of dashboard().preferences; track preference.id) {
+            <div class="grid gap-1 py-3 last:pb-0 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+              <dt class="break-words text-xs font-semibold text-ink-soft">{{ preference.label }}</dt>
+              <dd class="min-w-0 break-words text-base text-ink">{{ preference.value }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      <!-- Security tile -->
+      <section
+        aria-labelledby="security-title"
+        class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2"
+        [ngClass]="chatQuota() ? 'lg:col-span-3' : 'lg:col-span-6'">
+        <h2 id="security-title" class="text-lg font-bold text-ink">Credentials and security</h2>
+        <ul class="mt-5 flex flex-1 flex-col justify-between gap-3">
+          <!-- Sign-in method, from the authenticated identity -->
+          <li class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-sunken p-4">
+            <div class="flex min-w-0 items-center gap-3">
+              <svg lucideShieldCheck class="h-5 w-5 shrink-0 text-brand dark:text-brand-light" aria-hidden="true" />
+              <div class="min-w-0">
+                <h3 class="text-lg font-bold text-ink">Sign-in method</h3>
+                <p class="mt-1 flex min-w-0 items-center gap-2 break-words text-base text-ink-soft">
+                  @if (signInProvider().logo) {
+                    <img [src]="signInProvider().logo" alt="" aria-hidden="true" class="h-4 w-4 shrink-0" />
+                  }
+                  {{ signInProvider().label }}
+                </p>
+              </div>
+            </div>
+            <p class="inline-flex items-center gap-1.5 text-xs font-semibold text-ink">
+              @if (signInProvider().connected) {
+                <svg lucideCircleCheck class="h-4 w-4 text-brand dark:text-brand-light" aria-hidden="true" />
+                Connected
+              } @else {
+                <svg lucideCircleAlert class="h-4 w-4 text-danger" aria-hidden="true" />
+                Unknown
+              }
+            </p>
+          </li>
+
+          @for (item of dashboard().security; track item.id) {
+            <li class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-sunken p-4">
+              <div class="flex min-w-0 items-center gap-3">
+                <svg lucideLock class="h-5 w-5 shrink-0 text-brand dark:text-brand-light" aria-hidden="true" />
+                <div class="min-w-0">
+                  <h3 class="break-words text-lg font-bold text-ink">{{ item.label }}</h3>
+                  <p class="mt-1 break-words text-base text-ink-soft">{{ item.value }}</p>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-3">
+                <p class="inline-flex items-center gap-1.5 text-xs font-semibold text-ink">
+                  <svg lucideCircleCheck class="h-4 w-4 text-brand dark:text-brand-light" aria-hidden="true" />
+                  {{ item.status }}
+                </p>
+                @if (item.action; as action) {
+                  <a
+                    [routerLink]="action.route"
+                    [attr.aria-label]="action.label + ' ' + item.label"
+                    class="inline-flex min-h-11 items-center rounded-full border-2 border-brand bg-surface dark:border-brand-light px-5 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-sunken">
+                    {{ action.label }}
+                  </a>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <!-- Account closure -->
+      <section
+        aria-labelledby="closure-title"
+        class="rounded-3xl border border-hairline bg-sunken p-6 md:col-span-2 lg:col-span-6">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div class="min-w-0">
+            <h2 id="closure-title" class="text-lg font-bold text-ink">{{ dashboard().accountClosure.label }}</h2>
+            <p class="mt-2 max-w-2xl text-base text-ink-soft">{{ dashboard().accountClosure.description }}</p>
+          </div>
+          @if (!closureRequested()) {
+            <button
+              type="button"
+              class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border-2 border-danger bg-surface px-5 py-2 text-base font-semibold text-danger transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-sunken"
+              (click)="startClosure()">
+              {{ dashboard().accountClosure.actionLabel }}
+            </button>
+          }
+        </div>
+
+        @if (closureRequested()) {
+          <div class="mt-6 rounded-2xl border border-hairline bg-surface p-5" aria-labelledby="confirm-closure-title">
+            <h3 id="confirm-closure-title" tabindex="-1" class="flex items-center gap-2 text-lg font-bold text-ink">
+              <svg lucideCircleAlert class="h-5 w-5 shrink-0 text-danger" aria-hidden="true" />
+              Confirm account closure
+            </h3>
+            <p id="closure-instructions" class="mt-2 text-base text-ink-soft">
+              Type CLOSE to continue. Your profile, sessions, and listening history are removed, and this cannot be
+              undone.
+            </p>
+            <label for="closure-confirmation" class="mt-4 block text-xs font-semibold text-ink-soft">
+              Confirmation text
+            </label>
+            <input
+              id="closure-confirmation"
+              type="text"
+              autocomplete="off"
+              class="mt-2 min-h-11 w-full max-w-sm rounded-xl border border-hairline bg-sunken px-4 py-2 text-base text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+              [value]="closureConfirmation()"
+              [attr.aria-describedby]="'closure-instructions closure-error'"
+              [attr.aria-invalid]="closureStatus() && !closureIsValid()"
+              (input)="updateClosureConfirmation($any($event.target).value)" />
+            <p id="closure-error" class="mt-2 text-xs text-ink-soft" aria-live="polite">{{ closureStatus() }}</p>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <button
+                type="button"
+                class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-deep px-5 py-2 text-base font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                (click)="confirmClosure()">
+                Continue
+              </button>
+              <button
+                type="button"
+                class="inline-flex min-h-11 items-center justify-center rounded-full border-2 border-brand bg-surface dark:border-brand-light px-5 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                (click)="cancelClosure()">
+                Keep my account
+              </button>
+            </div>
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+</main>
