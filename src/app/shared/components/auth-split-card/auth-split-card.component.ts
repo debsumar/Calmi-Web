@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideDynamicIcon } from '@lucide/angular';
+import { LucideDynamicIcon, LucideX, provideLucideIcons } from '@lucide/angular';
 
 export type AuthImageSide = 'left' | 'right';
 
@@ -31,6 +31,7 @@ const SLIDE_INTERVAL_MS = 6000;
 @Component({
   selector: 'app-auth-split-card',
   imports: [RouterLink, LucideDynamicIcon],
+  providers: [provideLucideIcons(LucideX)],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="min-h-screen bg-canvas px-4 py-6 font-sans text-ink sm:px-6 md:flex md:items-center md:justify-center md:px-8 md:py-10">

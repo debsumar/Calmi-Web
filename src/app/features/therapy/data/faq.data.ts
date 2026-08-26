@@ -1,5 +1,3 @@
-import type { Therapist } from './therapist.data';
-
 export interface TherapyFaq {
   question: string;
   answer: string;
@@ -28,14 +26,11 @@ export const THERAPY_FAQS: TherapyFaq[] = [
   },
 ];
 
-export function createTherapistFaqs(profile: Therapist): TherapyFaq[] {
-  const sessionMode = profile.sessionMode.toLowerCase();
-  const languages = profile.languages.join(', ');
-
+export function createTherapistFaqs(): TherapyFaq[] {
   return [
     {
       question: 'What happens during my first session?',
-      answer: `Your first ${profile.duration} ${sessionMode} session with ${profile.name} is mostly a conversation. You will talk about what brought you here, what you would like support with, and what pace feels comfortable, and you can ask anything you want before deciding what to focus on together. Sessions can be held in ${languages}.`,
+      answer: 'Your first session is mostly a conversation. You will talk about what brought you here, what you would like support with, and what pace feels comfortable, and you can ask anything you want before deciding what to focus on together. Sessions can be held in any of the languages listed on this profile.',
     },
     {
       question: 'How many sessions will I need?',

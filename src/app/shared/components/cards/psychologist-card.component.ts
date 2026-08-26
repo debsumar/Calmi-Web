@@ -1,40 +1,38 @@
-import { Component, computed, input, output, ChangeDetectionStrategy } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, inject, input, ChangeDetectionStrategy } from '@angular/core';
+import { Router } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { DragScrollDirective } from '@/shared/directives/drag-scroll.directive';
 
+/** Pointer travel (px) past which a tap is treated as a carousel drag, not a click. */
+const DRAG_TOLERANCE_PX = 10;
+
 @Component({
   selector: 'app-psychologist-card',
-  imports: [RouterLink, LucideDynamicIcon, DragScrollDirective],
+  imports: [LucideDynamicIcon, DragScrollDirective],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <div class="h-full bg-surface border border-hairline rounded-2xl p-4 shadow-card flex flex-col">
-      <!-- Profile -->
-      <a [routerLink]="['/therapy', profileId()]"
-         [attr.aria-label]="'View ' + name() + ' profile'"
-         class="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-        <!-- Portrait -->
-        <div class="relative rounded-2xl overflow-hidden aspect-[3/4] bg-sunken">
-          @if (image()) {
-            <img [src]="image()" [alt]="'Portrait of ' + name()" class="absolute inset-0 w-full h-full object-cover">
-          } @else {
-            <span aria-hidden="true"
-                  class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-brand">
-              {{ initials() }}
-            </span>
-          }
-          <div class="absolute inset-0 bg-gradient-to-t from-scrim via-transparent to-transparent"></div>
+    <div class="relative h-full bg-surface border border-hairline rounded-2xl p-4 shadow-card flex flex-col">
+      <!-- Portrait -->
+      <div class="relative rounded-2xl overflow-hidden aspect-[3/4] bg-sunken">
+        @if (image()) {
+          <img [src]="image()" [alt]="'Portrait of ' + name()" class="absolute inset-0 w-full h-full object-cover">
+        } @else {
+          <span aria-hidden="true"
+                class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-brand">
+            {{ initials() }}
+          </span>
+        }
+        <div class="absolute inset-0 bg-gradient-to-t from-scrim via-transparent to-transparent"></div>
 
-          @if (available()) {
-            <span class="absolute bottom-14 left-3 inline-flex items-center gap-1.5 bg-surface border border-hairline rounded-full px-2.5 py-1 text-xs font-semibold text-ink">
-              <span aria-hidden="true" class="w-2 h-2 rounded-full bg-brand"></span>
-              Available
-            </span>
-          }
-          <p class="absolute bottom-3 left-3 right-3 text-on-brand text-xl font-bold truncate">{{ name() }}</p>
-        </div>
-      </a>
+        @if (available()) {
+          <span class="absolute bottom-14 left-3 inline-flex items-center gap-1.5 bg-surface border border-hairline rounded-full px-2.5 py-1 text-xs font-semibold text-ink">
+            <span aria-hidden="true" class="w-2 h-2 rounded-full bg-brand"></span>
+            Available
+          </span>
+        }
+        <p class="absolute bottom-3 left-3 right-3 text-on-brand text-xl font-bold truncate">{{ name() }}</p>
+      </div>
 
       <!-- Price + rating -->
       <div class="flex items-baseline justify-between gap-2 mt-4">
@@ -48,11 +46,11 @@ import { DragScrollDirective } from '@/shared/directives/drag-scroll.directive';
         </p>
       </div>
 
-      <!-- Specialities -->
+      <!-- Specialities: own scroll surface, so it stays above the card-wide link -->
       <div appDragScroll
            (mousedown)="$event.stopPropagation()"
            (touchstart)="$event.stopPropagation()"
-           class="flex gap-2 mt-3 overflow-x-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+           class="relative z-20 flex gap-2 mt-3 overflow-x-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         @for (tag of specialties(); track tag) {
           <span class="shrink-0 whitespace-nowrap border border-hairline rounded-full px-2.5 py-1 text-xs text-ink-soft">
             {{ tag }}
@@ -65,10 +63,20 @@ import { DragScrollDirective } from '@/shared/directives/drag-scroll.directive';
         <span class="font-semibold text-ink-soft">Speaks:</span> {{ languages().join(', ') }}
       </p>
 
-      <button type="button" (click)="booked.emit()"
-              class="mt-5 w-full bg-brand text-on-brand font-semibold text-sm rounded-full py-3 hover:bg-brand-deep transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+      <a [href]="profileUrl()"
+         [attr.aria-label]="'Book a session with ' + name()"
+         (pointerdown)="onPointerDown($event)"
+         (click)="onNavigate($event)"
+         class="relative z-20 mt-5 block w-full bg-brand text-on-brand font-semibold text-sm text-center rounded-full py-3 hover:bg-brand-deep transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
         Book Session
-      </button>
+      </a>
+
+      <!-- Card-wide tap target: covers the card, sits under the controls above -->
+      <a [href]="profileUrl()"
+         [attr.aria-label]="'View ' + name() + ' profile'"
+         (pointerdown)="onPointerDown($event)"
+         (click)="onNavigate($event)"
+         class="absolute inset-0 z-10 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset"></a>
     </div>
   `,
 })
@@ -83,7 +91,10 @@ export class PsychologistCardComponent {
   languages = input.required<string[]>();
   image = input('');
   available = input(true);
-  booked = output();
+
+  private readonly router = inject(Router);
+  private pointerStartX = 0;
+  private pointerStartY = 0;
 
   initials = computed(() =>
     this.name()
@@ -93,4 +104,30 @@ export class PsychologistCardComponent {
       .map((part) => part[0]?.toUpperCase() ?? '')
       .join('')
   );
+
+  /** Real href so the card stays a link: shareable, middle-clickable, crawlable. */
+  profileUrl = computed(() => `/therapy/${this.profileId()}`);
+
+  onPointerDown(event: PointerEvent): void {
+    this.pointerStartX = event.clientX;
+    this.pointerStartY = event.clientY;
+  }
+
+  /**
+   * Routes in-app, except when the "tap" was really a carousel swipe: a drag
+   * ends with a click on whatever sat under the finger.
+   */
+  onNavigate(event: MouseEvent): void {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    event.preventDefault();
+
+    const movedX = Math.abs(event.clientX - this.pointerStartX);
+    const movedY = Math.abs(event.clientY - this.pointerStartY);
+    const isDrag = (event.clientX || event.clientY)
+      && (movedX > DRAG_TOLERANCE_PX || movedY > DRAG_TOLERANCE_PX);
+    if (isDrag) return;
+
+    void this.router.navigate(['/therapy', this.profileId()]);
+  }
 }

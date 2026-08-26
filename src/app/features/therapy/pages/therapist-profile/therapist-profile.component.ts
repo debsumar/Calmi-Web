@@ -30,8 +30,5 @@ export class TherapistProfileComponent {
   private readonly routeParams = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
 
   readonly therapist = computed(() => THERAPISTS.find((profile) => profile.id === this.routeParams().get('id')));
-  readonly profileFaqs = computed(() => {
-    const profile = this.therapist();
-    return profile ? createTherapistFaqs(profile) : [];
-  });
+  readonly profileFaqs = computed(() => (this.therapist() ? createTherapistFaqs() : []));
 }
