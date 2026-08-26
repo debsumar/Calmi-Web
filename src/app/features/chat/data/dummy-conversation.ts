@@ -11,7 +11,7 @@ export function createGreetingMessages(): ChatMessage[] {
     {
       id: 'greeting-disclaimer',
       role: 'system',
-      text: 'Rumi AI is an AI companion, not a licensed therapist.',
+      text: 'Rumi is an AI companion and therapist, here to listen anytime.',
       timestamp: now,
       status: 'sent',
     },
