@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@/core/services/auth.service';
+import { LucideX, provideLucideIcons } from '@lucide/angular';
 import { ForgotPasswordComponent } from './forgot-password.component';
 
 describe('ForgotPasswordComponent', () => {
@@ -11,7 +13,11 @@ describe('ForgotPasswordComponent', () => {
     requestPasswordReset.mockClear();
     await TestBed.configureTestingModule({
       imports: [ForgotPasswordComponent],
-      providers: [{ provide: AuthService, useValue: { requestPasswordReset } }],
+      providers: [
+        provideRouter([]),
+        provideLucideIcons(LucideX),
+        { provide: AuthService, useValue: { requestPasswordReset } },
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(ForgotPasswordComponent);
     fixture.detectChanges();

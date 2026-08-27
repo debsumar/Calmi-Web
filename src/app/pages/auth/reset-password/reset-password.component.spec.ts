@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@/core/services/auth.service';
+import { LucideX, provideLucideIcons } from '@lucide/angular';
 import { ResetPasswordComponent } from './reset-password.component';
 
 describe('ResetPasswordComponent', () => {
@@ -17,6 +18,7 @@ describe('ResetPasswordComponent', () => {
       imports: [ResetPasswordComponent],
       providers: [
         provideRouter([]),
+        provideLucideIcons(LucideX),
         { provide: AuthService, useValue: { updatePassword, isAuthenticated } },
       ],
     }).compileComponents();

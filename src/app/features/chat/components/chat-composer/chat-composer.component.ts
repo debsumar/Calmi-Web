@@ -1,12 +1,11 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, inject, Injector, viewChild } from '@angular/core';
-import { LucideDynamicIcon, LucideSend, provideLucideIcons } from '@lucide/angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { ChatStoreService } from '../../services/chat-store.service';
 
 @Component({
   selector: 'app-chat-composer',
   standalone: true,
   imports: [LucideDynamicIcon],
-  providers: [provideLucideIcons(LucideSend)],
   template: `
     <form class="border-t border-hairline bg-glass p-3 backdrop-blur-xl" (submit)="$event.preventDefault(); send()">
       <div class="flex items-end gap-2">

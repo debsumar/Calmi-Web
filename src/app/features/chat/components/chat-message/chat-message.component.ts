@@ -1,6 +1,6 @@
 import { Component, inject, input } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { LucideCircleAlert, LucideDynamicIcon, provideLucideIcons } from '@lucide/angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { ChatMessage } from '../../models/chat-message.model';
 import { ChatStoreService } from '../../services/chat-store.service';
 
@@ -8,7 +8,6 @@ import { ChatStoreService } from '../../services/chat-store.service';
   selector: 'app-chat-message',
   standalone: true,
   imports: [DatePipe, LucideDynamicIcon],
-  providers: [provideLucideIcons(LucideCircleAlert)],
   template: `
     @switch (message().role) {
       @case ('user') {

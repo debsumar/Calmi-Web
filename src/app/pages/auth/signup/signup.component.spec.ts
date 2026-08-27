@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthRole, AuthService } from '@/core/services/auth.service';
+import { LucideX, provideLucideIcons } from '@lucide/angular';
 import { SignupComponent } from './signup.component';
 
 describe('SignupComponent', () => {
@@ -22,6 +23,7 @@ describe('SignupComponent', () => {
       imports: [SignupComponent],
       providers: [
         provideRouter([]),
+        provideLucideIcons(LucideX),
         { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: () => '/home' } } } },
         { provide: AuthService, useValue: { signup, loginWithGoogle, loginWithApple, selectedRole, isAuthenticated } },
       ],

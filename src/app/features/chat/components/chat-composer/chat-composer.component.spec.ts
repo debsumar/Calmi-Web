@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeEach } from 'vitest';
+import { provideLucideIcons, LucideSend } from '@lucide/angular';
 import { ChatComposerComponent } from './chat-composer.component';
 import { ChatStoreService } from '../../services/chat-store.service';
 
@@ -9,7 +10,10 @@ describe('ChatComposerComponent', () => {
   let store: ChatStoreService;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ imports: [ChatComposerComponent] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [ChatComposerComponent],
+      providers: [provideLucideIcons(LucideSend)],
+    }).compileComponents();
     fixture = TestBed.createComponent(ChatComposerComponent);
     store = TestBed.inject(ChatStoreService);
     store.reset();
