@@ -9,7 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { LucideArrowDown, LucideDynamicIcon, provideLucideIcons } from '@lucide/angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { ChatMessageComponent } from '../chat-message/chat-message.component';
 import { ChatTypingComponent } from '../chat-typing/chat-typing.component';
 import { ChatStoreService } from '../../services/chat-store.service';
@@ -18,7 +18,6 @@ import { ChatStoreService } from '../../services/chat-store.service';
   selector: 'app-chat-message-list',
   standalone: true,
   imports: [ChatMessageComponent, ChatTypingComponent, LucideDynamicIcon],
-  providers: [provideLucideIcons(LucideArrowDown)],
   host: { class: 'flex min-h-0 flex-1 flex-col' },
   template: `
     <div #messageLog

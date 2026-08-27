@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { signal } from '@angular/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthRole, AuthService } from '@/core/services/auth.service';
+import { LucideStethoscope, LucideUser, LucideX, provideLucideIcons } from '@lucide/angular';
 import { IdentificationComponent } from './identification.component';
 
 describe('IdentificationComponent', () => {
@@ -14,6 +15,7 @@ describe('IdentificationComponent', () => {
       imports: [IdentificationComponent],
       providers: [
         provideRouter([]),
+        provideLucideIcons(LucideX, LucideStethoscope, LucideUser),
         { provide: AuthService, useValue: auth },
         { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: () => '/home?from=auth' } } } },
       ],
@@ -22,15 +24,16 @@ describe('IdentificationComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders copy, meditation image, and left image panel', () => {
+  it('renders copy, welcome image, and left image panel', () => {
     expect(fixture.nativeElement.textContent).toContain('Get Started with Calmi');
     expect(fixture.nativeElement.textContent).toContain('Wellness Specialist');
-    expect(fixture.nativeElement.querySelector('img').getAttribute('src')).toBe('/assets/meditation.svg');
+    expect(fixture.nativeElement.querySelector('img').getAttribute('src')).toBe('/assets/welcome.svg');
     expect(fixture.nativeElement.querySelector('section > div').className).toContain('md:order-1');
   });
 
   it('gates Proceed until role selected and navigates with selected role', async () => {
-    const proceed = fixture.nativeElement.querySelector('button[type="button"]:last-of-type') as HTMLButtonElement;
+    const proceed = [...fixture.nativeElement.querySelectorAll('button[type="button"]')]
+      .find((button) => button.textContent.includes('Proceed')) as HTMLButtonElement;
     expect(proceed.disabled).toBe(true);
     (fixture.nativeElement.querySelector('[role="radio"]') as HTMLButtonElement).click();
     fixture.detectChanges();

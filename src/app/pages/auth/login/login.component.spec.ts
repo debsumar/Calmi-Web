@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@/core/services/auth.service';
+import { LucideX, provideLucideIcons } from '@lucide/angular';
 import { LoginComponent } from './login.component';
 
 describe('LoginComponent', () => {
@@ -18,6 +19,7 @@ describe('LoginComponent', () => {
       imports: [LoginComponent],
       providers: [
         provideRouter([]),
+        provideLucideIcons(LucideX),
         { provide: AuthService, useValue: { login, loginWithGoogle, loginWithApple, selectedRole: () => null } },
         { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: () => '/home' } } } },
       ],
