@@ -105,9 +105,14 @@
   --color-accent-coral: var(--p-coral-500, #e8724a);
   --color-accent-gold: var(--p-gold-500, #f5b731);
   --color-accent-pink: var(--p-pink-500, #f2a0b0);
+  /* Decorative green. Distinct from `--color-success`, which flips light/dark
+     for status text; this one must stay dark enough for white icons in both. */
+  --color-accent-green: var(--p-success-600, #2a7030);
 
   /* Decorative stops, all derived from the brand palette. */
-  --color-hero: color-mix(in srgb, var(--color-brand) 92%, white);
+  /* Hero fill is mixed toward black, not white: at 86% brand it clears WCAG AA
+     (4.70:1) for plain white body copy sitting on top of it. */
+  --color-hero: color-mix(in srgb, var(--color-brand) 86%, black);
   --color-hero-grad-from: color-mix(in srgb, var(--color-brand) 19%, black);
   --color-hero-grad-to: color-mix(in srgb, var(--color-brand) 9%, black);
   --color-brand-night: color-mix(in srgb, var(--color-brand) 28%, black);

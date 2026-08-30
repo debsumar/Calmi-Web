@@ -19,11 +19,11 @@ import { ChatStoreService } from '../../services/chat-store.service';
       [attr.aria-expanded]="chatStore.isOpen()"
       aria-controls="rumi-chat-panel"
       (click)="chatStore.toggle()">
-      <span class="logo-pulse inline-flex" aria-hidden="true">
+      <span class="logo-pulse inline-flex items-center justify-center" aria-hidden="true">
         @if (chatStore.isOpen()) {
           <svg [lucideIcon]="'x'" [size]="24"></svg>
         } @else {
-          <svg [lucideIcon]="'sparkles'" [size]="24"></svg>
+          <img src="assets/logos/rumi_logo.svg" alt="" class="h-9 w-9 object-contain md:h-10 md:w-10">
         }
       </span>
       @if (chatStore.unreadCount() > 0) {
