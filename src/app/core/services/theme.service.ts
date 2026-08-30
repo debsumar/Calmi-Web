@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, effect, isDevMode } from '@angular/core';
+import { DestroyRef, Injectable, inject, signal, computed, effect, isDevMode } from '@angular/core';
 import { updatePreset, palette } from '@primeuix/themes';
 import { SEED_PRIMARY } from '../theme/calmi-preset';
 
@@ -19,7 +19,19 @@ interface ForegroundChoice {
 const THEME_STORAGE_KEY = 'calmi-theme';
 const THEME_MODES: readonly ThemeMode[] = ['light', 'dark', 'auto'];
 
-/** Falls back to the operating system preference until the user picks a mode. */
+/** `auto` follows the user's local clock, not the OS preference. */
+const LIGHT_START_HOUR = 6;
+const LIGHT_END_HOUR = 20;
+
+/** Re-check the clock often enough that the switch lands within a minute. */
+const CLOCK_TICK_MS = 60_000;
+
+/** Light between 06:00 and 19:59 local time, dark from 20:00 to 05:59. */
+export function isDarkHour(hour: number): boolean {
+  return hour < LIGHT_START_HOUR || hour >= LIGHT_END_HOUR;
+}
+
+/** Falls back to the clock-driven `auto` mode until the user picks a mode. */
 function storedMode(): ThemeMode {
   const stored = localStorage.getItem(THEME_STORAGE_KEY);
   return THEME_MODES.includes(stored as ThemeMode) ? (stored as ThemeMode) : 'auto';
@@ -30,9 +42,12 @@ export class ThemeService {
   private readonly _mode = signal<ThemeMode>(storedMode());
   readonly mode = this._mode.asReadonly();
 
+  /** Local hour, polled so `auto` flips without a reload. */
+  private readonly clockHour = signal(new Date().getHours());
+
   darkTheme = computed(() => {
     const m = this.mode();
-    if (m === 'auto') return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (m === 'auto') return isDarkHour(this.clockHour());
     return m === 'dark';
   });
 
@@ -49,12 +64,8 @@ export class ThemeService {
     // Apply primary color on startup
     this.applyTheme();
 
-    // Listen for system preference changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-      if (this.mode() === 'auto') {
-        this.applyDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
-      }
-    });
+    const tick = setInterval(() => this.clockHour.set(new Date().getHours()), CLOCK_TICK_MS);
+    inject(DestroyRef).onDestroy(() => clearInterval(tick));
   }
 
   toggle(): void {
