@@ -35,7 +35,7 @@ export class OnboardingWizardComponent {
   onboardingService = inject(OnboardingService);
 
   goals = [
-    { id: 'anxiety', icon: 'frown', title: 'Reduce anxiety', desc: 'Find calm in stressful moments' },
+    { id: 'anxiety', icon: 'face-slightly-frowning', title: 'Reduce anxiety', desc: 'Find calm in stressful moments' },
     { id: 'sleep', icon: 'moon', title: 'Sleep better', desc: 'Drift off to peaceful rest' },
     { id: 'focus', icon: 'brain', title: 'Improve focus', desc: 'Clear the noise, stay sharp' },
     { id: 'mindfulness', icon: 'leaf', title: 'Daily mindfulness', desc: 'Build a healthy mental habit' }
@@ -43,7 +43,7 @@ export class OnboardingWizardComponent {
 
   sounds = [
     { id: 'rain', icon: 'cloud-rain', title: 'Rain' },
-    { id: 'ocean', icon: 'waves', title: 'Ocean Waves' },
+    { id: 'ocean', icon: 'waves-horizontal', title: 'Ocean Waves' },
     { id: 'noise', icon: 'audio-lines', title: 'White Noise' },
     { id: 'ambient', icon: 'sun', title: 'Ambient' },
     { id: 'fire', icon: 'flame', title: 'Fireplace' },

@@ -103,12 +103,16 @@
             </ul>
 
             <div class="mt-auto pt-4">
-              <app-primary-button 
+              <!-- CTAs disabled until checkout/onboarding flow ships. -->
+              <app-primary-button
                 class="w-full block"
+                title="Coming soon"
+                [disabled]="true"
                 (clicked)="onPlanAction(plan)"
                 [label]="plan.buttonText" 
                 [variant]="plan.buttonVariant">
               </app-primary-button>
+              <p class="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">Coming soon</p>
             </div>
           </div>
         </div>

@@ -134,7 +134,7 @@ function createTherapist(
 
 export const THERAPISTS: Therapist[] = [
   createTherapist({
-    id: 'gargi-yadav', name: 'Gargi Yadav', image: '', subtitle: 'Clinical Psychologist',
+    id: 'gargi-yadav', name: 'Gargi Yadav', image: 'assets/users/gargi.avif', subtitle: 'Counselling Psychologist',
     qualifications: ['M.Phil', 'M.Sc'], experienceYears: 8, price: 2000, duration: '50 mins',
     sessionMode: 'Video & Audio', rating: 4.9, reviews: 128,
     specialties: [
@@ -146,11 +146,11 @@ export const THERAPISTS: Therapist[] = [
     languages: ['English', 'Hindi'],
   }),
   createTherapist({
-    id: 'yukta-bansal', name: 'Yukta Bansal', image: '', subtitle: 'Counselling Psychologist',
-    qualifications: ['M.Phil', 'M.A.'], experienceYears: 7, price: 1500, duration: '30 mins',
+    id: 'yukta-bansal', name: 'Yukta Bansal', image: 'assets/users/yukta.avif', subtitle: 'Counselling Psychologist',
+    qualifications: ['BA', 'MA Psychology'], experienceYears: 3, price: 1500, duration: '40 mins',
     sessionMode: 'Video & Audio', rating: 4.8, reviews: 96,
     specialties: [
-      'Adolescent & Teen Counselling',
+      'Teen & Adult Counselling',
       'Relationship & Marital Issues',
       'Self-Esteem & Depression',
       'Women Challenges',

@@ -30,7 +30,7 @@ const RIPPLE_DURATION_MS = 420;
   template: `
     <header class="h-16 flex items-center justify-between px-4 md:px-8 bg-glass backdrop-blur-md border-b border-hairline">
       <a routerLink="/" class="flex items-center">
-        <img src="assets/logo.avif" alt="Calmi" class="h-8 md:h-10">
+        <img src="assets/logos/logo.avif" alt="Calmi" class="h-8 md:h-10">
       </a>
 
       <!-- Desktop nav -->
@@ -92,7 +92,7 @@ const RIPPLE_DURATION_MS = 420;
                 </div>
                 <button type="button" (click)="viewProfile()" aria-label="View Profile"
                         class="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-sunken rounded-lg transition-colors text-left">
-                  <svg [lucideIcon]="'user-circle'" [size]="16" aria-hidden="true"></svg>
+                  <svg [lucideIcon]="'circle-user'" [size]="16" aria-hidden="true"></svg>
                   View Profile
                 </button>
                 <button type="button" (click)="logout()" 

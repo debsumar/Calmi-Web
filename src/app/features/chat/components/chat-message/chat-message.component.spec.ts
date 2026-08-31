@@ -8,6 +8,8 @@ import {
   provideLucideIcons,
 } from '@lucide/angular';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { signal } from '@angular/core';
+import { AuthService } from '@/core/services/auth.service';
 import { ChatMessage } from '../../models/chat-message.model';
 import { ChatStoreService } from '../../services/chat-store.service';
 import { ChatMessageComponent } from './chat-message.component';
@@ -15,6 +17,7 @@ import { ChatMessageComponent } from './chat-message.component';
 describe('ChatMessageComponent', () => {
   let fixture: ComponentFixture<ChatMessageComponent>;
   const retry = vi.fn();
+  const currentUser = signal<{ user_metadata?: Record<string, unknown> } | null>(null);
 
   const message = (overrides: Partial<ChatMessage>): ChatMessage => ({
     id: 'message-1',
@@ -33,11 +36,13 @@ describe('ChatMessageComponent', () => {
 
   beforeEach(async () => {
     retry.mockReset();
+    currentUser.set(null);
     await TestBed.configureTestingModule({
       imports: [ChatMessageComponent],
       providers: [
         provideLucideIcons(LucideBot, LucideCheckCheck, LucideUser, LucideCircleAlert),
         { provide: ChatStoreService, useValue: { retry } },
+        { provide: AuthService, useValue: { currentUser } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(ChatMessageComponent);
@@ -82,6 +87,26 @@ describe('ChatMessageComponent', () => {
     expect(bubble?.classList).toContain('text-on-brand');
     expect(bubble?.classList).toContain('rounded-bl-md');
     expect(root.querySelector('time')?.classList).toContain('text-ink-muted');
+  });
+
+  it('shows the signed-in https photo on own messages and falls back to the user icon', () => {
+    currentUser.set({ user_metadata: { avatar_url: 'https://lh3.googleusercontent.com/a/photo.jpg' } });
+    let root = render(message({ role: 'user', status: 'sent', text: 'hi' }));
+    const photo = root.querySelector<HTMLImageElement>('article img');
+
+    expect(photo?.getAttribute('src')).toBe('https://lh3.googleusercontent.com/a/photo.jpg');
+    expect(photo?.getAttribute('alt')).toBe('');
+    expect(root.querySelector('[data-icon="user"]')).toBeNull();
+
+    // A broken remote photo must degrade to the icon rather than an empty circle.
+    photo?.dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[data-icon="user"]')).not.toBeNull();
+
+    currentUser.set({ user_metadata: { avatar_url: 'javascript:alert(1)' } });
+    root = render(message({ role: 'user', status: 'sent', text: 'hi' }));
+    expect(root.querySelector('article img')).toBeNull();
+    expect(root.querySelector('[data-icon="user"]')).not.toBeNull();
   });
 
   it('formats a creation timestamp as local short time', async () => {

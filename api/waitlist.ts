@@ -85,7 +85,7 @@ async function addContact(email: string, config: BrevoConfig): Promise<boolean> 
  * PNG, not the site's AVIF - Gmail and Outlook do not render AVIF in email.
  * Served at 3x the display size so it stays sharp on retina screens.
  */
-const LOGO_URL = 'https://www.calmi.in/assets/logo-email.png';
+const LOGO_URL = 'https://www.calmi.in/assets/logos/logo-email.png';
 
 /**
  * Sends the welcome mail. Failure here is logged but not fatal:

@@ -5,7 +5,7 @@ import {
   LucideChevronDown,
   LucideChevronLeft,
   LucideChevronRight,
-  LucideFilter,
+  LucideFunnel,
   LucideStar,
   provideLucideIcons,
 } from '@lucide/angular';
@@ -21,7 +21,7 @@ describe('TherapyComponent', () => {
       providers: [
         provideRouter([]),
         provideLucideIcons(
-          LucideFilter,
+          LucideFunnel,
           LucideChevronDown,
           LucideChevronLeft,
           LucideChevronRight,
