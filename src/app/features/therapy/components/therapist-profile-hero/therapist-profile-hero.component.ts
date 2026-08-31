@@ -33,10 +33,16 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
     <section class="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12" aria-labelledby="therapist-name">
       <article class="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card">
         <div class="grid gap-8 p-5 md:grid-cols-2 md:items-center md:gap-10 md:p-8 lg:grid-cols-[14rem_minmax(18rem,1fr)_minmax(23rem,1.35fr)]">
-          <div role="img" [attr.aria-label]="'Placeholder avatar for ' + profile().name"
-               class="mx-auto flex aspect-square w-40 items-center justify-center rounded-2xl border border-hairline bg-sunken md:w-56">
-            <span aria-hidden="true" class="font-sans text-3xl font-bold text-brand-deep md:text-5xl">{{ initials() }}</span>
-          </div>
+          @if (profile().image) {
+            <img [src]="profile().image" [alt]="'Portrait of ' + profile().name"
+                 width="224" height="224" decoding="async"
+                 class="mx-auto aspect-square w-40 rounded-2xl border border-hairline object-cover md:w-56">
+          } @else {
+            <div role="img" [attr.aria-label]="'Placeholder avatar for ' + profile().name"
+                 class="mx-auto flex aspect-square w-40 items-center justify-center rounded-2xl border border-hairline bg-sunken md:w-56">
+              <span aria-hidden="true" class="font-sans text-3xl font-bold text-brand-deep md:text-5xl">{{ initials() }}</span>
+            </div>
+          }
 
           <div class="min-w-0">
             <h1 appAnimateOnScroll id="therapist-name" style="--index:0" class="font-sans text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">{{ profile().name }}</h1>

@@ -116,7 +116,7 @@ export class PricingComponent {
       const ribbonLabel = plan.emphasis === 'popular'
         ? 'Most Popular'
         : plan.emphasis === 'recommended'
-          ? 'Recommended'
+          ? 'For Students'
           : null;
 
       return {

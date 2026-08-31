@@ -36,7 +36,7 @@ export const RUMI_HELP_CARDS: RumiHelpCard[] = [
 /** Icon-tile tint per topic; classes stay literal so Tailwind can scan them. */
 export interface RumiSupportTopic {
   id: string;
-  icon: 'brain' | 'sprout' | 'hand-heart' | 'moon';
+  icon: 'brain' | 'sprout' | 'heart-crack' | 'moon';
   tileClass: string;
   title: string;
   description: string;
@@ -46,7 +46,7 @@ export interface RumiSupportTopic {
 
 export interface RumiTrustPoint {
   id: string;
-  icon: 'lock' | 'brain' | 'clock' | 'user-circle';
+  icon: 'lock' | 'flask-conical' | 'clock' | 'circle-user';
   title: string;
   description: string;
 }
@@ -60,7 +60,7 @@ export const RUMI_TRUST_POINTS: RumiTrustPoint[] = [
   },
   {
     id: 'backed-by-science',
-    icon: 'brain',
+    icon: 'flask-conical',
     title: 'Backed by Science',
     description: 'Rumi uses proven psychological techniques to support you.',
   },
@@ -72,7 +72,7 @@ export const RUMI_TRUST_POINTS: RumiTrustPoint[] = [
   },
   {
     id: 'made-for-you',
-    icon: 'user-circle',
+    icon: 'circle-user',
     title: 'Made for You',
     description: 'Rumi adapts to you and your unique journey.',
   },
@@ -97,7 +97,7 @@ export const RUMI_SUPPORT_TOPICS: RumiSupportTopic[] = [
   },
   {
     id: 'low-mood-support',
-    icon: 'hand-heart',
+    icon: 'heart-crack',
     tileClass: 'bg-accent-coral text-on-coral',
     title: 'Low-mood support',
     description: 'Gentle support for days that feel heavy.',

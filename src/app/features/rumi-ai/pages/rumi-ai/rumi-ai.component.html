@@ -108,7 +108,7 @@
       </figure>
 
       <!-- Trust points -->
-      <ul class="flex flex-col gap-8 lg:h-full lg:justify-between">
+      <ul class="flex flex-col justify-center gap-8 lg:h-full lg:gap-10">
         @for (point of trustPoints(); track point.id; let i = $index) {
           <li appAnimateOnScroll [style.--index]="i + 2" class="flex items-start gap-4">
             <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-light text-brand-dark" aria-hidden="true">

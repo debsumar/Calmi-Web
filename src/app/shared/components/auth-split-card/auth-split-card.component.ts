@@ -85,7 +85,7 @@ const SLIDE_INTERVAL_MS = 6000;
           @if (showLogo() || showClose()) {
             <div class="mb-8 flex items-center justify-between gap-4">
               @if (showLogo()) {
-                <img src="/assets/logo.avif" alt="Calmi logo" class="h-10 w-auto object-contain" />
+                <img src="/assets/logos/logo.avif" alt="Calmi logo" class="h-10 w-auto object-contain" />
               } @else {
                 <span></span>
               }

@@ -25,7 +25,7 @@ export class HomeComponent {
   playerService = inject(PlayerService);
   authService = inject(AuthService);
   moodCards = signal<MoodCard[]>([
-    { icon: 'frown', title: 'I feel anxious', description: 'Calm your body and mind.' },
+    { icon: 'face-slightly-frowning', title: 'I feel anxious', description: 'Calm your body and mind.' },
     { icon: 'brain', title: "I'm overthinking", description: 'Clear your thoughts.' },
     { icon: 'moon', title: "I can't sleep", description: 'Relax and fall asleep faster.' },
   ]);

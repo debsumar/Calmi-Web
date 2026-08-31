@@ -38,7 +38,7 @@ describe('TherapistProfileComponent', () => {
     expect(root.textContent).toContain('Before Your First Session');
     expect(root.textContent).toContain('₹2000');
     expect(root.querySelectorAll('app-faq-accordion button[aria-controls]')).toHaveLength(3);
-    expect(root.querySelector('[role="img"][aria-label="Placeholder avatar for Gargi Yadav"]')).not.toBeNull();
+    expect(root.querySelector<HTMLImageElement>('img[alt="Portrait of Gargi Yadav"]')?.getAttribute('src')).toBe('assets/users/gargi.avif');
     expect(root.querySelector('nav[aria-label="Breadcrumb"] [aria-current="page"]')?.textContent).toContain('Therapist Profile');
 
     const profileIcons = root.querySelectorAll(

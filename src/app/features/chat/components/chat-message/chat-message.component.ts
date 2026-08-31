@@ -1,6 +1,8 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { LucideDynamicIcon } from '@lucide/angular';
+import { resolveHttpsAvatarUrl } from '@/core/identity/avatar-url';
+import { AuthService } from '@/core/services/auth.service';
 import { ChatMessage } from '../../models/chat-message.model';
 import { ChatStoreService } from '../../services/chat-store.service';
 
@@ -12,8 +14,13 @@ import { ChatStoreService } from '../../services/chat-store.service';
     @switch (message().role) {
       @case ('user') {
         <article [class.stagger-enter]="animate()" class="flex max-w-[85%] self-end flex-row-reverse items-start gap-3" [style.--index]="entranceIndex()">
-          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sunken-alt text-brand-dark dark:text-brand-light" aria-hidden="true">
-            <svg data-icon="user" [lucideIcon]="'user'" [size]="20" aria-hidden="true"></svg>
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sunken-alt text-brand-dark dark:text-brand-light" aria-hidden="true">
+            @if (avatarUrl(); as avatar) {
+              <img [src]="avatar" alt="" class="h-full w-full object-cover" referrerpolicy="no-referrer"
+                   (error)="onAvatarError()">
+            } @else {
+              <svg data-icon="user" [lucideIcon]="'user'" [size]="20" aria-hidden="true"></svg>
+            }
           </div>
           <div class="min-w-0 flex-1">
             <div class="rounded-2xl rounded-br-md border border-hairline bg-brand-light px-4 py-2.5 text-base text-ink dark:bg-sunken-alt">
@@ -69,6 +76,19 @@ export class ChatMessageComponent {
   readonly animate = input(false);
   readonly entranceIndex = input(0);
   private readonly store = inject(ChatStoreService);
+  private readonly auth = inject(AuthService);
+  private readonly avatarFailed = signal(false);
+
+  /** Signed-in photo for own messages; falls back to the generic user icon when absent or broken. */
+  readonly avatarUrl = computed(() => {
+    if (this.avatarFailed()) return null;
+    const metadata = this.auth.currentUser()?.user_metadata as Record<string, unknown> | undefined;
+    return resolveHttpsAvatarUrl(metadata);
+  });
+
+  onAvatarError(): void {
+    this.avatarFailed.set(true);
+  }
 
   retry(): void {
     this.store.retry(this.message().id);

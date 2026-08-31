@@ -57,9 +57,9 @@ export class SleepComponent {
     this.activeSlide.set(Math.round(scrollLeft / cardWidth));
   }
   vibes = signal([
-    { icon: 'waves', label: 'All Sounds', active: true },
+    { icon: 'waves-horizontal', label: 'All Sounds', active: true },
     { icon: 'cloud-rain', label: 'Rain', active: false },
-    { icon: 'waves', label: 'Ocean', active: false },
+    { icon: 'waves-horizontal', label: 'Ocean', active: false },
     { icon: 'tree-pine', label: 'Nature', active: false },
     { icon: 'sun', label: 'Ambient', active: false },
     { icon: 'audio-lines', label: 'White Noise', active: false },

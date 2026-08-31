@@ -88,13 +88,15 @@
       Our team is working hard to bring you a calmer, more personalized approach to mental wellness. Join the waitlist
       to receive launch updates and exclusive early access.
     </p>
-    <a href="/home"
-       class="inline-flex items-center gap-3 bg-white text-gray-900 dark:bg-brand-deep dark:text-white font-semibold text-sm rounded-full pl-6 pr-4 py-3 hover:shadow-lg transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
+    <!-- CTA disabled until early-access signup ships. -->
+    <button type="button" disabled aria-disabled="true" title="Coming soon"
+       class="inline-flex items-center gap-3 bg-white text-gray-900 dark:bg-brand-deep dark:text-white font-semibold text-sm rounded-full pl-6 pr-4 py-3 opacity-70 cursor-not-allowed">
       <span>Get Early Access</span>
       <span aria-hidden="true" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900">
         <svg [lucideIcon]="'arrow-right'" [size]="14"></svg>
       </span>
-    </a>
+    </button>
+    <p class="mt-3 text-xs text-white/80">Coming soon</p>
     </div>
   </div>
 </section>

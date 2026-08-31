@@ -24,6 +24,7 @@ import { RouterLink } from '@angular/router';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { DrawOnScrollDirective } from '@/shared/directives/draw-on-scroll.directive';
 import { AuthService } from '@/core/services/auth.service';
+import { resolveHttpsAvatarUrl } from '@/core/identity/avatar-url';
 import { THERAPISTS, type TherapistSessionSlot } from '@/features/therapy/data/therapist.data';
 import { ProfileDashboardService } from '../../services/profile-dashboard.service';
 
@@ -149,18 +150,9 @@ export class ProfileComponent {
   readonly email = computed(() => this.user()?.email ?? 'Email unavailable');
 
   /** Google/Apple avatar from the signed-in identity. Only https URLs are accepted. */
-  readonly avatarUrl = computed(() => {
-    const metadata = this.user()?.user_metadata as Record<string, unknown> | undefined;
-    const raw = metadata?.['avatar_url'] ?? metadata?.['picture'];
-    if (typeof raw !== 'string' || !raw.trim()) return null;
-
-    try {
-      const parsed = new URL(raw.trim());
-      return parsed.protocol === 'https:' ? parsed.toString() : null;
-    } catch {
-      return null;
-    }
-  });
+  readonly avatarUrl = computed(() =>
+    resolveHttpsAvatarUrl(this.user()?.user_metadata as Record<string, unknown> | undefined),
+  );
 
   readonly showAvatarImage = computed(() => this.avatarUrl() !== null && !this.avatarFailed());
 
