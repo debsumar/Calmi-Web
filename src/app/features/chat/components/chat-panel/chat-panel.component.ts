@@ -3,7 +3,6 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  computed,
   DOCUMENT,
   effect,
   HostListener,
@@ -13,19 +12,19 @@ import {
   OnDestroy,
   OnInit,
   signal,
+  viewChild,
 } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { ChatStoreService } from '../../services/chat-store.service';
-import { ChatMessageListComponent } from '../chat-message-list/chat-message-list.component';
-import { ChatComposerComponent } from '../chat-composer/chat-composer.component';
-import { ChatSuggestionsComponent } from '../chat-suggestions/chat-suggestions.component';
+import { ChatConversationComponent } from '../chat-conversation/chat-conversation.component';
+import { VoiceSessionService } from '../../services/voice-session.service';
 
 /** Must stay in sync with the chatPanelExit duration in chat-panel.component.scss. */
 const EXIT_ANIMATION_MS = 180;
 
 @Component({
   selector: 'app-chat-panel',
-  imports: [LucideDynamicIcon, ChatMessageListComponent, ChatComposerComponent, ChatSuggestionsComponent],
+  imports: [LucideDynamicIcon, ChatConversationComponent],
   host: { class: 'font-sans' },
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './chat-panel.component.html',
@@ -33,15 +32,14 @@ const EXIT_ANIMATION_MS = 180;
 })
 export class ChatPanelComponent implements AfterViewInit, OnDestroy, OnInit {
   readonly chatStore = inject(ChatStoreService);
+  readonly voice = inject(VoiceSessionService);
   readonly liftedForPlayer = input(false);
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
 
   readonly isMobileViewport = signal(false);
   readonly prefersReducedMotion = signal(false);
-  readonly hasUserMessages = computed(() =>
-    this.chatStore.messages().some((message) => message.role === 'user')
-  );
+  private readonly conversation = viewChild(ChatConversationComponent);
 
   private readonly focusableSelector =
     'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -67,6 +65,7 @@ export class ChatPanelComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   ngOnDestroy(): void {
+    this.voice.endForSurface('floating-panel');
     this.unlockBodyScroll();
     this.setAppShellInert(false);
   }
@@ -106,7 +105,7 @@ export class ChatPanelComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   closePanel(): void {
-    if (this.chatStore.isClosing()) return;
+    if (this.voice.isActive() || this.chatStore.isClosing()) return;
 
     if (this.prefersReducedMotion()) {
       this.chatStore.close();
@@ -117,6 +116,7 @@ export class ChatPanelComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   minimizePanel(): void {
+    if (this.voice.isActive()) return;
     this.chatStore.minimize();
   }
 
@@ -172,22 +172,9 @@ export class ChatPanelComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private focusComposer(): void {
-    const panel = this.document.getElementById('rumi-chat-panel');
-    const composer = panel?.querySelector<HTMLElement>('app-chat-composer');
-    const control = composer?.querySelector<HTMLElement>(this.focusableSelector);
+    if (this.voice.isActive()) return;
 
-    if (control) {
-      control.focus({ preventScroll: true });
-      return;
-    }
-
-    if (composer) {
-      composer.setAttribute('tabindex', '-1');
-      composer.focus({ preventScroll: true });
-      return;
-    }
-
-    panel?.focus({ preventScroll: true });
+    this.conversation()?.focusComposer();
   }
 
   private getFocusableElements(): HTMLElement[] {

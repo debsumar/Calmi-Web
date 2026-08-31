@@ -17,6 +17,7 @@ export class ChatStoreService implements OnDestroy {
   /** Wall clock, re-read on every minute boundary so stamps never lag. */
   private readonly _now = signal(new Date());
   private readonly _conversationStarted = signal(false);
+  private readonly _embeddedConversationVisible = signal(false);
 
   readonly isOpen = this._isOpen.asReadonly();
   readonly isMinimized = this._isMinimized.asReadonly();
@@ -25,6 +26,7 @@ export class ChatStoreService implements OnDestroy {
   readonly draft = this._draft.asReadonly();
   /** True while the exit animation plays, before the panel is torn down. */
   readonly isClosing = this._isClosing.asReadonly();
+  readonly isConversationVisible = computed(() => this.isOpen() || this._embeddedConversationVisible());
 
   /**
    * The greeting is stamped from the live clock until the first user message,
@@ -152,6 +154,11 @@ export class ChatStoreService implements OnDestroy {
     this._unreadCount.set(0);
   }
 
+  setEmbeddedConversationVisible(visible: boolean): void {
+    this._embeddedConversationVisible.set(visible);
+    if (visible) this.markRead();
+  }
+
   reset(): void {
     this.cancelPendingReply();
     this.cancelPendingClose();
@@ -163,6 +170,7 @@ export class ChatStoreService implements OnDestroy {
     this._isTyping.set(false);
     this._unreadCount.set(0);
     this._draft.set('');
+    this._embeddedConversationVisible.set(false);
   }
 
   cancelPendingReply(): void {
@@ -188,7 +196,7 @@ export class ChatStoreService implements OnDestroy {
         status: 'sent',
       }]);
       this._isTyping.set(false);
-      if (!this.isOpen()) {
+      if (!this.isConversationVisible()) {
         this._unreadCount.update((count) => count + 1);
       }
     }, delay);

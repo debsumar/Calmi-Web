@@ -5,6 +5,7 @@ import {
   ElementRef,
   effect,
   inject,
+  input,
   Injector,
   signal,
   viewChild,
@@ -22,11 +23,13 @@ import { ChatStoreService } from '../../services/chat-store.service';
   template: `
     <div #messageLog
          class="relative flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3"
-         role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation with Rumi AI"
+         [attr.role]="announce() ? 'log' : 'region'"
+         [attr.aria-live]="announce() ? 'polite' : 'off'" aria-atomic="false"
+         [attr.aria-label]="conversationLabel()"
          (scroll)="onScroll()">
       @if (!store.hasMessages()) {
         <div class="flex flex-1 flex-col items-center justify-center gap-3 text-center text-base text-brand-dark dark:text-brand-light">
-          <span class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft" aria-hidden="true"></span>
+          <span class="flex h-12 w-12 items-center justify-center rounded-full bg-sunken-alt" aria-hidden="true"></span>
           <p>Take a gentle moment. I am here to listen.</p>
         </div>
       } @else {
@@ -34,7 +37,7 @@ import { ChatStoreService } from '../../services/chat-store.service';
           <app-chat-message [message]="message" [index]="index" />
         }
         @if (store.isTyping()) {
-          <app-chat-typing />
+          <app-chat-typing [announce]="announce()" />
         }
       }
 
@@ -51,6 +54,8 @@ import { ChatStoreService } from '../../services/chat-store.service';
 })
 export class ChatMessageListComponent {
   readonly store = inject(ChatStoreService);
+  readonly announce = input(true);
+  readonly conversationLabel = input('Conversation with Rumi AI');
   private readonly injector = inject(Injector);
   private readonly messageLog = viewChild<ElementRef<HTMLElement>>('messageLog');
   readonly showScrollToBottom = signal(false);

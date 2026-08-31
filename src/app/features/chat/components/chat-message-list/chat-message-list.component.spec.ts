@@ -54,4 +54,14 @@ describe('ChatMessageListComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Scroll to bottom');
     expect(fixture.nativeElement.querySelector('[aria-label="Scroll to bottom"]')).not.toBeNull();
   });
+
+  it('uses adaptive roles for the empty-state identity treatment', () => {
+    (store as unknown as { _messages: { set: (messages: never[]) => void } })._messages.set([]);
+    fixture.detectChanges();
+
+    const emptyState = fixture.nativeElement.querySelector('.bg-sunken-alt') as HTMLElement;
+    expect(emptyState).not.toBeNull();
+    expect(emptyState.classList).toContain('bg-sunken-alt');
+    expect(fixture.nativeElement.querySelector('.dark\\:text-brand-light')).not.toBeNull();
+  });
 });

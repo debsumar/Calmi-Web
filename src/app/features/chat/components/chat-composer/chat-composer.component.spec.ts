@@ -1,29 +1,87 @@
 // @vitest-environment jsdom
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { describe, expect, it, beforeEach } from 'vitest';
-import { provideLucideIcons, LucideSend, LucideMic, LucideMicOff } from '@lucide/angular';
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
+import { provideLucideIcons, LucideAudioLines, LucideSend, LucideVolume2, LucideX } from '@lucide/angular';
 import { ChatComposerComponent } from './chat-composer.component';
 import { ChatStoreService } from '../../services/chat-store.service';
+import { VoiceSessionService } from '../../services/voice-session.service';
 
 describe('ChatComposerComponent', () => {
   let fixture: ComponentFixture<ChatComposerComponent>;
   let store: ChatStoreService;
+  let voice: VoiceSessionService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ChatComposerComponent],
-      providers: [provideLucideIcons(LucideSend, LucideMic, LucideMicOff)],
+      providers: [provideLucideIcons(LucideAudioLines, LucideSend, LucideVolume2, LucideX)],
     }).compileComponents();
     fixture = TestBed.createComponent(ChatComposerComponent);
     store = TestBed.inject(ChatStoreService);
+    voice = TestBed.inject(VoiceSessionService);
     store.reset();
+    voice.end();
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    voice.end();
+    vi.useRealTimers();
   });
 
   it('renders with an empty disabled send button', () => {
     const button = fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
     expect(button.disabled).toBe(true);
     expect(button.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('renders floating glass and embedded opaque composer surfaces', () => {
+    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+
+    expect(form.classList).toContain('bg-glass');
+    expect(form.classList).toContain('backdrop-blur-xl');
+    expect(form.classList).not.toContain('bg-surface');
+
+    fixture.componentRef.setInput('surface', 'rumi-embedded');
+    fixture.detectChanges();
+
+    expect(form.classList).toContain('bg-surface');
+    expect(form.classList).not.toContain('bg-glass');
+    expect(form.classList).not.toContain('backdrop-blur-xl');
+  });
+
+  it('always renders the audio-lines voice trigger and circular send control', () => {
+    const voiceButton = fixture.nativeElement.querySelector('button[aria-label="Start voice conversation"]') as HTMLButtonElement;
+    const sendButton = fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const textarea = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    const controlGroup = textarea.parentElement as HTMLElement;
+
+    expect(voiceButton).not.toBeNull();
+    expect(voiceButton.querySelector('svg')).not.toBeNull();
+    expect(voiceButton.classList).toContain('border-hairline');
+    expect(voiceButton.classList).toContain('dark:text-brand-light');
+    expect(voiceButton.classList).toContain('h-11');
+    expect(voiceButton.classList).toContain('w-11');
+    expect(voiceButton.classList).toContain('min-w-11');
+    expect(voiceButton.getAttribute('aria-pressed')).toBe('false');
+    expect(controlGroup).not.toBeNull();
+    expect(controlGroup.classList).toContain('rounded-full');
+    expect(sendButton).not.toBeNull();
+    expect(sendButton.classList).toContain('rounded-full');
+    expect(sendButton.classList).toContain('h-11');
+    expect(sendButton.classList).toContain('w-11');
+    expect(sendButton.classList).toContain('min-w-11');
+    expect(sendButton.getAttribute('aria-disabled')).toBe('true');
+    expect(textarea.getAttribute('placeholder')).toBe("Share what's on your mind...");
+  });
+
+  it('starts a voice session from the composer trigger', () => {
+    const button = fixture.nativeElement.querySelector('button[aria-label="Start voice conversation"]') as HTMLButtonElement;
+    button.click();
+    fixture.detectChanges();
+
+    expect(voice.phase()).toBe('listening');
+    expect(voice.isActive()).toBe(true);
   });
 
   it('sends on Enter without Shift', () => {
@@ -37,50 +95,5 @@ describe('ChatComposerComponent', () => {
 
     expect(store.messages().at(-1)?.text).toBe('I feel anxious');
     store.cancelPendingReply();
-  });
-
-  it('hides the mic when the Web Speech API is unavailable', () => {
-    expect(fixture.nativeElement.querySelector('button[aria-label="Start voice input"]')).toBeNull();
-  });
-
-  it('pipes dictated speech into the draft when the mic is available', () => {
-    class FakeRecognition {
-      continuous = false;
-      interimResults = false;
-      lang = '';
-      onresult: ((event: unknown) => void) | null = null;
-      onerror: (() => void) | null = null;
-      onend: (() => void) | null = null;
-
-      start(): void {
-        this.onresult?.({
-          resultIndex: 0,
-          results: { length: 1, 0: { length: 1, 0: { transcript: 'I feel tired' } } },
-        });
-      }
-
-      stop(): void {
-        this.onend?.();
-      }
-    }
-
-    const speechWindow = window as unknown as { SpeechRecognition?: unknown };
-    speechWindow.SpeechRecognition = FakeRecognition;
-
-    try {
-      const micFixture = TestBed.createComponent(ChatComposerComponent);
-      micFixture.detectChanges();
-
-      const mic = micFixture.nativeElement.querySelector('button[aria-label="Start voice input"]') as HTMLButtonElement;
-      expect(mic).not.toBeNull();
-
-      mic.click();
-      micFixture.detectChanges();
-
-      expect(store.draft()).toBe('I feel tired');
-      expect(micFixture.nativeElement.querySelector('button[aria-label="Stop voice input"]')).not.toBeNull();
-    } finally {
-      delete speechWindow.SpeechRecognition;
-    }
   });
 });

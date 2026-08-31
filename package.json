@@ -16,6 +16,9 @@
     "watch": "ng build --watch --configuration development",
     "pretest": "npm run set-license",
     "test": "ng test",
+    "test:watch": "ng test --watch",
+    "test:chat": "ng test --include=src/app/features/chat/**/*.spec.ts",
+    "test:coverage": "ng test --coverage",
     "typecheck:server": "tsc -p api/tsconfig.json --noEmit",
     "predev:api": "npm run set-license",
     "dev:api": "vercel dev"
