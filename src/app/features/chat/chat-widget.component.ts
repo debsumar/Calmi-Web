@@ -49,17 +49,21 @@ export class ChatWidgetComponent {
     const path = this.currentPath();
     return path === '/auth' || path.startsWith('/auth/');
   });
-  readonly isVisible = computed(() => !this.onboardingService.isActive() && !this.isAuthRoute());
+  readonly isVisible = computed(() => (
+    !this.onboardingService.isActive()
+    && !this.isAuthRoute()
+  ));
   readonly liftedForPlayer = computed(() => this.currentPath() === '/sleep' && this.playerService.hasTrack());
 
   constructor() {
     let wasOpen = false;
 
     effect(() => {
-      const visible = this.isVisible();
       const open = this.chatStore.isOpen();
 
-      if (!visible) {
+      // Rumi owns an embedded conversation surface. Keep shared state open there;
+      // auth/onboarding are the only hidden states that force-close the widget.
+      if (this.isAuthRoute() || this.onboardingService.isActive()) {
         this.chatStore.close();
       } else if (wasOpen && !open) {
         afterNextRender({

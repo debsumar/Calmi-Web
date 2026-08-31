@@ -40,12 +40,12 @@ export class RumiAiComponent {
   readonly supportTopics = signal(RUMI_SUPPORT_TOPICS);
   readonly trustPoints = signal(RUMI_TRUST_POINTS);
 
-  /** Hero CTA opens the existing Rumi chat panel rendered by the layout widget. */
+  /** Hero CTA uses shared chat state; this page keeps its embedded Rumi surface visible. */
   startConversation(): void {
     this.chatStore.open();
   }
 
-  /** Topic cards open the same panel with the composer pre-filled. */
+  /** Topic cards seed the shared embedded conversation draft and state. */
   startTopic(topic: RumiSupportTopic): void {
     this.chatStore.setDraft(topic.prompt);
     this.chatStore.open();
