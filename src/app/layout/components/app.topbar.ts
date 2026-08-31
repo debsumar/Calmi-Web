@@ -70,7 +70,7 @@ const RIPPLE_DURATION_MS = 420;
               @if (user.user_metadata['avatar_url']) {
                 <img [src]="user.user_metadata['avatar_url']" alt="Avatar" class="w-full h-full object-cover">
               } @else {
-                <div class="w-full h-full bg-brand/20 text-brand flex items-center justify-center font-bold text-sm">
+                <div class="w-full h-full bg-sunken-alt text-brand-dark dark:text-brand-light flex items-center justify-center font-bold text-sm">
                   {{ (user.user_metadata['full_name']?.[0] || user.email?.[0] || 'U').toUpperCase() }}
                 </div>
               }
@@ -105,7 +105,7 @@ const RIPPLE_DURATION_MS = 420;
           </div>
         } @else {
           <a routerLink="/auth/identify"
-             class="inline-flex items-center gap-2 rounded-full bg-brand-deep px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+             class="inline-flex min-h-11 items-center gap-2 rounded-full border border-transparent bg-brand-dark px-4 py-2 text-sm font-semibold text-on-brand transition-all hover:bg-brand-deep dark:border-hairline dark:bg-elevated dark:text-brand-light dark:hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
             <svg [lucideIcon]="'user'" [size]="16" aria-hidden="true"></svg>
             Sign In
           </a>
@@ -142,7 +142,7 @@ const RIPPLE_DURATION_MS = 420;
           </button>
         } @else {
           <a routerLink="/auth/identify" (click)="mobileMenuOpen.set(false)"
-             class="stagger-enter mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-brand-deep px-4 py-3 text-base font-semibold text-white hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+             class="stagger-enter mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-transparent bg-brand-dark px-4 py-3 text-base font-semibold text-on-brand hover:bg-brand-deep dark:border-hairline dark:bg-elevated dark:text-brand-light dark:hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
              [style.--index]="navLinks().length + 1">
             <svg [lucideIcon]="'user'" [size]="18" aria-hidden="true"></svg>
             Sign In

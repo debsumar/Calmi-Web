@@ -19,7 +19,19 @@
     --calmi-sunken-alt: color-mix(in srgb, var(--color-brand) 15%, white);
     --calmi-hairline: color-mix(in srgb, var(--color-brand) 12%, white);
     --calmi-glass: color-mix(in srgb, white 60%, transparent);
+    --calmi-voice-scrim: color-mix(in srgb, var(--calmi-surface) 82%, transparent);
+    --calmi-composer-trace: linear-gradient(
+      100deg,
+      transparent 18%,
+      color-mix(in srgb, var(--color-brand-light) 55%, transparent) 50%,
+      transparent 82%
+    );
+    --calmi-composer-glow: color-mix(in srgb, var(--color-brand-light) 32%, transparent);
+    --calmi-voice-end: color-mix(in srgb, var(--color-accent-coral) 68%, black);
+    --calmi-on-voice-end: white;
+    --calmi-aurora-composite: multiply;
     --calmi-scrim: color-mix(in srgb, black 45%, transparent);
+    --calmi-shadow-aurora: 0 12px 34px color-mix(in srgb, var(--color-brand) 42%, transparent);
     --calmi-on-coral: white;
     --calmi-success: var(--p-success-700);
     --calmi-danger: var(--p-danger-700);
@@ -48,7 +60,18 @@
     --calmi-sunken-alt: color-mix(in srgb, var(--color-brand) 13%, black);
     --calmi-hairline: color-mix(in srgb, var(--color-brand) 40%, black);
     --calmi-glass: color-mix(in srgb, var(--calmi-elevated) 55%, transparent);
-    --calmi-scrim: color-mix(in srgb, black 65%, transparent);
+    --calmi-voice-scrim: color-mix(in srgb, var(--calmi-surface) 82%, transparent);
+    --calmi-composer-trace: linear-gradient(
+      100deg,
+      transparent 18%,
+      color-mix(in srgb, var(--color-brand-light) 55%, transparent) 50%,
+      transparent 82%
+    );
+    --calmi-composer-glow: color-mix(in srgb, var(--color-brand-light) 32%, transparent);
+    --calmi-voice-end: color-mix(in srgb, var(--color-accent-coral) 68%, black);
+    --calmi-on-voice-end: white;
+    --calmi-aurora-composite: screen;
+    --calmi-shadow-aurora: 0 12px 34px color-mix(in srgb, var(--color-brand) 42%, transparent);
     --calmi-success: var(--p-success-300);
     --calmi-danger: var(--p-danger-300);
     --calmi-ink: color-mix(in srgb, var(--color-brand) 6%, white);
@@ -65,9 +88,15 @@
   @media (prefers-reduced-transparency: reduce) {
     :root {
       --calmi-glass: var(--calmi-surface);
+      --calmi-voice-scrim: var(--calmi-surface);
+      --calmi-composer-trace: none;
+      --calmi-composer-glow: transparent;
     }
     :root[class*="app-dark"] {
       --calmi-glass: var(--calmi-elevated);
+      --calmi-voice-scrim: var(--calmi-elevated);
+      --calmi-composer-trace: none;
+      --calmi-composer-glow: transparent;
     }
   }
 }
@@ -91,6 +120,9 @@
   --color-sunken-alt: var(--calmi-sunken-alt);
   --color-hairline: var(--calmi-hairline);
   --color-glass: var(--calmi-glass);
+  --color-voice-scrim: var(--calmi-voice-scrim);
+  --color-voice-end: var(--calmi-voice-end);
+  --color-on-voice-end: var(--calmi-on-voice-end);
   --color-scrim: var(--calmi-scrim);
   --color-on-coral: var(--calmi-on-coral);
   --color-success: var(--calmi-success);
@@ -120,6 +152,7 @@
   --color-player-to: color-mix(in srgb, var(--color-brand) 16%, black);
 
   --shadow-card: var(--calmi-shadow-card);
+  --shadow-aurora: var(--calmi-shadow-aurora);
   --shadow-player: var(--calmi-shadow-player);
   --drop-shadow-accent-coral: var(--calmi-shadow-accent-coral);
   --drop-shadow-accent-gold: var(--calmi-shadow-accent-gold);

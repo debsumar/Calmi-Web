@@ -1,0 +1,100 @@
+@media (prefers-reduced-transparency: reduce) {
+  :host .chat-composer__form {
+    background-color: var(--color-surface);
+    backdrop-filter: none;
+  }
+}
+
+:host .chat-composer__row {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+:host .chat-composer__row > * {
+  position: relative;
+  z-index: 1;
+}
+
+:host .chat-composer__row::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  content: '';
+  background: var(--calmi-composer-trace);
+  transform: translateX(-120%);
+}
+
+:host .chat-composer__row--entering {
+  animation: composerQuietTraceEnter 360ms cubic-bezier(.25, .75, .3, 1) both;
+}
+
+:host .chat-composer__row--entering::before {
+  animation: composerTraceSweep 520ms ease-out 60ms both;
+}
+
+:host .chat-composer__row--sending {
+  animation: composerSendSettle 420ms cubic-bezier(.2, .8, .25, 1) both;
+}
+
+:host .chat-composer__row--sending::before {
+  animation: composerTraceSweep 420ms ease-out both;
+}
+
+:host .chat-composer__row--sending .chat-composer__input {
+  animation: composerInputSettle 420ms cubic-bezier(.2, .8, .25, 1) both;
+}
+
+:host .chat-composer__row--sending button[type='submit'] {
+  animation: composerSendGlow 420ms ease-out both;
+}
+
+@keyframes composerQuietTraceEnter {
+  from { opacity: 0; filter: blur(2px); transform: translateY(6px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@keyframes composerTraceSweep {
+  to { transform: translateX(120%); }
+}
+
+@keyframes composerSendSettle {
+  42% { transform: scale(.985); }
+}
+
+@keyframes composerInputSettle {
+  42% { transform: translateY(-1px); }
+}
+
+@keyframes composerSendGlow {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  42% {
+    transform: scale(.88);
+    box-shadow: 0 0 0 5px var(--calmi-composer-glow);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host .chat-composer__row,
+  :host .chat-composer__row::before,
+  :host .chat-composer__row--sending .chat-composer__input,
+  :host .chat-composer__row--sending button[type='submit'] {
+    animation: none !important;
+    filter: none;
+    transition: none;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :host .chat-composer__row::before {
+    display: none;
+  }
+}
+
+:host .chat-composer__input {
+  caret-shape: block;
+}

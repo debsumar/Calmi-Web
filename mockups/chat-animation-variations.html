@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calmi Chat Animation Variations</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --brand-50: #faf8fb;
+      --brand-100: #e6dfed;
+      --brand-200: #d2c6e0;
+      --brand-300: #beadd2;
+      --brand-400: #aa94c4;
+      --brand-500: #967bb6;
+      --brand-600: #80699b;
+      --brand-700: #69567f;
+      --ink: #211b28;
+      --muted: #746b7d;
+      --surface: #fff;
+      --canvas: #f8f5fa;
+      --line: #e8e0ed;
+      --shadow: 0 18px 55px rgba(58, 42, 72, .14);
+      font-family: "Bricolage Grotesque", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(190, 173, 210, .34), transparent 28rem),
+        linear-gradient(180deg, #fff 0%, var(--canvas) 100%);
+    }
+    button, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .page {
+      width: min(1500px, 100%);
+      margin: 0 auto;
+      padding: 34px 24px 48px;
+    }
+    .masthead {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--brand-700);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: clamp(30px, 4vw, 52px); line-height: 1; letter-spacing: -.04em; }
+    .intro { max-width: 690px; margin: 14px 0 0; color: var(--muted); font-size: 16px; line-height: 1.55; }
+    .replay-all {
+      min-height: 44px;
+      flex: 0 0 auto;
+      border: 1px solid var(--brand-300);
+      border-radius: 999px;
+      padding: 0 18px;
+      color: var(--brand-700);
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 8px 24px rgba(105,86,127,.1);
+      font-weight: 750;
+      transition: transform .2s ease, background .2s ease;
+    }
+    .replay-all:hover { transform: translateY(-2px); background: var(--brand-50); }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 24px;
+      padding: 0;
+      list-style: none;
+    }
+    .legend li { border-radius: 999px; padding: 8px 12px; background: var(--brand-100); color: var(--brand-700); font-size: 12px; font-weight: 700; }
+
+    .variations { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: start; }
+    .variation {
+      min-width: 0;
+      border: 1px solid rgba(150,123,182,.24);
+      border-radius: 28px;
+      padding: 16px;
+      background: rgba(255,255,255,.72);
+      box-shadow: 0 16px 50px rgba(69,48,86,.08);
+      backdrop-filter: blur(20px);
+    }
+    .variation.recommended { border-color: var(--brand-400); box-shadow: 0 18px 55px rgba(128,105,155,.16); }
+    .variation-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; padding: 4px 4px 14px; }
+    .variation-title { margin: 0; font-size: 18px; }
+    .variation-copy { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .badge { display: inline-flex; margin-top: 8px; border-radius: 999px; padding: 5px 8px; color: white; background: var(--brand-600); font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    .replay {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--brand-700);
+      background: white;
+      transition: transform .3s cubic-bezier(.2,.8,.2,1), background .2s ease;
+    }
+    .replay:hover { transform: rotate(-25deg) scale(1.05); background: var(--brand-50); }
+
+    .chat {
+      height: 620px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .chat-head { padding: 17px 18px 14px; border-bottom: 1px solid var(--line); }
+    .chat-head strong { display: block; font-size: 16px; }
+    .chat-head span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .messages { display: flex; flex-direction: column; gap: 13px; overflow-y: auto; padding: 18px 16px; scroll-behavior: smooth; }
+    .row { display: flex; align-items: end; gap: 8px; max-width: 88%; transform-origin: bottom; }
+    .row.user { align-self: flex-end; flex-direction: row-reverse; }
+    .avatar { display: grid; width: 28px; height: 28px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: var(--brand-700); background: var(--brand-100); font-size: 13px; }
+    .bubble { border-radius: 18px 18px 18px 5px; padding: 11px 13px; color: var(--brand-700); background: var(--brand-50); font-size: 14px; line-height: 1.42; }
+    .user .bubble { border-radius: 18px 18px 5px 18px; color: white; background: linear-gradient(135deg, var(--brand-500), var(--brand-700)); }
+    .time { display: block; margin-top: 4px; color: #918897; font-size: 10px; }
+    .user .time { text-align: right; }
+    .typing .bubble { display: flex; gap: 5px; padding: 13px 15px; }
+    .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--brand-500); animation: typing 1s ease-in-out infinite; }
+    .typing i:nth-child(2) { animation-delay: .13s; }
+    .typing i:nth-child(3) { animation-delay: .26s; }
+    @keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-5px); opacity: 1; } }
+
+    .composer { display: flex; align-items: end; gap: 8px; margin: 0; padding: 12px; border-top: 1px solid var(--line); background: rgba(255,255,255,.94); }
+    .input-wrap { min-width: 0; flex: 1; border: 1px solid var(--line); border-radius: 22px; background: var(--brand-50); transition: border-color .25s ease, box-shadow .25s ease; }
+    .input-wrap:focus-within { border-color: var(--brand-400); box-shadow: 0 0 0 3px rgba(150,123,182,.14); }
+    textarea { display: block; width: 100%; min-height: 44px; max-height: 90px; resize: none; border: 0; outline: 0; padding: 12px 14px; color: var(--ink); caret-color: var(--brand-600); background: transparent; font-size: 13px; }
+    textarea::placeholder { color: #948b9b; }
+    .icon-btn { position: relative; display: inline-flex; width: 44px; height: 44px; flex: 0 0 auto; align-items: center; justify-content: center; overflow: visible; border: 1px solid var(--line); border-radius: 50%; color: var(--brand-700); background: white; transition: width .38s cubic-bezier(.2,.85,.25,1), transform .22s ease, color .22s ease, background .22s ease, box-shadow .22s ease; }
+    .icon-btn svg { width: 19px; height: 19px; overflow: visible; }
+    .send { color: white; border-color: transparent; background: var(--brand-600); }
+    .icon-btn:hover { transform: translateY(-2px); }
+    .icon-btn:focus-visible, .replay:focus-visible, .replay-all:focus-visible { outline: 3px solid var(--brand-300); outline-offset: 2px; }
+    .voice-label { max-width: 0; overflow: hidden; opacity: 0; white-space: nowrap; font-size: 12px; font-weight: 750; transition: max-width .25s ease, opacity .2s ease, margin .25s ease; }
+    .voice.is-listening { color: white; border-color: transparent; background: var(--brand-600); }
+    [data-motion="spring"] .voice.is-listening .voice-label { max-width: 66px; margin-left: 6px; opacity: 1; }
+
+    /* Variation A: calm stagger */
+    [data-motion="stagger"].is-loading .seed { animation: gentleUp .62s cubic-bezier(.22,.82,.24,1) both; animation-delay: calc(var(--i) * 110ms); }
+    [data-motion="stagger"] .sent-now { animation: gentleUp .5s cubic-bezier(.22,.82,.24,1) both; }
+    [data-motion="stagger"] .reply-now { animation: gentleUp .58s cubic-bezier(.22,.82,.24,1) both; }
+    [data-motion="stagger"] .voice.is-listening::before,
+    [data-motion="stagger"] .voice.is-listening::after { content: ""; position: absolute; inset: -2px; z-index: -1; border: 2px solid var(--brand-400); border-radius: inherit; animation: ripple 1.3s ease-out infinite; }
+    [data-motion="stagger"] .voice.is-listening::after { animation-delay: .55s; }
+    [data-motion="stagger"] .send.is-sending { animation: sendNod .48s cubic-bezier(.2,.9,.3,1); }
+    @keyframes gentleUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes ripple { from { opacity: .65; transform: scale(.86); } to { opacity: 0; transform: scale(1.6); } }
+    @keyframes sendNod { 0% { transform: scale(1); } 45% { transform: scale(.84) rotate(-8deg); } 100% { transform: scale(1) rotate(0); } }
+
+    /* Variation B: soft spring */
+    [data-motion="spring"].is-loading .seed { animation: softSpring .7s cubic-bezier(.18,1.3,.35,1) both; animation-delay: calc(var(--i) * 85ms); }
+    [data-motion="spring"] .sent-now { animation: bubbleSpring .68s cubic-bezier(.17,1.45,.32,1) both; }
+    [data-motion="spring"] .reply-now { animation: softSpring .66s cubic-bezier(.18,1.3,.35,1) both; }
+    [data-motion="spring"] .voice.is-listening { width: 112px; border-radius: 999px; box-shadow: 0 10px 26px rgba(128,105,155,.28); }
+    [data-motion="spring"] .voice.is-listening svg { animation: micBounce .75s ease-in-out infinite alternate; }
+    [data-motion="spring"] .send.is-sending { animation: sendSpin .55s cubic-bezier(.25,.8,.25,1); }
+    @keyframes softSpring { 0% { opacity: 0; transform: translateY(12px) scale(.94); } 72% { opacity: 1; transform: translateY(-2px) scale(1.012); } 100% { transform: translateY(0) scale(1); } }
+    @keyframes bubbleSpring { 0% { opacity: 0; transform: translateX(28px) scale(.85); } 68% { opacity: 1; transform: translateX(-3px) scale(1.025); } 100% { transform: translateX(0) scale(1); } }
+    @keyframes micBounce { to { transform: scale(1.15); } }
+    @keyframes sendSpin { 0% { transform: scale(1); } 45% { transform: scale(.82) rotate(-32deg); } 100% { transform: scale(1) rotate(0); } }
+
+    /* Variation C: quiet reveal */
+    [data-motion="reveal"].is-loading .seed { animation: quietReveal .72s cubic-bezier(.25,.75,.3,1) both; animation-delay: calc(var(--i) * 125ms); }
+    [data-motion="reveal"] .sent-now { animation: glideIn .52s cubic-bezier(.25,.8,.25,1) both; }
+    [data-motion="reveal"] .reply-now { animation: quietReveal .68s cubic-bezier(.25,.75,.3,1) both; }
+    [data-motion="reveal"] .voice.is-listening { box-shadow: 0 0 0 7px var(--brand-100), 0 0 32px rgba(150,123,182,.48); animation: breathe 1.45s ease-in-out infinite; }
+    [data-motion="reveal"] .voice.is-listening svg { animation: waveTilt .7s ease-in-out infinite alternate; }
+    [data-motion="reveal"] .send.is-sending { animation: sendGlow .65s ease; }
+    @keyframes quietReveal { from { opacity: 0; filter: blur(7px); transform: translateY(8px); } to { opacity: 1; filter: blur(0); transform: translateY(0); } }
+    @keyframes glideIn { from { opacity: 0; transform: translateX(34px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes breathe { 50% { transform: scale(1.075); box-shadow: 0 0 0 11px var(--brand-100), 0 0 38px rgba(150,123,182,.42); } }
+    @keyframes waveTilt { to { transform: rotate(8deg) scale(1.08); } }
+    @keyframes sendGlow { 40% { transform: scale(.88); box-shadow: 0 0 0 10px rgba(150,123,182,.16); } }
+
+    .notes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 22px; }
+    .note { border-radius: 18px; padding: 16px; color: var(--muted); background: rgba(255,255,255,.72); font-size: 12px; line-height: 1.5; }
+    .note strong { display: block; margin-bottom: 5px; color: var(--ink); font-size: 13px; }
+
+    @media (max-width: 1040px) {
+      .variations, .notes { grid-template-columns: 1fr; }
+      .chat { height: 590px; }
+      .notes { gap: 10px; }
+    }
+    @media (max-width: 640px) {
+      .page { padding: 22px 12px 36px; }
+      .masthead { align-items: start; flex-direction: column; }
+      .variation { padding: 10px; border-radius: 22px; }
+      .chat { height: min(610px, 76vh); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Calmi interaction study</p>
+        <h1>Chat motion variations</h1>
+        <p class="intro">Compare first-load message sequencing, voice-tap feedback, and the easing used when a new message row enters. Every card is interactive.</p>
+      </div>
+      <button class="replay-all" type="button">↻ Replay all loads</button>
+    </header>
+
+    <ul class="legend" aria-label="How to use this mockup">
+      <li>Replay = initial load</li>
+      <li>Tap microphone = listening state</li>
+      <li>Type + send = row animation</li>
+    </ul>
+
+    <section class="variations" aria-label="Animation comparisons">
+      <article class="variation recommended">
+        <div class="variation-head">
+          <div>
+            <h2 class="variation-title">A. Gentle stagger</h2>
+            <p class="variation-copy">Calm rise, 110ms between rows, subtle voice ripples.</p>
+            <span class="badge">Recommended</span>
+          </div>
+          <button class="replay" type="button" aria-label="Replay Gentle stagger">↻</button>
+        </div>
+        <div class="chat demo" data-motion="stagger">
+          <header class="chat-head"><strong>Hi there, I’m Rumi. 👋</strong><span>I’m here to listen and help you make sense of your thoughts.</span></header>
+          <div class="messages" aria-live="polite"></div>
+          <form class="composer">
+            <div class="input-wrap"><textarea rows="1" aria-label="Message for Gentle stagger" placeholder="Share what’s on your mind..."></textarea></div>
+            <button class="icon-btn voice" type="button" aria-label="Start voice input" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M8 7v10M4 10v4M16 7v10M20 10v4"/></svg><span class="voice-label">Listening</span>
+            </button>
+            <button class="icon-btn send" type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 17-8-7 18-2-8-8-2Z"/><path d="m11 13 9-10"/></svg></button>
+          </form>
+        </div>
+      </article>
+
+      <article class="variation">
+        <div class="variation-head">
+          <div>
+            <h2 class="variation-title">B. Soft spring</h2>
+            <p class="variation-copy">Friendly overshoot, expanding voice pill, spring send.</p>
+          </div>
+          <button class="replay" type="button" aria-label="Replay Soft spring">↻</button>
+        </div>
+        <div class="chat demo" data-motion="spring">
+          <header class="chat-head"><strong>Hi there, I’m Rumi. 👋</strong><span>I’m here to listen and help you make sense of your thoughts.</span></header>
+          <div class="messages" aria-live="polite"></div>
+          <form class="composer">
+            <div class="input-wrap"><textarea rows="1" aria-label="Message for Soft spring" placeholder="Share what’s on your mind..."></textarea></div>
+            <button class="icon-btn voice" type="button" aria-label="Start voice input" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M8 7v10M4 10v4M16 7v10M20 10v4"/></svg><span class="voice-label">Listening</span>
+            </button>
+            <button class="icon-btn send" type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 17-8-7 18-2-8-8-2Z"/><path d="m11 13 9-10"/></svg></button>
+          </form>
+        </div>
+      </article>
+
+      <article class="variation">
+        <div class="variation-head">
+          <div>
+            <h2 class="variation-title">C. Quiet reveal</h2>
+            <p class="variation-copy">Blur-to-clear load, horizontal send glide, breathing halo.</p>
+          </div>
+          <button class="replay" type="button" aria-label="Replay Quiet reveal">↻</button>
+        </div>
+        <div class="chat demo" data-motion="reveal">
+          <header class="chat-head"><strong>Hi there, I’m Rumi. 👋</strong><span>I’m here to listen and help you make sense of your thoughts.</span></header>
+          <div class="messages" aria-live="polite"></div>
+          <form class="composer">
+            <div class="input-wrap"><textarea rows="1" aria-label="Message for Quiet reveal" placeholder="Share what’s on your mind..."></textarea></div>
+            <button class="icon-btn voice" type="button" aria-label="Start voice input" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M8 7v10M4 10v4M16 7v10M20 10v4"/></svg><span class="voice-label">Listening</span>
+            </button>
+            <button class="icon-btn send" type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 17-8-7 18-2-8-8-2Z"/><path d="m11 13 9-10"/></svg></button>
+          </form>
+        </div>
+      </article>
+    </section>
+
+    <section class="notes" aria-label="Motion recommendations">
+      <div class="note"><strong>A — best default</strong>Most consistent with Calmi: visible but quiet. Stagger gives hierarchy without feeling playful or slow.</div>
+      <div class="note"><strong>B — strongest feedback</strong>Best if voice interaction needs more discoverability. Larger layout movement makes it less subtle.</div>
+      <div class="note"><strong>C — premium ambient</strong>Elegant for first load and voice mode. Blur can feel slower on low-powered devices, so use sparingly.</div>
+    </section>
+  </main>
+
+  <template id="seed-messages">
+    <div class="row user seed" style="--i:0"><span class="avatar">○</span><div><div class="bubble">I’ve been feeling overwhelmed lately.</div><time class="time">2:40 PM</time></div></div>
+    <div class="row seed" style="--i:1"><span class="avatar">✦</span><div><div class="bubble">I’m glad you shared that. What has been weighing on you most?</div><time class="time">2:40 PM</time></div></div>
+    <div class="row user seed" style="--i:2"><span class="avatar">○</span><div><div class="bubble">I can’t seem to relax, even when I have time.</div><time class="time">2:41 PM</time></div></div>
+    <div class="row seed" style="--i:3"><span class="avatar">✦</span><div><div class="bubble">That sounds exhausting. We can slow this moment down together.</div><time class="time">2:41 PM</time></div></div>
+  </template>
+
+  <script>
+    const seedTemplate = document.querySelector('#seed-messages');
+    const demos = [...document.querySelectorAll('.demo')];
+
+    function timeNow() {
+      return new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' }).format(new Date());
+    }
+
+    function seedDemo(demo) {
+      const messages = demo.querySelector('.messages');
+      messages.replaceChildren(seedTemplate.content.cloneNode(true));
+      demo.classList.remove('is-loading');
+      void demo.offsetWidth;
+      demo.classList.add('is-loading');
+      messages.scrollTop = 0;
+    }
+
+    function makeRow(text, role, className = '') {
+      const row = document.createElement('div');
+      row.className = `row ${role === 'user' ? 'user' : ''} ${className}`.trim();
+      row.innerHTML = `<span class="avatar">${role === 'user' ? '○' : '✦'}</span><div><div class="bubble"></div><time class="time">${timeNow()}</time></div>`;
+      row.querySelector('.bubble').textContent = text;
+      return row;
+    }
+
+    function makeTyping() {
+      const row = document.createElement('div');
+      row.className = 'row typing reply-now';
+      row.innerHTML = '<span class="avatar">✦</span><div class="bubble" aria-label="Rumi is typing"><i></i><i></i><i></i></div>';
+      return row;
+    }
+
+    demos.forEach((demo) => {
+      seedDemo(demo);
+      const messages = demo.querySelector('.messages');
+      const form = demo.querySelector('.composer');
+      const input = form.querySelector('textarea');
+      const voice = form.querySelector('.voice');
+      const send = form.querySelector('.send');
+      let voiceTimer;
+
+      demo.closest('.variation').querySelector('.replay').addEventListener('click', () => seedDemo(demo));
+
+      voice.addEventListener('click', () => {
+        const listening = !voice.classList.contains('is-listening');
+        clearTimeout(voiceTimer);
+        voice.classList.toggle('is-listening', listening);
+        voice.setAttribute('aria-pressed', String(listening));
+        voice.setAttribute('aria-label', listening ? 'Stop voice input' : 'Start voice input');
+        if (listening) voiceTimer = setTimeout(() => {
+          voice.classList.remove('is-listening');
+          voice.setAttribute('aria-pressed', 'false');
+          voice.setAttribute('aria-label', 'Start voice input');
+        }, 3200);
+      });
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const text = input.value.trim() || 'I need a calm moment right now.';
+        input.value = '';
+        send.classList.remove('is-sending');
+        void send.offsetWidth;
+        send.classList.add('is-sending');
+
+        messages.append(makeRow(text, 'user', 'sent-now'));
+        messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+
+        setTimeout(() => {
+          const typing = makeTyping();
+          messages.append(typing);
+          messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+          setTimeout(() => {
+            typing.replaceWith(makeRow('I’m here with you. Let’s take one slow breath before we continue.', 'ai', 'reply-now'));
+            messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+          }, 1250);
+        }, 350);
+      });
+    });
+
+    document.querySelector('.replay-all').addEventListener('click', () => demos.forEach(seedDemo));
+  </script>
+</body>
+</html>

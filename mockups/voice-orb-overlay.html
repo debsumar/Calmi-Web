@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rumi voice mode — orb overlay variants</title>
+<style>
+  /* Tokens mirrored from src/tailwind.css. No new palette values introduced. */
+  :root {
+    --brand: #967bb6;
+    --brand-light: #beadd2;
+    --brand-soft: #aa94c4;
+    --brand-deep: #80699b;
+    --brand-dark: #69567f;
+    --canvas: #f6f4f8;
+    --surface: #ffffff;
+    --sunken: #f1ecf6;
+    --hairline: #e7e1ee;
+    --ink: #17141a;
+    --ink-muted: #6f6878;
+    --coral: #e8724a;
+    --gold: #f5b731;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0; padding: 28px 24px 64px;
+    background: var(--canvas); color: var(--ink);
+    font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  header { max-width: 1180px; margin: 0 auto 20px; }
+  h1 { margin: 0 0 6px; font-size: 26px; }
+  .lede { margin: 0; max-width: 68ch; color: var(--ink-muted); font-size: 13.5px; line-height: 1.6; }
+
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    max-width: 1180px; margin: 18px auto 0;
+  }
+  .toolbar .group {
+    display: inline-flex; gap: 6px; align-items: center;
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 999px; padding: 5px;
+  }
+  .toolbar button {
+    border: 1px solid transparent; background: none; color: var(--ink);
+    border-radius: 999px; padding: 7px 13px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  .toolbar button:hover { background: var(--sunken); }
+  .toolbar button.is-active { background: var(--brand-deep); color: #fff; }
+  .toolbar label { font-size: 12.5px; color: var(--ink-muted); display: inline-flex; gap: 6px; align-items: center; }
+  .toolbar .tag { font-size: 11.5px; font-weight: 700; color: var(--ink-muted); padding-left: 8px; }
+
+  .layout {
+    max-width: 1180px; margin: 24px auto 0;
+    display: grid; gap: 28px; grid-template-columns: 400px 1fr;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+  /* ---------------- chat panel replica (matches app: 380x600, rounded-3xl) --- */
+  .panel {
+    position: relative; overflow: hidden;
+    width: 380px; height: 600px;
+    display: flex; flex-direction: column;
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 24px; box-shadow: 0 10px 30px rgb(0 0 0 / .10);
+  }
+  .panel__header {
+    display: flex; align-items: center; gap: 10px;
+    height: 64px; min-height: 64px; padding: 0 14px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .avatar {
+    height: 36px; width: 36px; border-radius: 999px; overflow: hidden;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand-deep));
+  }
+  .avatar img { height: 28px; width: 28px; object-fit: contain; }
+  .panel__title { font-size: 15px; font-weight: 700; line-height: 1.2; }
+  .panel__sub { font-size: 11px; color: var(--brand-dark); }
+  .panel__body { flex: 1; overflow: hidden; padding: 16px 14px; display: flex; flex-direction: column; gap: 12px; }
+  .bubble { max-width: 84%; font-size: 13.5px; line-height: 1.5; padding: 9px 12px; }
+  .bubble--ai   { align-self: flex-start; background: var(--sunken); border: 1px solid var(--hairline); color: var(--brand-dark); border-radius: 16px 16px 16px 5px; }
+  .bubble--user { align-self: flex-end;  background: var(--brand-deep); color: #fff; border-radius: 16px 16px 5px 16px; }
+  .panel__composer { display: flex; align-items: center; gap: 8px; padding: 12px; border-top: 1px solid var(--hairline); }
+  .panel__composer .fake-input {
+    flex: 1; height: 42px; border: 1px solid var(--hairline); border-radius: 16px;
+    display: flex; align-items: center; padding: 0 12px; color: #a99fb8; font-size: 13px;
+  }
+  .icon-btn {
+    height: 42px; width: 42px; border-radius: 999px; flex: 0 0 auto; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--hairline); background: var(--surface); color: var(--brand-deep);
+  }
+  .icon-btn:hover { background: var(--sunken); }
+  .icon-btn--send { background: var(--brand-deep); border-color: transparent; color: #fff; }
+
+  /* ---------------- voice overlay: sits on top of the chat window ----------- */
+  .voice {
+    position: absolute; inset: 0; z-index: 5;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+    padding: 28px 20px 24px;
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    backdrop-filter: blur(18px);
+    opacity: 0; pointer-events: none;
+    transition: opacity .28s ease;
+  }
+  .voice.is-open { opacity: 1; pointer-events: auto; }
+  .voice__status { font-size: 13px; font-weight: 700; color: var(--brand-dark); letter-spacing: .01em; }
+  .voice__caption {
+    min-height: 42px; max-width: 280px; text-align: center;
+    font-size: 12.5px; line-height: 1.5; color: var(--ink-muted);
+  }
+  .voice__actions { display: flex; gap: 12px; margin-top: 4px; }
+  .voice__actions button {
+    height: 46px; min-width: 46px; padding: 0 16px; border-radius: 999px; cursor: pointer;
+    font: inherit; font-size: 12.5px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 1px solid var(--hairline); background: var(--surface); color: var(--brand-dark);
+  }
+  .voice__actions button:hover { background: var(--sunken); }
+  .voice__actions .end { background: var(--coral); border-color: transparent; color: #fff; }
+
+  /* Variant A only shows when the overlay carries its class, etc. */
+  .orb-slot { display: grid; place-items: center; height: 200px; width: 200px; }
+  .orb { display: none; }
+  .voice[data-variant="a"] .orb--a,
+  .voice[data-variant="b"] .orb--b,
+  .voice[data-variant="c"] .orb--c,
+  .voice[data-variant="d"] .orb--d,
+  .voice[data-variant="e"] .orb--e { display: grid; }
+
+  /* ======================= A · Aurora blob (4o-like) ======================= */
+  .orb--a { position: relative; place-items: center; height: 170px; width: 170px; }
+  .orb--a .layer {
+    position: absolute; inset: 0; border-radius: 50%;
+    filter: blur(14px); mix-blend-mode: multiply; opacity: .9;
+  }
+  .orb--a .l1 { background: radial-gradient(circle at 32% 30%, var(--brand-light), transparent 62%); }
+  .orb--a .l2 { background: radial-gradient(circle at 70% 62%, var(--brand-soft), transparent 60%); }
+  .orb--a .l3 { background: radial-gradient(circle at 52% 78%, var(--brand), transparent 58%); }
+  .orb--a .core {
+    position: relative; height: 108px; width: 108px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #fff 4%, var(--brand-light) 42%, var(--brand-deep) 100%);
+    box-shadow: 0 12px 34px color-mix(in srgb, var(--brand) 42%, transparent);
+  }
+  .is-listening .orb--a .core { animation: aBreath 2.6s ease-in-out infinite; }
+  .is-listening .orb--a .layer { animation: aDrift 7s linear infinite; }
+  .is-thinking  .orb--a .core { animation: aBreath 1.1s ease-in-out infinite; }
+  .is-thinking  .orb--a .layer { animation: aDrift 2.6s linear infinite; }
+  .is-speaking  .orb--a .core { animation: aTalk .62s ease-in-out infinite; }
+  .is-speaking  .orb--a .layer { animation: aDrift 3.4s linear infinite reverse; }
+  @keyframes aBreath { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+  @keyframes aTalk   { 0%,100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.13) translateY(-3px); } }
+  @keyframes aDrift  { to { transform: rotate(360deg); } }
+
+  /* ======================= B · Sonar rings ================================ */
+  .orb--b { position: relative; place-items: center; height: 190px; width: 190px; }
+  .orb--b .core {
+    height: 96px; width: 96px; border-radius: 50%;
+    background: linear-gradient(140deg, var(--brand-light), var(--brand-deep));
+    box-shadow: 0 10px 26px color-mix(in srgb, var(--brand) 38%, transparent);
+  }
+  .orb--b .wave {
+    position: absolute; height: 96px; width: 96px; border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--brand) 60%, transparent);
+    opacity: 0;
+  }
+  .is-listening .orb--b .wave { animation: bSonar 2.4s ease-out infinite; }
+  .is-speaking  .orb--b .wave { animation: bSonar 1.1s ease-out infinite; }
+  .is-thinking  .orb--b .wave { animation: bSonar 1.7s ease-out infinite; }
+  .orb--b .wave:nth-child(2) { animation-delay: .55s; }
+  .orb--b .wave:nth-child(3) { animation-delay: 1.1s; }
+  .is-speaking .orb--b .core { animation: bBob .55s ease-in-out infinite; }
+  @keyframes bSonar { 0% { transform: scale(1); opacity: .65; } 100% { transform: scale(1.95); opacity: 0; } }
+  @keyframes bBob   { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+  /* ======================= C · Morphing organic blob ====================== */
+  .orb--c { place-items: center; height: 170px; width: 170px; }
+  .orb--c .core {
+    height: 132px; width: 132px;
+    background: linear-gradient(135deg, var(--brand-light), var(--brand), var(--brand-deep));
+    border-radius: 46% 54% 52% 48% / 50% 46% 54% 50%;
+    box-shadow: 0 14px 34px color-mix(in srgb, var(--brand) 36%, transparent);
+  }
+  .is-listening .orb--c .core { animation: cMorph 6s ease-in-out infinite, cSpin 18s linear infinite; }
+  .is-thinking  .orb--c .core { animation: cMorph 2.4s ease-in-out infinite, cSpin 7s linear infinite; }
+  .is-speaking  .orb--c .core { animation: cMorph 1.5s ease-in-out infinite, cSpin 9s linear infinite reverse; }
+  @keyframes cMorph {
+    0%,100% { border-radius: 46% 54% 52% 48% / 50% 46% 54% 50%; transform: scale(1); }
+    33%     { border-radius: 58% 42% 38% 62% / 42% 58% 42% 58%; transform: scale(1.05); }
+    66%     { border-radius: 38% 62% 60% 40% / 60% 38% 62% 40%; transform: scale(.97); }
+  }
+  @keyframes cSpin { to { transform: rotate(360deg); } }
+
+  /* ======================= D · Siri-style dot ring ======================== */
+  .orb--d { position: relative; place-items: center; height: 190px; width: 190px; }
+  .orb--d .dot {
+    position: absolute; height: 9px; width: 9px; border-radius: 50%;
+    background: var(--brand-soft);
+    /* --i set inline; ring radius animates via translate */
+    transform: rotate(calc(var(--i) * 22.5deg)) translateY(-64px);
+  }
+  .orb--d .core {
+    height: 62px; width: 62px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #fff, var(--brand-light) 55%, var(--brand-deep));
+  }
+  .is-listening .orb--d .dot { animation: dPush 2.2s ease-in-out infinite; }
+  .is-thinking  .orb--d .dot { animation: dOrbit 2.4s linear infinite; }
+  .is-speaking  .orb--d .dot { animation: dPush .8s ease-in-out infinite; }
+  .orb--d .dot { animation-delay: calc(var(--i) * 80ms); }
+  @keyframes dPush {
+    0%,100% { transform: rotate(calc(var(--i) * 22.5deg)) translateY(-58px) scale(.85); opacity: .55; }
+    50%     { transform: rotate(calc(var(--i) * 22.5deg)) translateY(-76px) scale(1.15); opacity: 1; }
+  }
+  @keyframes dOrbit {
+    0%   { transform: rotate(calc(var(--i) * 22.5deg)) translateY(-66px) scale(.7); opacity: .35; }
+    50%  { transform: rotate(calc(var(--i) * 22.5deg + 12deg)) translateY(-66px) scale(1.1); opacity: 1; }
+    100% { transform: rotate(calc(var(--i) * 22.5deg)) translateY(-66px) scale(.7); opacity: .35; }
+  }
+
+  /* ======================= E · Mascot in glass orb ======================== */
+  .orb--e { position: relative; place-items: center; height: 190px; width: 190px; }
+  .orb--e .halo {
+    position: absolute; height: 120px; width: 120px; border-radius: 50%;
+    background: color-mix(in srgb, var(--brand) 26%, transparent); opacity: 0;
+  }
+  .orb--e .glass {
+    position: relative; height: 130px; width: 130px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: radial-gradient(circle at 34% 26%, #fff 6%, color-mix(in srgb, var(--brand-light) 70%, #fff) 58%, var(--brand-soft) 100%);
+    border: 1px solid color-mix(in srgb, var(--brand) 24%, transparent);
+    box-shadow: inset 0 -10px 24px color-mix(in srgb, var(--brand) 22%, transparent), 0 12px 30px color-mix(in srgb, var(--brand) 30%, transparent);
+  }
+  .orb--e img { height: 88px; width: 88px; object-fit: contain; }
+  .is-listening .orb--e .halo { animation: eHalo 2.6s ease-out infinite; }
+  .is-speaking  .orb--e .halo { animation: eHalo 1.1s ease-out infinite; }
+  .is-thinking  .orb--e .halo { animation: eHalo 1.7s ease-out infinite; }
+  .is-listening .orb--e img { animation: eBreathe 2.8s ease-in-out infinite; }
+  .is-thinking  .orb--e img { animation: eTilt 1.6s ease-in-out infinite; }
+  .is-speaking  .orb--e img { animation: eNod .62s ease-in-out infinite; }
+  @keyframes eHalo    { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(1.7); opacity: 0; } }
+  @keyframes eBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+  @keyframes eNod     { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-5px) scale(1.05); } }
+  @keyframes eTilt    { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+
+  /* ---------------- variant catalogue (right column) ----------------------- */
+  .notes { display: grid; gap: 14px; }
+  .note {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 16px 18px;
+  }
+  .note h3 { margin: 0 0 5px; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+  .note p  { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-muted); }
+  .key {
+    display: inline-grid; place-items: center; height: 22px; width: 22px; border-radius: 6px;
+    background: var(--sunken); color: var(--brand-dark); font-size: 11.5px; font-weight: 800;
+  }
+  .pick { color: #2a7030; font-weight: 800; font-size: 11px; letter-spacing: .02em; }
+
+  /* Reduced motion: orbs hold a calm static pose. */
+  body.reduce-motion * { animation: none !important; }
+  body.reduce-motion .orb--b .wave { opacity: .28; transform: scale(1.45); }
+  body.reduce-motion .orb--e .halo { opacity: .3; transform: scale(1.3); }
+
+  footer { max-width: 1180px; margin: 34px auto 0; font-size: 12.5px; line-height: 1.7; color: var(--ink-muted); }
+  footer code { background: #ece7f2; padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Rumi voice mode — orb overlay variants</h1>
+  <p class="lede">
+    ChatGPT-style voice mode: tapping the voice control raises a circular animated orb over the chat window.
+    It stays until you end the call, and its motion changes with the turn — listening, thinking, speaking.
+    Pick a variant and a state below, or hit <strong>Simulate conversation</strong> to watch the turns cycle.
+  </p>
+
+  <div class="toolbar">
+    <span class="tag">Variant</span>
+    <div class="group" id="variants">
+      <button type="button" data-variant="a" class="is-active">A · Aurora</button>
+      <button type="button" data-variant="b">B · Sonar</button>
+      <button type="button" data-variant="c">C · Blob</button>
+      <button type="button" data-variant="d">D · Dot ring</button>
+      <button type="button" data-variant="e">E · Mascot</button>
+    </div>
+
+    <span class="tag">State</span>
+    <div class="group" id="states">
+      <button type="button" data-state="listening" class="is-active">Listening</button>
+      <button type="button" data-state="thinking">Thinking</button>
+      <button type="button" data-state="speaking">Speaking</button>
+    </div>
+
+    <div class="group">
+      <button type="button" id="simulate">Simulate conversation</button>
+    </div>
+    <label><input type="checkbox" id="reduceMotion"> Simulate <code>prefers-reduced-motion</code></label>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- chat panel with the overlay living inside it -->
+  <div class="panel">
+    <div class="panel__header">
+      <span class="avatar"><img src="../public/assets/logos/rumi_logo.svg" alt=""></span>
+      <div style="min-width:0;flex:1">
+        <div class="panel__title">Rumi AI</div>
+        <div class="panel__sub">Your smart AI companion</div>
+      </div>
+      <span class="icon-btn" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+      </span>
+    </div>
+
+    <div class="panel__body">
+      <div class="bubble bubble--ai">I am here to listen anytime.</div>
+      <div class="bubble bubble--user">I’ve been feeling overwhelmed lately.</div>
+      <div class="bubble bubble--ai">That sounds exhausting. Want to tell me what’s been weighing on your mind?</div>
+      <div class="bubble bubble--user">Maybe easier to just talk it out.</div>
+    </div>
+
+    <div class="panel__composer">
+      <span class="fake-input">Share what’s on your mind...</span>
+      <button type="button" class="icon-btn" id="startVoice" aria-label="Start voice conversation">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 10v4M6 6v12M10 3v18M14 8v8M18 5v14M22 10v4"/></svg>
+      </button>
+      <button type="button" class="icon-btn icon-btn--send" aria-label="Send message">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg>
+      </button>
+    </div>
+
+    <!-- the overlay -->
+    <div class="voice is-listening" id="voice" data-variant="a" role="dialog" aria-modal="true" aria-label="Rumi voice conversation">
+      <div class="voice__status" id="status">Listening…</div>
+
+      <div class="orb-slot">
+        <!-- A -->
+        <div class="orb orb--a">
+          <span class="layer l1"></span><span class="layer l2"></span><span class="layer l3"></span>
+          <span class="core"></span>
+        </div>
+        <!-- B -->
+        <div class="orb orb--b">
+          <span class="wave"></span><span class="wave"></span><span class="wave"></span>
+          <span class="core"></span>
+        </div>
+        <!-- C -->
+        <div class="orb orb--c"><span class="core"></span></div>
+        <!-- D -->
+        <div class="orb orb--d" id="orbD"><span class="core"></span></div>
+        <!-- E -->
+        <div class="orb orb--e">
+          <span class="halo"></span>
+          <span class="glass"><img src="../public/assets/logos/rumi_logo.svg" alt=""></span>
+        </div>
+      </div>
+
+      <p class="voice__caption" id="caption">Everything just feels like too much right now…</p>
+
+      <div class="voice__actions">
+        <button type="button" id="mute" aria-label="Mute microphone">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3ZM5 11a7 7 0 0 0 14 0M12 18v4"/></svg>
+          Mute
+        </button>
+        <button type="button" class="end" id="endVoice">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          End
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- catalogue -->
+  <div class="notes">
+    <div class="note">
+      <h3><span class="key">A</span> Aurora blob <span class="pick">· recommended</span></h3>
+      <p>Blurred brand-gradient layers drift behind a glossy core; the core breathes slowly while listening and pumps harder while speaking. Closest to ChatGPT‑4o voice mode, and the drift reads as "alive" without looking like a loading spinner. Pure CSS — three blurred radial gradients plus one rotation.</p>
+    </div>
+    <div class="note">
+      <h3><span class="key">B</span> Sonar rings</h3>
+      <p>Solid orb emitting three staggered expanding rings; ring cadence speeds up on speaking. Clearest signal that audio is flowing, and it reuses the ripple language already in the topbar ink indicator. Risk: rings can read as "recording" or even as an error pulse.</p>
+    </div>
+    <div class="note">
+      <h3><span class="key">C</span> Morphing blob</h3>
+      <p>Organic <code>border-radius</code> morph plus slow rotation — a squishy liquid mass. Most characterful and least generic, best fit for a calm wellness product. Watch out: continuous morphing can feel restless during long listens, so it wants the slowest tempo of the set.</p>
+    </div>
+    <div class="note">
+      <h3><span class="key">D</span> Siri dot ring</h3>
+      <p>Sixteen dots on a ring, radius and opacity modulated per dot with a stagger. Reads unmistakably as voice, and maps beautifully onto real amplitude data later — each dot can take a frequency bin from an <code>AnalyserNode</code>. Heaviest DOM of the five (16 nodes).</p>
+    </div>
+    <div class="note">
+      <h3><span class="key">E</span> Mascot in glass orb</h3>
+      <p>The Rumi logo inside a glass sphere: breathes while listening, tilts while thinking, nods while speaking. Strongest brand payoff and the friendliest read, since the character is already your chat identity. Least abstract, so it can feel more toy-like than the others.</p>
+    </div>
+    <div class="note">
+      <h3>Shared behaviour</h3>
+      <p>All five keep the same shell: overlay sits <em>inside</em> the chat panel with a blurred scrim so context stays visible behind it, a live status line, a caption area for the running transcript, and Mute / End. Nothing dismisses on scrim tap — the call ends only via End, per your requirement. Every variant degrades to a static pose under <code>prefers-reduced-motion</code>.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Colours come from <code>src/tailwind.css</code> (<code>--brand</code>, <code>--brand-light</code>,
+  <code>--brand-deep</code>, <code>--coral</code>) so nothing here implies a new palette value. Icons are the
+  Lucide set already registered in <code>app.config.ts</code> — the trigger uses <code>audio-lines</code>, not a
+  mic, since this is a spoken conversation rather than dictation. States are driven by the classes
+  <code>.is-listening</code>, <code>.is-thinking</code>, <code>.is-speaking</code> on the overlay, which is the
+  same shape an Angular signal would drive.
+</footer>
+
+<script>
+  const voice   = document.getElementById('voice');
+  const status  = document.getElementById('status');
+  const caption = document.getElementById('caption');
+
+  // Variant D dots are generated so the markup stays readable.
+  const orbD = document.getElementById('orbD');
+  for (let i = 0; i < 16; i += 1) {
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    dot.style.setProperty('--i', String(i));
+    orbD.appendChild(dot);
+  }
+
+  const COPY = {
+    listening: { status: 'Listening…',   caption: 'Everything just feels like too much right now…' },
+    thinking:  { status: 'Thinking…',    caption: '' },
+    speaking:  { status: 'Rumi speaking', caption: 'That sounds exhausting. Let’s take it one small moment at a time.' },
+  };
+
+  function setState(state) {
+    voice.classList.remove('is-listening', 'is-thinking', 'is-speaking');
+    voice.classList.add('is-' + state);
+    status.textContent = COPY[state].status;
+    caption.textContent = COPY[state].caption;
+    document.querySelectorAll('#states button').forEach((b) => {
+      b.classList.toggle('is-active', b.dataset.state === state);
+    });
+  }
+
+  document.getElementById('variants').addEventListener('click', (event) => {
+    const button = event.target.closest('button');
+    if (!button) return;
+    voice.dataset.variant = button.dataset.variant;
+    document.querySelectorAll('#variants button').forEach((b) => b.classList.toggle('is-active', b === button));
+  });
+
+  document.getElementById('states').addEventListener('click', (event) => {
+    const button = event.target.closest('button');
+    if (button) { stopSim(); setState(button.dataset.state); }
+  });
+
+  document.getElementById('startVoice').addEventListener('click', () => {
+    voice.classList.add('is-open');
+    setState('listening');
+  });
+  document.getElementById('endVoice').addEventListener('click', () => {
+    stopSim();
+    voice.classList.remove('is-open');
+  });
+  document.getElementById('mute').addEventListener('click', (event) => {
+    const on = event.currentTarget.dataset.muted !== 'true';
+    event.currentTarget.dataset.muted = String(on);
+    event.currentTarget.style.background = on ? 'var(--sunken)' : 'var(--surface)';
+  });
+
+  // Turn-taking simulation: listen -> think -> speak -> listen, until ended.
+  let timer = null;
+  const simBtn = document.getElementById('simulate');
+  const CYCLE = [['listening', 3200], ['thinking', 1400], ['speaking', 3600]];
+
+  function runSim(step = 0) {
+    const [state, hold] = CYCLE[step % CYCLE.length];
+    setState(state);
+    timer = setTimeout(() => runSim(step + 1), hold);
+  }
+  function stopSim() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    simBtn.classList.remove('is-active');
+    simBtn.textContent = 'Simulate conversation';
+  }
+  simBtn.addEventListener('click', () => {
+    if (timer) { stopSim(); return; }
+    voice.classList.add('is-open');
+    simBtn.classList.add('is-active');
+    simBtn.textContent = 'Stop simulation';
+    runSim();
+  });
+
+  document.getElementById('reduceMotion').addEventListener('change', (event) => {
+    document.body.classList.toggle('reduce-motion', event.target.checked);
+  });
+
+  // Open on load so the mockup shows its point immediately.
+  voice.classList.add('is-open');
+</script>
+
+</body>
+</html>

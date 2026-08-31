@@ -9,15 +9,14 @@
   aria-labelledby="rumi-chat-title"
   aria-describedby="rumi-chat-subtitle"
   tabindex="-1"
-  class="chat-panel fixed inset-x-0 bottom-0 z-[60] flex h-[85dvh] max-h-[100dvh] flex-col overflow-hidden rounded-t-3xl border border-hairline bg-surface text-brand-deep dark:text-brand-light shadow-card md:right-6 md:inset-x-auto md:bottom-24 md:h-[600px] md:max-h-[calc(100dvh-9rem)] md:w-[380px] md:rounded-3xl md:bg-glass md:backdrop-blur-xl"
+  class="chat-panel fixed inset-x-0 top-0 z-[60] box-border flex h-[100dvh] max-h-none flex-col overflow-hidden rounded-none border border-hairline bg-glass pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-brand-deep dark:text-brand-light shadow-card backdrop-blur-xl md:top-auto md:right-6 md:inset-x-auto md:bottom-24 md:h-[600px] md:max-h-[calc(100dvh-9rem)] md:w-[380px] md:rounded-3xl md:pt-0 md:pb-0"
   [class.chat-panel--lifted]="liftedForPlayer()"
-  [class.bottom-40]="liftedForPlayer()"
   [class.chat-panel--exit]="chatStore.isClosing()"
   [class.chat-panel--minimized]="chatStore.isMinimized()">
-  <div class="mx-auto mt-3 h-1 w-12 rounded-full bg-brand/30 md:hidden" aria-hidden="true"></div>
+  <div class="mx-auto mt-3 h-1 w-12 rounded-full bg-sunken-alt md:hidden" aria-hidden="true"></div>
 
   <header class="flex h-16 min-h-16 items-center gap-3 border-b border-hairline px-4">
-    <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-brand-dark to-brand-deep text-on-brand" aria-hidden="true">
+    <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-hairline bg-sunken-alt p-0.5" aria-hidden="true">
       <img src="assets/logos/rumi_logo.svg" alt="" class="h-7 w-7 object-contain">
     </div>
     <div class="min-w-0 flex-1">
@@ -26,14 +25,14 @@
     </div>
     <button
       type="button"
-      class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-brand-deep dark:text-brand-light hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+      class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-brand-deep dark:text-brand-light hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
       aria-label="Minimize Rumi AI chat"
       (click)="minimizePanel()">
       <svg [lucideIcon]="'minus'" [size]="18" aria-hidden="true"></svg>
     </button>
     <button
       type="button"
-      class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-brand-deep dark:text-brand-light hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+      class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-brand-deep dark:text-brand-light hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
       aria-label="Close Rumi AI chat"
       (click)="closePanel()">
       <svg [lucideIcon]="'x'" [size]="18" aria-hidden="true"></svg>
@@ -41,17 +40,6 @@
   </header>
 
   @if (!chatStore.isMinimized()) {
-    <div class="flex min-h-0 flex-1 flex-col overflow-hidden text-base">
-      <app-chat-message-list></app-chat-message-list>
-      @if (!hasUserMessages()) {
-        <div class="shrink-0 px-4 pb-3">
-          <app-chat-suggestions></app-chat-suggestions>
-        </div>
-      }
-    </div>
-
-    <footer class="shrink-0 border-t border-hairline p-3">
-      <app-chat-composer></app-chat-composer>
-    </footer>
+    <app-chat-conversation surface="floating-panel"></app-chat-conversation>
   }
 </section>

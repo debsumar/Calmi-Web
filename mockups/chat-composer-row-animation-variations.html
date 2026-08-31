@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat Composer Row Animation Variations</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --brand-50: #faf8fb;
+      --brand-100: #e6dfed;
+      --brand-200: #d2c6e0;
+      --brand-300: #beadd2;
+      --brand-400: #aa94c4;
+      --brand-500: #967bb6;
+      --brand-600: #80699b;
+      --brand-700: #69567f;
+      --ink: #211b28;
+      --muted: #7a7181;
+      --surface: #fff;
+      --canvas: #f8f5fa;
+      --line: #e8e0ed;
+      font-family: "Bricolage Grotesque", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: radial-gradient(circle at 10% 0%, rgba(190,173,210,.4), transparent 31rem), linear-gradient(180deg, #fff, var(--canvas));
+    }
+    button, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .page { width: min(1240px, 100%); margin: 0 auto; padding: 36px 22px 50px; }
+    .header { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+    .eyebrow { margin: 0 0 8px; color: var(--brand-700); font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(30px, 4vw, 50px); line-height: 1; letter-spacing: -.04em; }
+    .intro { max-width: 720px; margin: 13px 0 0; color: var(--muted); line-height: 1.55; }
+    .replay-all, .replay {
+      border: 1px solid var(--brand-300);
+      color: var(--brand-700);
+      background: white;
+      font-weight: 750;
+      transition: transform .22s ease, background .22s ease;
+    }
+    .replay-all { min-height: 44px; flex: 0 0 auto; border-radius: 999px; padding: 0 18px; }
+    .replay { width: 40px; height: 40px; flex: 0 0 auto; border-radius: 50%; }
+    .replay-all:hover { transform: translateY(-2px); background: var(--brand-50); }
+    .replay:hover { transform: rotate(-28deg); background: var(--brand-50); }
+    .hint { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; padding: 0; list-style: none; }
+    .hint li { border-radius: 999px; padding: 8px 11px; color: var(--brand-700); background: var(--brand-100); font-size: 12px; font-weight: 700; }
+
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    .variant {
+      min-width: 0;
+      border: 1px solid rgba(150,123,182,.25);
+      border-radius: 25px;
+      padding: 17px;
+      background: rgba(255,255,255,.8);
+      box-shadow: 0 17px 48px rgba(60,49,73,.09);
+      backdrop-filter: blur(18px);
+    }
+    .variant.recommended { border-color: var(--brand-400); box-shadow: 0 18px 55px rgba(128,105,155,.17); }
+    .variant-head { display: flex; align-items: start; justify-content: space-between; gap: 14px; min-height: 92px; padding: 2px 2px 15px; }
+    .variant-title { margin: 0; font-size: 19px; }
+    .variant-copy { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .badge { display: inline-flex; margin-top: 7px; border-radius: 999px; padding: 5px 8px; color: white; background: var(--brand-600); font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+
+    .stage {
+      min-height: 180px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 34px 18px;
+      background: linear-gradient(145deg, #fff, var(--brand-50));
+    }
+    .demo { width: 100%; max-width: 580px; }
+    .composer-row {
+      position: relative;
+      display: flex;
+      align-items: end;
+      gap: 8px;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 7px 6px 16px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgba(60,49,73,.08);
+      transform-origin: center;
+      transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease, background .25s ease;
+    }
+    .composer-row:focus-within { border-color: var(--brand-500); box-shadow: 0 0 0 3px rgba(150,123,182,.13), 0 10px 30px rgba(60,49,73,.09); }
+    textarea {
+      min-width: 0;
+      min-height: 44px;
+      max-height: 90px;
+      flex: 1;
+      resize: none;
+      border: 0;
+      outline: 0;
+      padding: 11px 0 8px;
+      color: var(--ink);
+      caret-color: var(--brand-600);
+      background: transparent;
+      font-size: 15px;
+      line-height: 1.45;
+      transition: opacity .28s ease, transform .35s ease, filter .28s ease;
+    }
+    textarea::placeholder { color: #8f8795; }
+    .control {
+      position: relative;
+      display: inline-flex;
+      width: 44px;
+      height: 44px;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--brand-700);
+      background: white;
+      transition: width .38s cubic-bezier(.2,.85,.25,1), transform .25s ease, color .25s ease, background .25s ease, box-shadow .25s ease;
+    }
+    .control svg { width: 19px; height: 19px; }
+    .send { color: var(--brand-700); background: var(--brand-100); }
+    .control:hover { transform: translateY(-2px); }
+    .control:focus-visible, .replay:focus-visible, .replay-all:focus-visible { outline: 3px solid var(--brand-300); outline-offset: 2px; }
+    .voice-label { max-width: 0; overflow: hidden; opacity: 0; white-space: nowrap; font-size: 12px; font-weight: 750; transition: max-width .25s ease, opacity .2s ease, margin .25s ease; }
+    .state { min-height: 18px; margin: 10px 0 0; color: var(--muted); text-align: center; font-size: 11px; }
+
+    /* A — Calm settle */
+    [data-motion="calm"].entering .composer-row { animation: calmEnter .62s cubic-bezier(.22,.82,.24,1) both; }
+    [data-motion="calm"] .voice.listening::before, [data-motion="calm"] .voice.listening::after {
+      content: ""; position: absolute; inset: -2px; z-index: -1; border: 2px solid var(--brand-400); border-radius: 50%; animation: ripple 1.25s ease-out infinite;
+    }
+    [data-motion="calm"] .voice.listening::after { animation-delay: .5s; }
+    [data-motion="calm"].sending .send { animation: calmPress .5s cubic-bezier(.2,.9,.3,1); }
+    [data-motion="calm"].sending textarea { animation: textLift .48s ease both; }
+    @keyframes calmEnter { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes ripple { from { opacity: .65; transform: scale(.84); } to { opacity: 0; transform: scale(1.62); } }
+    @keyframes calmPress { 40% { transform: scale(.82) rotate(-8deg); } }
+    @keyframes textLift { 45% { opacity: 0; transform: translateY(-12px); } 55% { opacity: 0; transform: translateY(8px); } }
+
+    /* B — Soft spring */
+    [data-motion="spring"].entering .composer-row { animation: springEnter .72s cubic-bezier(.17,1.4,.3,1) both; }
+    [data-motion="spring"] .voice.listening { width: 112px; border-radius: 999px; color: white; border-color: transparent; background: var(--brand-600); box-shadow: 0 10px 28px rgba(128,105,155,.28); }
+    [data-motion="spring"] .voice.listening .voice-label { max-width: 64px; margin-left: 6px; opacity: 1; }
+    [data-motion="spring"] .voice.listening svg { animation: micBounce .7s ease-in-out infinite alternate; }
+    [data-motion="spring"].sending .composer-row { animation: rowSpring .6s cubic-bezier(.17,1.4,.3,1); }
+    [data-motion="spring"].sending .send { animation: springSend .58s cubic-bezier(.2,.9,.3,1); }
+    [data-motion="spring"].sending textarea { opacity: 0; transform: translateX(18px) scale(.97); }
+    @keyframes springEnter { 0% { opacity: 0; transform: scale(.9) translateY(12px); } 72% { opacity: 1; transform: scale(1.025) translateY(-2px); } 100% { transform: scale(1); } }
+    @keyframes micBounce { to { transform: scale(1.14); } }
+    @keyframes rowSpring { 45% { transform: scale(.985); } 72% { transform: scale(1.012); } }
+    @keyframes springSend { 45% { transform: scale(.8) rotate(-28deg); } }
+
+    /* C — Lavender trace */
+    [data-motion="trace"] .composer-row { overflow: hidden; }
+    [data-motion="trace"] .composer-row::before {
+      content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(100deg, transparent 25%, rgba(190,173,210,.45) 50%, transparent 75%); transform: translateX(-115%);
+    }
+    [data-motion="trace"].entering .composer-row { animation: traceEnter .65s ease-out both; }
+    [data-motion="trace"].entering .composer-row::before { animation: traceSweep .9s ease-out .08s both; }
+    [data-motion="trace"] .voice.listening { color: white; border-color: transparent; background: var(--brand-600); box-shadow: 0 0 0 7px var(--brand-100); animation: breathe 1.35s ease-in-out infinite; }
+    [data-motion="trace"] .voice.listening svg { animation: waveTilt .65s ease-in-out infinite alternate; }
+    [data-motion="trace"].sending .composer-row::before { animation: traceSweep .62s ease-out both; }
+    [data-motion="trace"].sending .send { animation: glowSend .64s ease; }
+    [data-motion="trace"].sending textarea { opacity: 0; filter: blur(4px); transform: translateX(12px); }
+    @keyframes traceEnter { from { opacity: 0; filter: blur(5px); } to { opacity: 1; filter: blur(0); } }
+    @keyframes traceSweep { to { transform: translateX(115%); } }
+    @keyframes breathe { 50% { transform: scale(1.07); box-shadow: 0 0 0 11px var(--brand-100); } }
+    @keyframes waveTilt { to { transform: rotate(8deg) scale(1.07); } }
+    @keyframes glowSend { 42% { transform: scale(.86); box-shadow: 0 0 0 10px rgba(150,123,182,.18); } }
+
+    /* D — Minimal nudge */
+    [data-motion="minimal"].entering .composer-row { animation: minimalEnter .38s ease-out both; }
+    [data-motion="minimal"] .voice.listening { color: white; border-color: transparent; background: var(--brand-600); transform: scale(.94); }
+    [data-motion="minimal"] .voice.listening svg { animation: minimalMic .65s ease-in-out infinite alternate; }
+    [data-motion="minimal"].sending .composer-row { animation: rowNudge .42s ease-out; border-color: var(--brand-400); }
+    [data-motion="minimal"].sending .send { animation: minimalSend .38s ease-out; }
+    [data-motion="minimal"].sending textarea { opacity: 0; transform: translateX(8px); }
+    @keyframes minimalEnter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes minimalMic { to { transform: scale(1.1); } }
+    @keyframes rowNudge { 48% { transform: translateX(3px); } }
+    @keyframes minimalSend { 45% { transform: scale(.86); } }
+
+    .notes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px; }
+    .note { border-radius: 16px; padding: 14px; color: var(--muted); background: rgba(255,255,255,.78); font-size: 12px; line-height: 1.5; }
+    .note strong { display: block; margin-bottom: 4px; color: var(--ink); }
+
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .notes { grid-template-columns: repeat(2, 1fr); } .variant-head { min-height: auto; } }
+    @media (max-width: 600px) { .page { padding: 24px 12px 38px; } .header { align-items: start; flex-direction: column; } .variant { padding: 10px; } .stage { padding: 30px 10px; } .composer-row { gap: 6px; padding-left: 13px; } .control { width: 42px; height: 42px; } .notes { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div>
+        <p class="eyebrow">Composer row only</p>
+        <h1>Textarea row animation variants</h1>
+        <p class="intro">No chat window and no benefit list. Each option demonstrates only the textarea, voice button, send button, and how this row reacts.</p>
+      </div>
+      <button class="replay-all" type="button">↻ Replay all rows</button>
+    </header>
+
+    <ul class="hint"><li>Replay = row load</li><li>Focus textarea = lavender focus</li><li>Tap voice = listening motion</li><li>Send = text + row response</li></ul>
+
+    <section class="grid" aria-label="Composer row animation variations">
+      <article class="variant recommended">
+        <div class="variant-head"><div><h2 class="variant-title">A. Calm settle</h2><p class="variant-copy">Soft row rise, quiet voice ripples, and text lifting away on send.</p><span class="badge">Recommended</span></div><button class="replay" type="button" aria-label="Replay Calm settle">↻</button></div>
+        <div class="stage"><div class="demo" data-motion="calm"><form class="composer-row"><textarea rows="1" aria-label="Calm settle message" placeholder="Share what's on your mind..."></textarea><button class="control voice" type="button" aria-label="Start voice input" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M8 7v10M4 10v4M16 7v10M20 10v4"/></svg><span class="voice-label">Listening</span></button><button class="control send" type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 17-8-7 18-2-8-8-2Z"/><path d="m11 13 9-10"/></svg></button></form><p class="state">Tap voice or send</p></div></div>
+      </article>
+
+      <article class="variant">
+        <div class="variant-head"><div><h2 class="variant-title">B. Soft spring</h2><p class="variant-copy">Row springs into place; voice expands into a Listening pill.</p></div><button class="replay" type="button" aria-label="Replay Soft spring">↻</button></div>
+        <div class="stage"><div class="demo" data-motion="spring"><form class="composer-row"><textarea rows="1" aria-label="Soft spring message" placeholder="Share what's on your mind..."></textarea><button class="control voice" type="button" aria-label="Start voice input" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M8 7v10M4 10v4M16 7v10M20 10v4"/></svg><span class="voice-label">Listening</span></button><button class="control send" type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 17-8-7 18-2-8-8-2Z"/><path d="m11 13 9-10"/></svg></button></form><p class="state">Tap voice or send</p></div></div>
+      </article>
+
+      <article class="variant">
+        <div class="variant-head"><div><h2 class="variant-title">C. Lavender trace</h2><p class="variant-copy">Light sweeps through the row; voice breathes and send glows.</p></div><button class="replay" type="button" aria-label="Replay Lavender trace">↻</button></div>
+        <div class="stage"><div class="demo" data-motion="trace"><form class="composer-row"><textarea rows="1" aria-label="Lavender trace message" placeholder="Share what's on your mind..."></textarea><button class="control voice" type="button" aria-label="Start voice input" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M8 7v10M4 10v4M16 7v10M20 10v4"/></svg><span class="voice-label">Listening</span></button><button class="control send" type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 17-8-7 18-2-8-8-2Z"/><path d="m11 13 9-10"/></svg></button></form><p class="state">Tap voice or send</p></div></div>
+      </article>
+
+      <article class="variant">
+        <div class="variant-head"><div><h2 class="variant-title">D. Minimal nudge</h2><p class="variant-copy">Fast, restrained motion with a small press and horizontal nudge.</p></div><button class="replay" type="button" aria-label="Replay Minimal nudge">↻</button></div>
+        <div class="stage"><div class="demo" data-motion="minimal"><form class="composer-row"><textarea rows="1" aria-label="Minimal nudge message" placeholder="Share what's on your mind..."></textarea><button class="control voice" type="button" aria-label="Start voice input" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M8 7v10M4 10v4M16 7v10M20 10v4"/></svg><span class="voice-label">Listening</span></button><button class="control send" type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 17-8-7 18-2-8-8-2Z"/><path d="m11 13 9-10"/></svg></button></form><p class="state">Tap voice or send</p></div></div>
+      </article>
+    </section>
+
+    <section class="notes" aria-label="Recommendations"><div class="note"><strong>A — calm default</strong>Best match for Calmi tone.</div><div class="note"><strong>B — voice discovery</strong>Most obvious listening state.</div><div class="note"><strong>C — expressive</strong>Premium but more visible.</div><div class="note"><strong>D — restrained</strong>Fastest and least distracting.</div></section>
+  </main>
+
+  <script>
+    const demos = [...document.querySelectorAll('.demo')];
+
+    function replay(demo) {
+      demo.classList.remove('entering', 'sending');
+      void demo.offsetWidth;
+      demo.classList.add('entering');
+      demo.querySelector('.state').textContent = 'Row loaded — tap voice or send';
+    }
+
+    demos.forEach((demo) => {
+      const form = demo.querySelector('.composer-row');
+      const input = demo.querySelector('textarea');
+      const voice = demo.querySelector('.voice');
+      const state = demo.querySelector('.state');
+      let voiceTimer;
+      replay(demo);
+
+      demo.closest('.variant').querySelector('.replay').addEventListener('click', () => replay(demo));
+
+      voice.addEventListener('click', () => {
+        const listening = !voice.classList.contains('listening');
+        clearTimeout(voiceTimer);
+        voice.classList.toggle('listening', listening);
+        voice.setAttribute('aria-pressed', String(listening));
+        voice.setAttribute('aria-label', listening ? 'Stop voice input' : 'Start voice input');
+        state.textContent = listening ? 'Listening… tap again to stop' : 'Voice stopped';
+        if (listening) voiceTimer = setTimeout(() => {
+          voice.classList.remove('listening');
+          voice.setAttribute('aria-pressed', 'false');
+          voice.setAttribute('aria-label', 'Start voice input');
+          state.textContent = 'Voice capture complete';
+        }, 3000);
+      });
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (!input.value.trim()) input.value = 'I need a calm moment.';
+        demo.classList.remove('sending');
+        void demo.offsetWidth;
+        demo.classList.add('sending');
+        state.textContent = 'Sending…';
+        setTimeout(() => {
+          input.value = '';
+          demo.classList.remove('sending');
+          state.textContent = 'Message sent';
+          input.focus({ preventScroll: true });
+        }, 650);
+      });
+    });
+
+    document.querySelector('.replay-all').addEventListener('click', () => demos.forEach(replay));
+  </script>
+</body>
+</html>

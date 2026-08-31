@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rumi voice button — animation options</title>
+<style>
+  /* Brand tokens mirrored from src/tailwind.css so the mockup matches the app. */
+  :root {
+    --brand: #967bb6;
+    --brand-light: #beadd2;
+    --brand-soft: #aa94c4;
+    --brand-deep: #80699b;
+    --brand-dark: #69567f;
+    --canvas: #f6f4f8;
+    --surface: #ffffff;
+    --hairline: #e7e1ee;
+    --ink: #17141a;
+    --ink-muted: #6f6878;
+    --coral: #e8724a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 24px 64px;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  header { max-width: 1080px; margin: 0 auto 32px; }
+  h1 { margin: 0 0 8px; font-size: 28px; }
+  .lede { margin: 0; max-width: 60ch; color: var(--ink-muted); font-size: 14px; line-height: 1.6; }
+
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    max-width: 1080px; margin: 20px auto 0;
+  }
+  .toolbar button {
+    border: 1px solid var(--hairline); background: var(--surface); color: var(--ink);
+    border-radius: 999px; padding: 8px 16px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .toolbar button:hover { background: #f0ecf5; }
+  .toolbar label { font-size: 13px; color: var(--ink-muted); display: inline-flex; gap: 6px; align-items: center; }
+
+  .grid {
+    max-width: 1080px; margin: 28px auto 0;
+    display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 18px;
+    padding: 20px; box-shadow: 0 4px 4px rgb(0 0 0 / .06);
+  }
+  .card h2 { margin: 0 0 4px; font-size: 16px; }
+  .card p  { margin: 0 0 16px; font-size: 12.5px; line-height: 1.55; color: var(--ink-muted); }
+  .badge {
+    display: inline-block; margin-bottom: 10px; padding: 3px 9px; border-radius: 999px;
+    background: #efe9f6; color: var(--brand-dark); font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  }
+  .badge--pick { background: #e2f6e6; color: #2a7030; }
+
+  /* Composer shell: same shape as the real chat composer row. */
+  .composer {
+    display: flex; align-items: flex-end; gap: 8px;
+    border-top: 1px solid var(--hairline); padding-top: 14px;
+  }
+  .composer textarea {
+    flex: 1; min-height: 44px; max-height: 44px; resize: none;
+    border: 1px solid var(--hairline); border-radius: 16px; background: var(--surface);
+    padding: 11px 12px; font: inherit; font-size: 14px; color: var(--brand-deep);
+    transition: opacity .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .composer textarea::placeholder { color: #a99fb8; }
+
+  .btn {
+    position: relative; flex: 0 0 auto;
+    height: 44px; width: 44px; border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--hairline); background: var(--surface); color: var(--brand-deep);
+    cursor: pointer; transition: background-color .2s ease, color .2s ease, transform .2s ease;
+  }
+  .btn:hover { background: #f4f0f8; }
+  .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--brand), 0 0 0 4px #fff; }
+  .btn--send { background: var(--brand-deep); border-color: transparent; color: #fff; }
+  .btn.is-live { background: var(--brand-deep); border-color: transparent; color: #fff; }
+
+  .hint { margin: 12px 0 0; font-size: 11.5px; color: var(--ink-muted); }
+  .state { font-weight: 700; color: var(--brand-dark); }
+
+  /* ------------------------------------------------------------------ */
+  /* 1. Pulsing halo                                                     */
+  /* ------------------------------------------------------------------ */
+  .halo {
+    position: absolute; inset: 0; border-radius: 999px;
+    background: color-mix(in srgb, var(--brand) 35%, transparent);
+    opacity: 0; pointer-events: none;
+  }
+  .btn.is-live .halo { animation: haloPulse 1.5s ease-out infinite; }
+  .btn.is-live .halo:nth-child(2) { animation-delay: .75s; }
+  @keyframes haloPulse {
+    0%   { transform: scale(.85); opacity: .55; }
+    100% { transform: scale(1.9);  opacity: 0; }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 2. Live waveform bars                                               */
+  /* ------------------------------------------------------------------ */
+  .bars { display: flex; align-items: center; gap: 2.5px; height: 18px; }
+  .bars span {
+    width: 2.5px; border-radius: 999px; background: currentColor;
+    height: 6px; transform-origin: center;
+  }
+  .btn.is-live .bars span { animation: barFlex 1s ease-in-out infinite; }
+  .bars span:nth-child(1) { animation-delay: 0s;    }
+  .bars span:nth-child(2) { animation-delay: .12s;  }
+  .bars span:nth-child(3) { animation-delay: .24s;  }
+  .bars span:nth-child(4) { animation-delay: .36s;  }
+  .bars span:nth-child(5) { animation-delay: .48s;  }
+  @keyframes barFlex {
+    0%, 100% { height: 5px;  opacity: .7; }
+    50%      { height: 17px; opacity: 1;  }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 3. Icon morph to stop                                               */
+  /* ------------------------------------------------------------------ */
+  .morph { position: relative; display: grid; place-items: center; height: 20px; width: 20px; }
+  .morph > * {
+    position: absolute; transition: opacity .18s ease, transform .24s cubic-bezier(.65,0,.35,1);
+  }
+  .morph .stop {
+    height: 11px; width: 11px; border-radius: 3px; background: currentColor;
+    opacity: 0; transform: scale(.5) rotate(-45deg);
+  }
+  .btn.is-live .morph .glyph { opacity: 0; transform: scale(.5) rotate(45deg); }
+  .btn.is-live .morph .stop  { opacity: 1; transform: scale(1) rotate(0deg); }
+
+  /* ------------------------------------------------------------------ */
+  /* 4. Breathing mascot                                                 */
+  /* ------------------------------------------------------------------ */
+  .mascot { height: 30px; width: 30px; object-fit: contain; }
+  .btn.is-live .mascot { animation: breathe 2.4s ease-in-out infinite; }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1);    }
+    50%      { transform: scale(1.09); }
+  }
+  .btn--mascot { background: var(--surface); }
+  .btn--mascot.is-live { background: #efe9f6; border-color: var(--brand-light); }
+
+  /* ------------------------------------------------------------------ */
+  /* 5. Composer-wide listening state                                    */
+  /* ------------------------------------------------------------------ */
+  .listening-row {
+    flex: 1; display: none; align-items: center; gap: 10px;
+    min-height: 44px; padding: 0 14px;
+    border: 1px solid var(--brand); border-radius: 16px;
+    background: #f7f3fb; box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 16%, transparent);
+  }
+  .composer.is-live .listening-row { display: flex; }
+  .composer.is-live textarea { display: none; }
+  .listening-row .label { font-size: 13px; font-weight: 600; color: var(--brand-dark); }
+  .listening-row .cancel {
+    margin-left: auto; border: none; background: none; color: var(--brand-dark);
+    font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: underline;
+  }
+  .dots { display: inline-flex; gap: 3px; }
+  .dots i { height: 5px; width: 5px; border-radius: 999px; background: var(--brand-soft); display: block; }
+  .composer.is-live .dots i { animation: dotHop 1.4s ease-in-out infinite; }
+  .dots i:nth-child(2) { animation-delay: .18s; }
+  .dots i:nth-child(3) { animation-delay: .36s; }
+  @keyframes dotHop {
+    0%, 60%, 100% { transform: translateY(0);    }
+    30%           { transform: translateY(-4px); }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 6. Amplitude-reactive ring (fake amplitude via random walk)         */
+  /* ------------------------------------------------------------------ */
+  .ring {
+    position: absolute; inset: -6px; border-radius: 999px;
+    border: 2px solid color-mix(in srgb, var(--brand) 55%, transparent);
+    transform: scale(var(--amp, 1)); opacity: 0;
+    transition: transform .12s linear, opacity .2s ease;
+    pointer-events: none;
+  }
+  .btn.is-live .ring { opacity: 1; }
+
+  /* Reduced motion: every variant degrades to a static, legible state. */
+  body.reduce-motion * { animation: none !important; transition: none !important; }
+  body.reduce-motion .btn.is-live .halo { opacity: .3; transform: scale(1.35); }
+  body.reduce-motion .btn.is-live .bars span { height: 12px; }
+
+  footer { max-width: 1080px; margin: 40px auto 0; font-size: 12.5px; color: var(--ink-muted); line-height: 1.7; }
+  footer code { background: #ece7f2; padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Rumi voice button — animation options</h1>
+  <p class="lede">
+    Six candidate treatments for the voice control in the chat composer, sitting in a replica of the real
+    composer row. Tap any button to toggle its listening state. There is no voice model behind these — the
+    amplitude ring fakes its input with a random walk.
+  </p>
+  <div class="toolbar">
+    <button type="button" id="toggleAll">Toggle all listening</button>
+    <button type="button" id="resetAll">Reset all</button>
+    <label><input type="checkbox" id="reduceMotion"> Simulate <code>prefers-reduced-motion</code></label>
+  </div>
+</header>
+
+<main class="grid">
+
+  <!-- 1 -->
+  <section class="card">
+    <span class="badge">Option 1</span>
+    <h2>Pulsing halo</h2>
+    <p>Soft brand ring scales out and fades on a 1.5s loop, two staggered waves. Same ripple vocabulary as the topbar ink indicator. Cheapest to build, reads instantly.</p>
+    <div class="composer">
+      <textarea placeholder="Share what is on your mind..." rows="1"></textarea>
+      <button type="button" class="btn js-toggle" aria-pressed="false" aria-label="Start voice conversation">
+        <span class="halo"></span><span class="halo"></span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M2 10v4M6 6v12M10 3v18M14 8v8M18 5v14M22 10v4"/>
+        </svg>
+      </button>
+      <button type="button" class="btn btn--send" aria-label="Send message">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg>
+      </button>
+    </div>
+    <p class="hint">State: <span class="state js-state">idle</span></p>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <span class="badge badge--pick">Option 2 · recommended</span>
+    <h2>Live waveform bars</h2>
+    <p>Icon becomes five bars with staggered height animation — closest to ChatGPT voice mode. Reuses the staggered-dot pattern already in <code>chat-typing.component.ts</code>.</p>
+    <div class="composer">
+      <textarea placeholder="Share what is on your mind..." rows="1"></textarea>
+      <button type="button" class="btn js-toggle" aria-pressed="false" aria-label="Start voice conversation">
+        <span class="bars"><span></span><span></span><span></span><span></span><span></span></span>
+      </button>
+      <button type="button" class="btn btn--send" aria-label="Send message">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg>
+      </button>
+    </div>
+    <p class="hint">State: <span class="state js-state">idle</span></p>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <span class="badge">Option 3</span>
+    <h2>Icon morph to stop</h2>
+    <p>Waveform glyph rotates out, rounded stop square rotates in, button fills brand. Communicates tap-to-stop rather than only signalling state. Composes with 1 or 2.</p>
+    <div class="composer">
+      <textarea placeholder="Share what is on your mind..." rows="1"></textarea>
+      <button type="button" class="btn js-toggle" aria-pressed="false" aria-label="Start voice conversation">
+        <span class="morph">
+          <svg class="glyph" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M2 10v4M6 6v12M10 3v18M14 8v8M18 5v14M22 10v4"/>
+          </svg>
+          <span class="stop"></span>
+        </span>
+      </button>
+      <button type="button" class="btn btn--send" aria-label="Send message">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg>
+      </button>
+    </div>
+    <p class="hint">State: <span class="state js-state">idle</span></p>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <span class="badge">Option 4</span>
+    <h2>Breathing mascot</h2>
+    <p>Rumi logo scales 1 → 1.09 on a slow 2.4s ease. Echoes the existing <code>logo-pulse</code> on the chat bubble. Calmest, most on-brand; weakest as a pure "recording" signal.</p>
+    <div class="composer">
+      <textarea placeholder="Share what is on your mind..." rows="1"></textarea>
+      <button type="button" class="btn btn--mascot js-toggle" aria-pressed="false" aria-label="Start voice conversation">
+        <img class="mascot" src="../public/assets/logos/rumi_logo.svg" alt="">
+      </button>
+      <button type="button" class="btn btn--send" aria-label="Send message">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg>
+      </button>
+    </div>
+    <p class="hint">State: <span class="state js-state">idle</span></p>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <span class="badge">Option 5</span>
+    <h2>Composer-wide listening state</h2>
+    <p>Textarea is replaced by a "Listening…" strip with hopping dots and a cancel action. Unmistakable modal state, and a natural home for partial transcripts once the model lands.</p>
+    <div class="composer js-composer">
+      <textarea placeholder="Share what is on your mind..." rows="1"></textarea>
+      <div class="listening-row">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="label">Listening…</span>
+        <button type="button" class="cancel js-cancel">Cancel</button>
+      </div>
+      <button type="button" class="btn js-toggle" aria-pressed="false" aria-label="Start voice conversation">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M2 10v4M6 6v12M10 3v18M14 8v8M18 5v14M22 10v4"/>
+        </svg>
+      </button>
+      <button type="button" class="btn btn--send" aria-label="Send message">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg>
+      </button>
+    </div>
+    <p class="hint">State: <span class="state js-state">idle</span></p>
+  </section>
+
+  <!-- 6 -->
+  <section class="card">
+    <span class="badge">Option 6</span>
+    <h2>Amplitude-reactive ring</h2>
+    <p>Ring scale is driven by input level. Here it is a random walk; the real version needs an <code>AnalyserNode</code>, so it only pays off once the voice model exists.</p>
+    <div class="composer">
+      <textarea placeholder="Share what is on your mind..." rows="1"></textarea>
+      <button type="button" class="btn js-toggle js-amp" aria-pressed="false" aria-label="Start voice conversation">
+        <span class="ring"></span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M2 10v4M6 6v12M10 3v18M14 8v8M18 5v14M22 10v4"/>
+        </svg>
+      </button>
+      <button type="button" class="btn btn--send" aria-label="Send message">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg>
+      </button>
+    </div>
+    <p class="hint">State: <span class="state js-state">idle</span></p>
+  </section>
+
+</main>
+
+<footer>
+  Notes — the glyph used throughout is Lucide <code>audio-lines</code>, already registered in
+  <code>app.config.ts</code>, not a mic: a mic implies dictation into the text box, a waveform implies a spoken
+  conversation. Colours are copied from <code>src/tailwind.css</code> so nothing here introduces a new value.
+  Every variant has a static reduced-motion fallback — toggle the checkbox above to check it.
+  Suggested combination: option 2 for listening, option 3 for the stop affordance, option 4 reserved for when
+  Rumi is speaking back, giving three visually distinct states.
+</footer>
+
+<script>
+  const cards = document.querySelectorAll('.card');
+
+  function setLive(card, live) {
+    const btn = card.querySelector('.js-toggle');
+    const composer = card.querySelector('.js-composer');
+    btn.classList.toggle('is-live', live);
+    btn.setAttribute('aria-pressed', String(live));
+    btn.setAttribute('aria-label', live ? 'Stop voice conversation' : 'Start voice conversation');
+    if (composer) composer.classList.toggle('is-live', live);
+    card.querySelector('.js-state').textContent = live ? 'listening' : 'idle';
+  }
+
+  cards.forEach((card) => {
+    const btn = card.querySelector('.js-toggle');
+    btn.addEventListener('click', () => setLive(card, !btn.classList.contains('is-live')));
+    const cancel = card.querySelector('.js-cancel');
+    if (cancel) cancel.addEventListener('click', () => setLive(card, false));
+  });
+
+  document.getElementById('toggleAll').addEventListener('click', () => {
+    const anyIdle = [...cards].some((c) => !c.querySelector('.js-toggle').classList.contains('is-live'));
+    cards.forEach((c) => setLive(c, anyIdle));
+  });
+
+  document.getElementById('resetAll').addEventListener('click', () => {
+    cards.forEach((c) => setLive(c, false));
+  });
+
+  document.getElementById('reduceMotion').addEventListener('change', (event) => {
+    document.body.classList.toggle('reduce-motion', event.target.checked);
+  });
+
+  // Fake amplitude for option 6: random walk, ~15fps, only while listening.
+  const ampButton = document.querySelector('.js-amp');
+  let amp = 1;
+  setInterval(() => {
+    if (!ampButton.classList.contains('is-live') || document.body.classList.contains('reduce-motion')) {
+      ampButton.style.setProperty('--amp', '1');
+      return;
+    }
+    amp += (Math.random() - 0.5) * 0.22;
+    amp = Math.min(1.35, Math.max(1, amp));
+    ampButton.style.setProperty('--amp', amp.toFixed(3));
+  }, 66);
+</script>
+
+</body>
+</html>

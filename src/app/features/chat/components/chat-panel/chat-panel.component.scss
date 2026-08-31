@@ -67,6 +67,10 @@
     transform-origin: bottom center;
   }
 
+  .chat-panel--lifted {
+    bottom: auto;
+  }
+
   .chat-panel--exit {
     animation: chatSheetExit 180ms ease-in both;
   }

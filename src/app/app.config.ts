@@ -5,9 +5,10 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { providePrimeNG } from 'primeng/config';
 import {
   provideLucideIcons,
+  LucideBot, LucideCheckCheck,
   LucideArrowRight, LucideArrowLeft, LucideMoon, LucideUser, LucideFrown, LucideBrain,
   LucideBriefcaseBusiness,
-  LucideHeadphones, LucideCloud, LucideHeart, LucideZap, LucidePlay,
+  LucideHeadphones, LucideCloud, LucideHeart, LucideZap, LucidePlay, LucideSmartphone,
   LucideCircleCheck, LucideLock, LucideSun, LucideSearch,
   LucideWaves, LucideCloudRain, LucideTreePine, LucideAudioLines,
   LucideFlame, LucideX, LucideChevronLeft, LucideChevronRight, LucideLeaf,
@@ -39,9 +40,10 @@ export const appConfig: ApplicationConfig = {
       theme: { preset: CalmiPreset, options: { darkModeSelector: '.app-dark' } },
     }),
     provideLucideIcons(
+      LucideBot, LucideCheckCheck,
       LucideArrowRight, LucideArrowLeft, LucideMoon, LucideUser, LucideFrown, LucideBrain,
   LucideBriefcaseBusiness,
-      LucideHeadphones, LucideCloud, LucideHeart, LucideZap, LucidePlay,
+      LucideHeadphones, LucideCloud, LucideHeart, LucideZap, LucidePlay, LucideSmartphone,
       LucideCircleCheck, LucideLock, LucideSun, LucideSearch,
       LucideWaves, LucideCloudRain, LucideTreePine, LucideAudioLines,
       LucideFlame, LucideX, LucideChevronLeft, LucideChevronRight, LucideLeaf,

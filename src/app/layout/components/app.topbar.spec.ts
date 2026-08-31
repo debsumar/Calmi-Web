@@ -3,6 +3,7 @@ import { provideRouter, Router } from '@angular/router';
 import { Component } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { provideLucideIcons, LucideMoon, LucideSun, LucideUser, LucideMenu, LucideX, LucideLogOut } from '@lucide/angular';
+import { AuthService } from '../../core/services/auth.service';
 import { AppTopbar } from './app.topbar';
 
 @Component({ template: '' })
@@ -72,4 +73,34 @@ describe('AppTopbar', () => {
     // rather than asserting pixel values.
     expect(indicator().style.width).not.toBe('');
   });
+
+  it('renders desktop and mobile Sign In controls with adaptive dark-mode variants', () => {
+    const menuButton = nav().parentElement?.querySelector('button[aria-controls="mobile-menu"]') as HTMLButtonElement;
+    menuButton.click();
+    fixture.detectChanges();
+
+    const signInLinks = fixture.nativeElement.querySelectorAll('a[href="/auth/identify"]') as NodeListOf<HTMLAnchorElement>;
+
+    expect(signInLinks).toHaveLength(2);
+    for (const link of signInLinks) {
+      expect(link.classList).toContain('bg-brand-dark');
+      expect(link.classList).toContain('text-on-brand');
+      expect(link.classList).toContain('dark:bg-elevated');
+      expect(link.classList).toContain('dark:text-brand-light');
+      expect(link.classList).toContain('min-h-11');
+      expect(link.classList).not.toContain('bg-white');
+      expect(link.classList).not.toContain('text-white');
+    }
+  });
+
+  it('uses adaptive roles for the profile-avatar fallback', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.currentUser.set({ email: 'person@example.com', user_metadata: {} } as never);
+    fixture.detectChanges();
+
+    const fallback = fixture.nativeElement.querySelector('button div.bg-sunken-alt') as HTMLElement;
+    expect(fallback).not.toBeNull();
+    expect(fallback.classList).toContain('dark:text-brand-light');
+  });
 });
+

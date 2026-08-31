@@ -2,8 +2,11 @@
 import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
+  LucideArrowDown,
   LucideArrowRight,
+  LucideAudioLines,
   LucideBrain,
+  LucideCircleAlert,
   LucideHandHeart,
   LucideHeart,
   LucideLeaf,
@@ -17,6 +20,9 @@ import {
   LucideSend,
   LucideMic,
   LucideSprout,
+  LucideX,
+  LucideBot,
+  LucideCheckCheck,
   provideLucideIcons,
 } from '@lucide/angular';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -48,6 +54,13 @@ describe('RumiAiComponent', () => {
           LucideSparkles,
           LucideSend,
           LucideMic,
+          // Icons pulled in by the embedded app-chat-conversation.
+          LucideAudioLines,
+          LucideArrowDown,
+          LucideCircleAlert,
+          LucideBot,
+          LucideCheckCheck,
+          LucideX,
         ),
       ],
     }).compileComponents();
@@ -115,17 +128,35 @@ describe('RumiAiComponent', () => {
     }
   });
 
-  it('renders the safe-space preview and trust points', () => {
+  it('renders the safe-space live conversation and trust points', () => {
     const root = fixture.nativeElement as HTMLElement;
 
     expect(root.textContent).toContain('A safe space to be you.');
     expect(root.textContent).toContain('Hi there, I’m Rumi.');
-    expect(root.querySelectorAll('app-chat-message')).toHaveLength(4);
-    expect(root.querySelector('app-chat-typing')).not.toBeNull();
+    // The static preview was replaced by the live shared-store conversation.
+    const conversation = root.querySelector('app-chat-conversation') as HTMLElement | null;
+    expect(conversation).not.toBeNull();
+    expect(root.querySelector('app-chat-conversation[data-variant="embedded"]')).toBe(conversation);
+    expect(getComputedStyle(conversation!).getPropertyValue('min-block-size')).toBe('40rem');
+    expect(root.querySelector('figure.rumi-conversation-figure')).not.toBeNull();
+    const firstMessage = root.querySelector('app-chat-message article') as HTMLElement | null;
+    expect(firstMessage).not.toBeNull();
+    expect(firstMessage?.classList).toContain('stagger-enter');
+    expect(firstMessage?.style.getPropertyValue('--index')).toBe('0');
+    expect(root.querySelector('textarea')).not.toBeNull();
     expect(root.textContent).toContain('Private & Secure');
     expect(root.textContent).toContain('Backed by Science');
     expect(root.textContent).toContain('Available Anytime');
     expect(root.textContent).toContain('Made for You');
+  });
+
+  it('keeps embedded composer opaque and free of floating glass classes', () => {
+    const form = fixture.nativeElement.querySelector('app-chat-conversation form') as HTMLFormElement;
+
+    expect(form).not.toBeNull();
+    expect(form.classList).toContain('bg-surface');
+    expect(form.classList).not.toContain('bg-glass');
+    expect(form.classList).not.toContain('backdrop-blur-xl');
   });
 
   it('renders geometry for every Rumi icon', () => {

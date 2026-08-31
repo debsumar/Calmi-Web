@@ -1,6 +1,3 @@
-import { ChatMessage } from '@/features/chat/models/chat-message.model';
-
-
 export type RumiIcon = 'heart' | 'leaf' | 'lightbulb';
 export interface RumiHelpCard {
   id: string;
@@ -45,43 +42,6 @@ export interface RumiSupportTopic {
   description: string;
   /** Seeds the chat composer so the panel opens mid-conversation, not blank. */
   prompt: string;
-}
-
-/** Marketing preview of a Rumi conversation. Fixed calendar date + clock times
- *  keep both the rendered label and the `datetime` attribute deterministic. */
-export function createRumiPreviewMessages(): ChatMessage[] {
-  const at = (hour: number, minute: number): Date => new Date(2024, 0, 1, hour, minute, 0, 0);
-
-  return [
-    {
-      id: 'preview-1',
-      role: 'user',
-      text: 'I’ve been feeling overwhelmed lately. Everything feels like too much.',
-      timestamp: at(10, 21),
-      status: 'sent',
-    },
-    {
-      id: 'preview-2',
-      role: 'ai',
-      text: 'I’m really sorry that you’re feeling this way. That sounds exhausting. Want to tell what’s been weighing on your mind?',
-      timestamp: at(10, 22),
-      status: 'sent',
-    },
-    {
-      id: 'preview-3',
-      role: 'user',
-      text: 'I just can’t seem to relax no matter what I try.',
-      timestamp: at(10, 24),
-      status: 'sent',
-    },
-    {
-      id: 'preview-4',
-      role: 'ai',
-      text: 'That sounds exhausting. When you’ve tried everything and still can’t switch off, it can be hard to know what’s actually keeping your mind busy.',
-      timestamp: at(10, 25),
-      status: 'sent',
-    },
-  ];
 }
 
 export interface RumiTrustPoint {
