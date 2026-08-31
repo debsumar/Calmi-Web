@@ -137,13 +137,25 @@ export const THERAPISTS: Therapist[] = [
     id: 'gargi-yadav', name: 'Gargi Yadav', image: '', subtitle: 'Clinical Psychologist',
     qualifications: ['M.Phil', 'M.Sc'], experienceYears: 8, price: 2000, duration: '50 mins',
     sessionMode: 'Video & Audio', rating: 4.9, reviews: 128,
-    specialties: ['Anxiety & Stress', 'Depression', 'Relationship'], languages: ['English', 'Hindi'],
+    specialties: [
+      'Relationship & Communication Issues',
+      'Anxiety & Emotional Regulation',
+      'Self-Esteem & Personal Growth',
+      'Grief & Emotional Well-being',
+    ],
+    languages: ['English', 'Hindi'],
   }),
   createTherapist({
     id: 'yukta-bansal', name: 'Yukta Bansal', image: '', subtitle: 'Counselling Psychologist',
     qualifications: ['M.Phil', 'M.A.'], experienceYears: 7, price: 1500, duration: '30 mins',
     sessionMode: 'Video & Audio', rating: 4.8, reviews: 96,
-    specialties: ['Loneliness', 'Depression', 'Adult ADHD'], languages: ['English', 'Hindi'],
+    specialties: [
+      'Adolescent & Teen Counselling',
+      'Relationship & Marital Issues',
+      'Self-Esteem & Depression',
+      'Women Challenges',
+    ],
+    languages: ['English', 'Hindi'],
   }),
   createTherapist({
     id: 'prerna-gawde', name: 'Prerna Gawde', image: '', subtitle: 'Clinical Psychologist',
