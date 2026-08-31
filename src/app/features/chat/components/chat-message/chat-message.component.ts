@@ -11,7 +11,7 @@ import { ChatStoreService } from '../../services/chat-store.service';
   template: `
     @switch (message().role) {
       @case ('user') {
-        <article class="stagger-enter flex max-w-[85%] self-end flex-row-reverse items-start gap-3" [style.--index]="index()">
+        <article [class.stagger-enter]="animate()" class="flex max-w-[85%] self-end flex-row-reverse items-start gap-3" [style.--index]="entranceIndex()">
           <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sunken-alt text-brand-dark dark:text-brand-light" aria-hidden="true">
             <svg data-icon="user" [lucideIcon]="'user'" [size]="20" aria-hidden="true"></svg>
           </div>
@@ -39,7 +39,7 @@ import { ChatStoreService } from '../../services/chat-store.service';
         </article>
       }
       @case ('ai') {
-        <article class="stagger-enter flex max-w-[85%] self-start items-start gap-3" [style.--index]="index()">
+        <article [class.stagger-enter]="animate()" class="flex max-w-[85%] self-start items-start gap-3" [style.--index]="entranceIndex()">
           <div class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-hairline bg-brand-light p-0.5 dark:bg-sunken-alt" aria-hidden="true">
             <img data-icon="rumi-logo" src="assets/logos/rumi_logo.svg" alt="" class="h-5 w-5 object-contain">
           </div>
@@ -54,7 +54,7 @@ import { ChatStoreService } from '../../services/chat-store.service';
         </article>
       }
       @case ('system') {
-        <article class="stagger-enter w-full self-center rounded-2xl border border-hairline bg-sunken-alt px-4 py-2.5 text-center text-xs text-ink-muted" [style.--index]="index()">
+        <article [class.stagger-enter]="animate()" class="w-full self-center rounded-2xl border border-hairline bg-sunken-alt px-4 py-2.5 text-center text-xs text-ink-muted" [style.--index]="entranceIndex()">
           <p>{{ message().text }}</p>
           <time class="mt-1 block text-xs" [dateTime]="message().timestamp.toISOString()">
             {{ message().timestamp | date:'shortTime' }}
@@ -63,19 +63,11 @@ import { ChatStoreService } from '../../services/chat-store.service';
       }
     }
   `,
-  styles: `
-    @media (prefers-reduced-motion: reduce) {
-      .stagger-enter {
-        animation: none !important;
-        opacity: 1;
-        transform: none;
-      }
-    }
-  `,
 })
 export class ChatMessageComponent {
   readonly message = input.required<ChatMessage>();
-  readonly index = input(0);
+  readonly animate = input(false);
+  readonly entranceIndex = input(0);
   private readonly store = inject(ChatStoreService);
 
   retry(): void {

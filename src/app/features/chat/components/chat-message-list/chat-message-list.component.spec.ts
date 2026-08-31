@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { LucideDynamicIcon, LucideArrowDown, provideLucideIcons } from '@lucide/angular';
 import { ChatMessageListComponent } from './chat-message-list.component';
 import { ChatTypingComponent } from '../chat-typing/chat-typing.component';
@@ -10,10 +10,13 @@ import { ChatStoreService } from '../../services/chat-store.service';
 @Component({
   selector: 'app-chat-message',
   standalone: true,
-  template: '',
-  inputs: ['message', 'index'],
+  template: '<article [class.stagger-enter]="animate" [style.--index]="entranceIndex"></article>',
+  inputs: ['message', 'animate', 'entranceIndex'],
 })
-class ChatMessageStubComponent {}
+class ChatMessageStubComponent {
+  animate = false;
+  entranceIndex = 0;
+}
 
 describe('ChatMessageListComponent', () => {
   let fixture: ComponentFixture<ChatMessageListComponent>;
@@ -38,6 +41,38 @@ describe('ChatMessageListComponent', () => {
     expect(log).not.toBeNull();
     expect(log.getAttribute('aria-label')).toBe('Conversation with Rumi AI');
     expect(fixture.nativeElement.querySelector('app-chat-message')).not.toBeNull();
+  });
+
+  it('passes shared stagger entry and indexed inputs to rendered messages', () => {
+    const articles = fixture.nativeElement.querySelectorAll('app-chat-message article');
+
+    expect(articles.length).toBeGreaterThanOrEqual(2);
+    expect(articles[0].classList).toContain('stagger-enter');
+    expect(articles[1].classList).toContain('stagger-enter');
+    expect(articles[0].style.getPropertyValue('--index')).toBe('0');
+    expect(articles[1].style.getPropertyValue('--index')).toBe('1');
+  });
+  it('keeps shared message entry static when reduced motion is preferred', () => {
+    fixture.destroy();
+    const matchMedia = vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+      matches: query.includes('prefers-reduced-motion'),
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    }) as MediaQueryList);
+
+    const reducedFixture = TestBed.createComponent(ChatMessageListComponent);
+    reducedFixture.detectChanges();
+
+    expect(reducedFixture.componentInstance.animateMessages()).toBe(false);
+    expect(reducedFixture.nativeElement.querySelector('app-chat-message article')?.classList).not.toContain('stagger-enter');
+
+    reducedFixture.destroy();
+    matchMedia.mockRestore();
   });
 
   it('shows the scroll-to-bottom pill when the user is more than 100px from the bottom', () => {

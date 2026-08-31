@@ -43,6 +43,23 @@ describe('ChatMessageComponent', () => {
     fixture = TestBed.createComponent(ChatMessageComponent);
   });
 
+  it('gates shared stagger entry and carries the provided stable index', () => {
+    fixture.componentRef.setInput('message', message({ role: 'ai' }));
+    fixture.componentRef.setInput('animate', false);
+    fixture.componentRef.setInput('entranceIndex', 0);
+    fixture.detectChanges();
+
+    let article = fixture.nativeElement.querySelector('article') as HTMLElement;
+    expect(article.classList).not.toContain('stagger-enter');
+
+    fixture.componentRef.setInput('animate', true);
+    fixture.componentRef.setInput('entranceIndex', 4);
+    fixture.detectChanges();
+
+    article = fixture.nativeElement.querySelector('article') as HTMLElement;
+    expect(article.classList).toContain('stagger-enter');
+    expect(article.style.getPropertyValue('--index')).toBe('4');
+  });
   it('renders AI messages with decorative Rumi logo avatar and brand bubble', () => {
     const root = render(message({ role: 'ai', status: 'streaming' }));
     const article = root.querySelector('article');

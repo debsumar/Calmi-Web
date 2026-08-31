@@ -11,6 +11,15 @@
   animation: staggerFadeDown 0.35s ease-in both;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .stagger-enter,
+  .stagger-leave {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes staggerFadeUp {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }

@@ -139,7 +139,10 @@ describe('RumiAiComponent', () => {
     expect(root.querySelector('app-chat-conversation[data-variant="embedded"]')).toBe(conversation);
     expect(getComputedStyle(conversation!).getPropertyValue('min-block-size')).toBe('40rem');
     expect(root.querySelector('figure.rumi-conversation-figure')).not.toBeNull();
-    expect(root.querySelectorAll('app-chat-message').length).toBeGreaterThan(0);
+    const firstMessage = root.querySelector('app-chat-message article') as HTMLElement | null;
+    expect(firstMessage).not.toBeNull();
+    expect(firstMessage?.classList).toContain('stagger-enter');
+    expect(firstMessage?.style.getPropertyValue('--index')).toBe('0');
     expect(root.querySelector('textarea')).not.toBeNull();
     expect(root.textContent).toContain('Private & Secure');
     expect(root.textContent).toContain('Backed by Science');

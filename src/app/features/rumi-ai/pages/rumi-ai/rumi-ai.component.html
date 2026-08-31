@@ -96,7 +96,7 @@
       A safe space to be you.
     </h2>
 
-    <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-12">
+    <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:items-stretch lg:gap-12">
       <!-- Live conversation backed by the shared chat store. -->
       <figure appAnimateOnScroll style="--index:1"
               class="rumi-conversation-figure m-0 overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card">
@@ -108,7 +108,7 @@
       </figure>
 
       <!-- Trust points -->
-      <ul class="flex flex-col gap-8">
+      <ul class="flex flex-col gap-8 lg:h-full lg:justify-between">
         @for (point of trustPoints(); track point.id; let i = $index) {
           <li appAnimateOnScroll [style.--index]="i + 2" class="flex items-start gap-4">
             <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-light text-brand-dark" aria-hidden="true">

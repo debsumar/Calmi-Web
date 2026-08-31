@@ -1,4 +1,4 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, inject, input, Injector, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, input, Injector, signal, viewChild } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { ChatStoreService } from '../../services/chat-store.service';
 import { VoiceSessionService } from '../../services/voice-session.service';
@@ -16,7 +16,9 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
           [class.backdrop-blur-xl]="surface() === 'floating-panel'"
           [class.bg-surface]="surface() === 'rumi-embedded'"
           (submit)="$event.preventDefault(); send()">
-      <div class="flex items-end gap-2 rounded-full border border-hairline bg-surface px-2 py-1.5">
+      <div class="chat-composer__row flex items-end gap-2 rounded-full border border-hairline bg-surface px-2 py-1.5 focus-within:ring-2 focus-within:ring-brand focus-within:ring-inset"
+           [class.chat-composer__row--entering]="isEntering()"
+           [class.chat-composer__row--sending]="isSendingFeedback()">
         <textarea #input
                   [value]="store.draft()"
                   (input)="onInput($event)"
@@ -25,7 +27,7 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
                   maxlength="1000"
                   [attr.aria-label]="composerAriaLabel()"
                   placeholder="Share what's on your mind..."
-                  class="max-h-32 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto bg-transparent px-1 py-2 text-base text-ink outline-none placeholder:text-ink-muted focus-visible:ring-2 focus-visible:ring-brand"
+                  class="chat-composer__input max-h-32 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto bg-transparent px-1 py-2 text-base text-ink caret-brand outline-none placeholder:text-ink-muted"
         ></textarea>
         <button type="button"
                 (click)="startVoice($event)"
@@ -56,11 +58,35 @@ export class ChatComposerComponent {
   /** Named `textareaRef` (not `input`) so it does not shadow Angular's `input()` signal API. */
   private readonly textareaRef = viewChild<ElementRef<HTMLTextAreaElement>>('input');
   private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
+  private entryTimer: ReturnType<typeof setTimeout> | undefined;
+  private sendFeedbackTimer: ReturnType<typeof setTimeout> | undefined;
+  readonly isEntering = signal(false);
+  readonly isSendingFeedback = signal(false);
   readonly store = inject(ChatStoreService);
   readonly voice = inject(VoiceSessionService);
   readonly surface = input<ChatConversationSurface>('floating-panel');
   readonly composerAriaLabel = input('Share what is on your mind');
   readonly announce = input(true);
+
+  constructor() {
+    afterNextRender(
+      {
+        write: () => {
+          this.isEntering.set(true);
+          this.entryTimer = setTimeout(() => {
+            this.entryTimer = undefined;
+            this.isEntering.set(false);
+          }, 580);
+        },
+      },
+      { injector: this.injector },
+    );
+    this.destroyRef.onDestroy(() => {
+      if (this.entryTimer) clearTimeout(this.entryTimer);
+      if (this.sendFeedbackTimer) clearTimeout(this.sendFeedbackTimer);
+    });
+  }
 
   focusInput(): void {
     afterNextRender(
@@ -90,8 +116,35 @@ export class ChatComposerComponent {
   send(): void {
     if (!this.store.canSend()) return;
     this.store.send();
+    this.playSendFeedback();
     const textarea = this.textareaRef()?.nativeElement;
     if (textarea) this.resize(textarea);
+  }
+
+  private playSendFeedback(): void {
+    if (this.entryTimer) {
+      clearTimeout(this.entryTimer);
+      this.entryTimer = undefined;
+    }
+    if (this.sendFeedbackTimer) {
+      clearTimeout(this.sendFeedbackTimer);
+      this.sendFeedbackTimer = undefined;
+    }
+    this.isEntering.set(false);
+    this.isSendingFeedback.set(false);
+
+    afterNextRender(
+      {
+        write: () => {
+          this.isSendingFeedback.set(true);
+          this.sendFeedbackTimer = setTimeout(() => {
+            this.sendFeedbackTimer = undefined;
+            this.isSendingFeedback.set(false);
+          }, 460);
+        },
+      },
+      { injector: this.injector },
+    );
   }
 
   private resize(textarea: HTMLTextAreaElement): void {

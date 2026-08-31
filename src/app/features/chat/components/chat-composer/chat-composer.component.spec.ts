@@ -73,6 +73,17 @@ describe('ChatComposerComponent', () => {
     expect(sendButton.classList).toContain('min-w-11');
     expect(sendButton.getAttribute('aria-disabled')).toBe('true');
     expect(textarea.getAttribute('placeholder')).toBe("Share what's on your mind...");
+    expect(textarea.classList).toContain('caret-brand');
+    expect(textarea.classList).toContain('outline-none');
+    expect(textarea.classList).not.toContain('focus:ring-2');
+    expect(textarea.classList).not.toContain('focus:ring-brand');
+    expect(textarea.classList).not.toContain('focus:ring-inset');
+    expect(textarea.classList).not.toContain('focus-visible:ring-2');
+    expect(controlGroup.classList).toContain('focus-within:ring-2');
+    expect(controlGroup.classList).toContain('focus-within:ring-brand');
+    expect(controlGroup.classList).toContain('focus-within:ring-inset');
+    expect(voiceButton.classList).toContain('focus-visible:ring-2');
+    expect(sendButton.classList).toContain('focus-visible:ring-2');
   });
 
   it('starts a voice session from the composer trigger', () => {
