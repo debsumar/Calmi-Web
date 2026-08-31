@@ -20,7 +20,7 @@ describe('TherapistProfileHeroComponent', () => {
   it('renders the hero icon geometry and expertise content', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect(root.textContent).toContain('Areas of Expertise');
-    expect(root.textContent).toContain('Anxiety & Stress');
+    expect(root.textContent).toContain('Anxiety & Emotional Regulation');
     const name = root.querySelector('h1[appAnimateOnScroll]') as HTMLElement;
     expect(name?.style.getPropertyValue('--index')).toBe('0');
     expect(name?.classList.contains('stagger-enter')).toBe(true);
