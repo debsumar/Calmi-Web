@@ -31,7 +31,7 @@ import { RouterLink } from '@angular/router';
             <p class="mt-6 text-lg leading-relaxed text-ink-soft">
               Find a little more room to breathe with mood check-ins, guided tools, journaling, and thoughtful reflections from Rumi AI—all in one gentle space.
             </p>
-            <p class="mt-5 text-base font-semibold text-brand-deep">Calmi — Mental Wellness App. Coming soon.</p>
+            <p class="mt-5 text-base font-semibold text-brand-deep">Calmi — Mental Wellness App.</p>
 
             <div class="mt-8" aria-label="App stores, coming soon">
               <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">Available soon on</p>

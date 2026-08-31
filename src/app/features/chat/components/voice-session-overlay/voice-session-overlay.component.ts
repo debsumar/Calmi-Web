@@ -105,6 +105,7 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
     .orb--a {
       inline-size: 85%;
       block-size: 85%;
+      isolation: isolate;
     }
 
     .orb--a .core {
@@ -144,7 +145,7 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
     .orb--a .core {
       position: relative;
       border-radius: 50%;
-      background: radial-gradient(circle at 38% 32%, var(--color-surface) 4%, var(--color-brand-light) 42%, var(--color-brand-deep) 100%);
+      background: radial-gradient(circle at 38% 32%, var(--color-voice-core) 4%, var(--color-brand-light) 42%, var(--color-brand-deep) 100%);
       box-shadow: var(--shadow-aurora);
     }
 

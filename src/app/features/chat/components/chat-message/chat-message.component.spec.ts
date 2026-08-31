@@ -84,6 +84,17 @@ describe('ChatMessageComponent', () => {
     expect(root.querySelector('time')?.classList).toContain('text-ink-muted');
   });
 
+  it('formats a creation timestamp as local short time', async () => {
+    const timestamp = new Date(2026, 7, 31, 15, 28);
+    fixture.componentRef.setInput('message', message({ timestamp }));
+
+    await fixture.whenStable();
+
+    const time = fixture.nativeElement.querySelector('time') as HTMLTimeElement;
+    expect(time.getAttribute('dateTime')).toBe(timestamp.toISOString());
+    expect(time.textContent?.replace(/\s+/g, ' ')).toContain('3:28 PM');
+  });
+
   it('renders sent user messages with an adaptive muted surface and check-check cue', () => {
     const root = render(message({ role: 'user', status: 'sent', text: 'I feel calmer' }));
     const article = root.querySelector('article');

@@ -79,7 +79,7 @@ export class ChatConversationComponent implements OnInit, OnDestroy {
     this.surface() ?? (this.variant() === 'embedded' ? 'rumi-embedded' : 'floating-panel'),
   );
   readonly shouldAnnounce = computed(() =>
-    this.variant() === 'embedded' ? !this.store.isOpen() : this.store.isOpen(),
+    this.variant() === 'embedded' ? true : this.store.isOpen(),
   );
   readonly conversationLabel = computed(() =>
     this.variant() === 'embedded'

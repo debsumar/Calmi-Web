@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
-import { provideRouter } from '@angular/router';
+import { Component, provideZonelessChangeDetection } from '@angular/core';
+import { provideRouter, RouterLink, RouterOutlet, Routes } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   LucideArrowDown,
@@ -23,11 +25,16 @@ import {
   LucideX,
   LucideBot,
   LucideCheckCheck,
+  LucideMinus,
+  LucideDynamicIcon,
   provideLucideIcons,
 } from '@lucide/angular';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ChatStoreService } from '@/features/chat/services/chat-store.service';
+import { ChatWidgetComponent } from '@/features/chat/chat-widget.component';
 import { RUMI_SUPPORT_TOPICS } from '@/features/rumi-ai/data/rumi-ai.data';
+import { ScrollPositionService } from '@/core/services/scroll-position.service';
+import { AppLayout } from '@/layout/components/app.layout';
 import { RumiAiComponent } from './rumi-ai.component';
 
 describe('RumiAiComponent', () => {
@@ -85,7 +92,33 @@ describe('RumiAiComponent', () => {
     expect(root.textContent).toContain('Reflect and understand your thoughts, patterns and emotions.');
   });
 
-  it('opens the chat panel when the hero CTA is clicked', () => {
+  it('keeps embedded conversation mounted while shared chat state is open', async () => {
+    const chatStore = TestBed.inject(ChatStoreService);
+    const conversation = fixture.nativeElement.querySelector('app-chat-conversation[data-variant="embedded"]');
+
+    expect(conversation).not.toBeNull();
+    chatStore.open();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(chatStore.isOpen()).toBe(true);
+    expect(fixture.nativeElement.querySelector('app-chat-conversation[data-variant="embedded"]')).toBe(conversation);
+    expect(fixture.nativeElement.querySelector('[role="log"][aria-label="Conversation with Rumi AI on the Rumi AI page"]')).not.toBeNull();
+  });
+
+  it('renders one embedded transcript on the Rumi page itself', async () => {
+    const chatStore = TestBed.inject(ChatStoreService);
+    chatStore.open();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelectorAll('app-chat-conversation')).toHaveLength(1);
+    expect(root.querySelectorAll('[role="log"][aria-label="Conversation with Rumi AI on the Rumi AI page"]')).toHaveLength(1);
+    expect(root.querySelectorAll('app-chat-message')).toHaveLength(chatStore.messages().length);
+  });
+
+  it('uses shared chat state when the hero CTA is clicked', () => {
     const chatStore = TestBed.inject(ChatStoreService);
     const root = fixture.nativeElement as HTMLElement;
     const cta = root.querySelector('button[data-testid="hero-cta"]') as HTMLButtonElement;
@@ -167,5 +200,90 @@ describe('RumiAiComponent', () => {
     icons.forEach((icon) => {
       expect(icon.querySelector('path, line, circle, polyline, rect')).not.toBeNull();
     });
+  });
+});
+
+
+@Component({
+  selector: 'app-topbar',
+  standalone: true,
+  template: '<header>Test topbar</header>',
+})
+class IntegrationTestTopbar {}
+
+const rumiIntegrationRoutes: Routes = [
+  {
+    path: '',
+    component: AppLayout,
+    children: [{ path: 'rumi-ai', component: RumiAiComponent }],
+  },
+];
+
+describe('RumiAiComponent in the production layout', () => {
+  beforeEach(async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter(rumiIntegrationRoutes),
+        provideLucideIcons(
+          LucideArrowRight,
+          LucideHeart,
+          LucideLeaf,
+          LucideLightbulb,
+          LucideBrain,
+          LucideSprout,
+          LucideHandHeart,
+          LucideMoon,
+          LucideLock,
+          LucideClock,
+          LucideUser,
+          LucideUserCircle,
+          LucideSparkles,
+          LucideSend,
+          LucideMic,
+          LucideAudioLines,
+          LucideArrowDown,
+          LucideCircleAlert,
+          LucideBot,
+          LucideCheckCheck,
+          LucideX,
+          // Pulled in by the floating chat panel header on the Rumi page.
+          LucideMinus,
+        ),
+        { provide: ScrollPositionService, useValue: {} },
+      ],
+    });
+
+    TestBed.overrideComponent(AppLayout, {
+      set: {
+        imports: [RouterOutlet, RouterLink, LucideDynamicIcon, IntegrationTestTopbar, ChatWidgetComponent],
+      },
+    });
+
+    await TestBed.compileComponents();
+  });
+
+  it('keeps the embedded transcript and the floating bubble available after the Rumi CTA opens chat', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/rumi-ai');
+    await harness.fixture.whenStable();
+
+    const root = harness.fixture.nativeElement as HTMLElement;
+    const chatStore = TestBed.inject(ChatStoreService);
+    const initialMessageMetadata = chatStore.messages().map(({ id, timestamp }) => ({ id, timestamp }));
+    const conversation = root.querySelector('app-chat-conversation[data-variant="embedded"]');
+    const cta = root.querySelector('button[data-testid="hero-cta"]') as HTMLButtonElement;
+
+    expect(conversation).not.toBeNull();
+    expect(root.querySelector('#rumi-chat-bubble')).not.toBeNull();
+
+    cta.click();
+    await harness.fixture.whenStable();
+
+    expect(chatStore.isOpen()).toBe(true);
+    expect(chatStore.messages().map(({ id, timestamp }) => ({ id, timestamp }))).toEqual(initialMessageMetadata);
+    expect(root.querySelector('app-chat-conversation[data-variant="embedded"]')).toBe(conversation);
+    expect(root.querySelector('#rumi-chat-bubble')).not.toBeNull();
+    expect(root.querySelectorAll('[role="log"][aria-label="Conversation with Rumi AI on the Rumi AI page"]')).toHaveLength(1);
   });
 });

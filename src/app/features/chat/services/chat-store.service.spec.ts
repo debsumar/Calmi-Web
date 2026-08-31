@@ -59,18 +59,23 @@ describe('ChatStoreService', () => {
     expect(service.canSend()).toBe(false);
   });
 
-  it('stamps the greeting with the current local time', () => {
-    const before = Date.now();
+  it('keeps greeting and user timestamps at their creation time', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 7, 31, 15, 28));
     service.reset();
-    const after = Date.now();
+    const greetingTimestamps = service.messages().map((message) => message.timestamp.getTime());
 
-    const stamps = service.messages().map((m) => m.timestamp.getTime());
+    service.setDraft('I need a quiet moment');
+    service.send();
+    service.cancelPendingReply();
+    const userTimestamp = service.messages().find((message) => message.role === 'user')?.timestamp.getTime();
 
-    expect(stamps.length).toBe(2);
-    for (const stamp of stamps) {
-      expect(stamp).toBeGreaterThanOrEqual(before);
-      expect(stamp).toBeLessThanOrEqual(after);
-    }
+    vi.advanceTimersByTime(3 * 60_000);
+
+    expect(service.messages().slice(0, greetingTimestamps.length).map((message) => message.timestamp.getTime()))
+      .toEqual(greetingTimestamps);
+    expect(service.messages().find((message) => message.role === 'user')?.timestamp.getTime())
+      .toBe(userTimestamp);
   });
 
   it('keeps the panel mounted while the exit animation plays', () => {

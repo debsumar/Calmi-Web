@@ -20,6 +20,7 @@
     --calmi-hairline: color-mix(in srgb, var(--color-brand) 12%, white);
     --calmi-glass: color-mix(in srgb, white 60%, transparent);
     --calmi-voice-scrim: color-mix(in srgb, var(--calmi-surface) 82%, transparent);
+    --calmi-voice-core: white;
     --calmi-composer-trace: linear-gradient(
       100deg,
       transparent 18%,
@@ -60,7 +61,8 @@
     --calmi-sunken-alt: color-mix(in srgb, var(--color-brand) 13%, black);
     --calmi-hairline: color-mix(in srgb, var(--color-brand) 40%, black);
     --calmi-glass: color-mix(in srgb, var(--calmi-elevated) 55%, transparent);
-    --calmi-voice-scrim: color-mix(in srgb, var(--calmi-surface) 82%, transparent);
+    --calmi-voice-scrim: color-mix(in srgb, var(--calmi-surface) 92%, transparent);
+    --calmi-voice-core: color-mix(in srgb, var(--color-brand-light) 72%, var(--color-brand) 28%);
     --calmi-composer-trace: linear-gradient(
       100deg,
       transparent 18%,
@@ -70,7 +72,7 @@
     --calmi-composer-glow: color-mix(in srgb, var(--color-brand-light) 32%, transparent);
     --calmi-voice-end: color-mix(in srgb, var(--color-accent-coral) 68%, black);
     --calmi-on-voice-end: white;
-    --calmi-aurora-composite: screen;
+    --calmi-aurora-composite: normal;
     --calmi-shadow-aurora: 0 12px 34px color-mix(in srgb, var(--color-brand) 42%, transparent);
     --calmi-success: var(--p-success-300);
     --calmi-danger: var(--p-danger-300);
@@ -121,6 +123,7 @@
   --color-hairline: var(--calmi-hairline);
   --color-glass: var(--calmi-glass);
   --color-voice-scrim: var(--calmi-voice-scrim);
+  --color-voice-core: var(--calmi-voice-core);
   --color-voice-end: var(--calmi-voice-end);
   --color-on-voice-end: var(--calmi-on-voice-end);
   --color-scrim: var(--calmi-scrim);

@@ -145,4 +145,20 @@ describe('VoiceSessionOverlayComponent', () => {
     const overlay = fixture.nativeElement.querySelector('.voice') as HTMLElement;
     expect(overlay.classList.contains('reduce-motion')).toBe(true);
   });
+
+  it('keeps the orb isolated and uses its semantic core token', () => {
+    voice.start();
+    fixture.detectChanges();
+
+    const orb = fixture.nativeElement.querySelector('.orb--a') as HTMLElement;
+    const styles = (VoiceSessionOverlayComponent as unknown as { ɵcmp?: { styles?: string | string[] } }).ɵcmp?.styles;
+    const styleText = Array.isArray(styles) ? styles.join('\n') : styles ?? '';
+
+    expect(orb).not.toBeNull();
+    expect(orb.querySelectorAll('.layer')).toHaveLength(3);
+    expect(orb.querySelector('.core')).not.toBeNull();
+    expect(styleText).toContain('isolation: isolate');
+    expect(styleText).toContain('color-voice-core');
+    expect(styleText).not.toContain('color-surface');
+  });
 });
