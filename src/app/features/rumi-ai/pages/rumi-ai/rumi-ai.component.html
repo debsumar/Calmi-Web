@@ -104,7 +104,9 @@
           <p class="text-lg font-bold text-ink">Hi there, I&rsquo;m Rumi. <span aria-hidden="true">&#128075;</span></p>
           <p class="mt-1 text-sm text-ink-muted">I&rsquo;m here to listen, support and help you make sense of your thoughts.</p>
         </figcaption>
-        <app-chat-conversation variant="embedded" surface="rumi-embedded"></app-chat-conversation>
+        @if (!chatStore.isOpen()) {
+          <app-chat-conversation variant="embedded" surface="rumi-embedded"></app-chat-conversation>
+        }
       </figure>
 
       <!-- Trust points -->

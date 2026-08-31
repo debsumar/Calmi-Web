@@ -16,13 +16,14 @@ describe('DownloadComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders requested headline, supporting copy, breadcrumb, and coming-soon message', () => {
+  it('renders requested headline, supporting copy, breadcrumb, and app name', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelectorAll('h1')).toHaveLength(1);
     expect(element.querySelector('h1')?.textContent).toContain('Make Space for your Mind.');
     expect(element.textContent).toContain('mood check-ins');
-    expect(element.textContent).toContain('Calmi — Mental Wellness App. Coming soon.');
+    expect(element.textContent).toContain('Calmi — Mental Wellness App.');
+    expect(element.textContent).toContain('Available soon on');
     expect(element.querySelector('nav[aria-label="Breadcrumb"] a[href="/home"]')).not.toBeNull();
   });
 

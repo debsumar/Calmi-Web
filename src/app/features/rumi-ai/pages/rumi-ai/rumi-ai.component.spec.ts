@@ -85,6 +85,14 @@ describe('RumiAiComponent', () => {
     expect(root.textContent).toContain('Reflect and understand your thoughts, patterns and emotions.');
   });
 
+  it('unmounts embedded transcript while floating chat uses shared store', async () => {
+    TestBed.inject(ChatStoreService).open();
+
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('app-chat-conversation[data-variant="embedded"]')).toBeNull();
+  });
+
   it('opens the chat panel when the hero CTA is clicked', () => {
     const chatStore = TestBed.inject(ChatStoreService);
     const root = fixture.nativeElement as HTMLElement;

@@ -33,7 +33,7 @@ import {
   `,
 })
 export class RumiAiComponent {
-  private readonly chatStore = inject(ChatStoreService);
+  readonly chatStore = inject(ChatStoreService);
 
   readonly heroBullets = signal(RUMI_HERO_BULLETS);
   readonly helpCards = signal(RUMI_HELP_CARDS);
