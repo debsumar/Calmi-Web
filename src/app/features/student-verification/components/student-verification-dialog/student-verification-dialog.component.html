@@ -1,0 +1,138 @@
+@if (isVisible()) {
+  <div
+    class="verification-scrim verification-scrim--open"
+    [class.verification-scrim--closing]="isClosing()"
+    [attr.aria-hidden]="isClosing()"
+    (click)="onScrimClick($event)"
+    (animationend)="onScrimAnimationSettled($event)"
+    (animationcancel)="onScrimAnimationSettled($event)">
+    <section
+      #dialog
+      class="verification-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="student-verification-title"
+      [attr.aria-busy]="isChecking()"
+      [attr.aria-hidden]="isClosing()"
+      [attr.inert]="isClosing() ? '' : null">
+      <header class="verification-dialog__header">
+        <div>
+          <p class="verification-dialog__eyebrow">Student Premium</p>
+          <h2 #heading id="student-verification-title" tabindex="-1">Verify your student status</h2>
+        </div>
+        <div class="verification-dialog__header-actions">
+          <nav class="verification-dialog__nav" aria-label="Verification step navigation">
+            <button
+              type="button"
+              class="verification-dialog__nav-button"
+              aria-label="Go back to the previous step"
+              [disabled]="isChecking() || !service.canGoBack()"
+              (click)="onGoBack()">
+              <svg lucideArrowLeft [size]="18" aria-hidden="true"></svg>
+            </button>
+            <button
+              type="button"
+              class="verification-dialog__nav-button"
+              aria-label="Go forward to the next step"
+              [disabled]="isChecking() || !service.canGoForward()"
+              (click)="onGoForward()">
+              <svg lucideArrowRight [size]="18" aria-hidden="true"></svg>
+            </button>
+          </nav>
+          <button
+            type="button"
+            class="verification-dialog__close"
+            aria-label="Close verification dialog"
+            (click)="requestClose()">&times;</button>
+        </div>
+      </header>
+
+      <app-verification-stepper [currentStep]="currentStep()" />
+
+      <p class="sr-only" role="status" aria-live="polite">{{ statusAnnouncement() }}</p>
+
+      <div class="verification-pane-stack">
+        <div
+          data-pane="collecting"
+          class="verification-pane"
+          [class.verification-pane--enter-forward]="isEntering('collecting') && direction() === 'forward'"
+          [class.verification-pane--enter-backward]="isEntering('collecting') && direction() === 'backward'"
+          [class.verification-pane--exit-forward]="isExiting('collecting') && direction() === 'forward'"
+          [class.verification-pane--exit-backward]="isExiting('collecting') && direction() === 'backward'"
+          [hidden]="!isPaneVisible('collecting')"
+          [attr.inert]="isPaneHidden('collecting') ? '' : null"
+          [attr.aria-hidden]="isPaneHidden('collecting')"
+          (animationend)="onPaneAnimationSettled($event, 'collecting')"
+          (animationcancel)="onPaneAnimationSettled($event, 'collecting')">
+          <!-- Stream C wiring: import app-verification-method-step via direct standalone import. -->
+          <app-verification-method-step
+            [institutions]="service.institutions()"
+            [request]="service.request()"
+            [pending]="isChecking()"
+            (submitted)="onMethodSubmitted($event)" />
+        </div>
+
+        <div
+          data-pane="code"
+          class="verification-pane"
+          [class.verification-pane--enter-forward]="isEntering('code') && direction() === 'forward'"
+          [class.verification-pane--enter-backward]="isEntering('code') && direction() === 'backward'"
+          [class.verification-pane--exit-forward]="isExiting('code') && direction() === 'forward'"
+          [class.verification-pane--exit-backward]="isExiting('code') && direction() === 'backward'"
+          [hidden]="!isPaneVisible('code')"
+          [attr.inert]="isPaneHidden('code') ? '' : null"
+          [attr.aria-hidden]="isPaneHidden('code')"
+          (animationend)="onPaneAnimationSettled($event, 'code')"
+          (animationcancel)="onPaneAnimationSettled($event, 'code')">
+          <!-- Stream C wiring: import app-verification-email-code-step via direct standalone import. -->
+          <app-verification-email-code-step
+            [email]="service.otpTarget()"
+            [resendIn]="service.resendIn()"
+            [canResend]="service.canResend()"
+            (codeSubmitted)="onCodeSubmitted($event)"
+            (resend)="onResend()"
+            (changeEmail)="onChangeEmail()" />
+        </div>
+
+        <div
+          data-pane="checking"
+          class="verification-pane"
+          [class.verification-pane--enter-forward]="isEntering('checking') && direction() === 'forward'"
+          [class.verification-pane--enter-backward]="isEntering('checking') && direction() === 'backward'"
+          [class.verification-pane--exit-forward]="isExiting('checking') && direction() === 'forward'"
+          [class.verification-pane--exit-backward]="isExiting('checking') && direction() === 'backward'"
+          [hidden]="!isPaneVisible('checking')"
+          [attr.inert]="isPaneHidden('checking') ? '' : null"
+          [attr.aria-hidden]="isPaneHidden('checking')"
+          (animationend)="onPaneAnimationSettled($event, 'checking')"
+          (animationcancel)="onPaneAnimationSettled($event, 'checking')">
+          <!-- Stream C wiring: import app-verification-checking-step via direct standalone import. -->
+          <app-verification-checking-step [label]="service.institutionLabel()" />
+        </div>
+
+        <div
+          data-pane="result"
+          class="verification-pane"
+          [class.verification-pane--enter-forward]="isEntering('result') && direction() === 'forward'"
+          [class.verification-pane--enter-backward]="isEntering('result') && direction() === 'backward'"
+          [class.verification-pane--exit-forward]="isExiting('result') && direction() === 'forward'"
+          [class.verification-pane--exit-backward]="isExiting('result') && direction() === 'backward'"
+          [hidden]="!isPaneVisible('result')"
+          [attr.inert]="isPaneHidden('result') ? '' : null"
+          [attr.aria-hidden]="isPaneHidden('result')"
+          (animationend)="onPaneAnimationSettled($event, 'result')"
+          (animationcancel)="onPaneAnimationSettled($event, 'result')">
+          <!-- Stream C wiring: import app-verification-result-step via direct standalone import. -->
+          <app-verification-result-step
+            [result]="service.result()"
+            [status]="service.status()"
+            (retry)="onRetry()"
+            (changeMethod)="onChangeMethod()"
+            (escalate)="onEscalate()"
+            (continued)="onContinue()"
+            (requestNewCode)="onRequestNewCode()" />
+        </div>
+      </div>
+    </section>
+  </div>
+}

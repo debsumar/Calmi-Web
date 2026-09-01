@@ -1,0 +1,47 @@
+:host {
+  display: block;
+}
+
+.verification-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: var(--color-ink-muted);
+  font-size: 0.75rem;
+}
+
+.verification-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+}
+
+.verification-step__connector {
+  width: 1.5rem;
+  height: 0.25rem;
+  border-radius: 9999px;
+  background: var(--color-hairline);
+  background-image: linear-gradient(90deg, var(--color-brand) 0 100%, var(--color-hairline) 100%);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+}
+
+.verification-step[data-done="true"] .verification-step__connector {
+  animation: connectorFill var(--dur-base) var(--ease-out) both;
+}
+
+.verification-step--current {
+  color: var(--color-ink);
+  font-weight: 600;
+  animation: stepCurrent var(--dur-base) var(--ease-out) both;
+}
+
+@media (max-width: 30rem) {
+  .verification-step__connector {
+    width: 1rem;
+  }
+}

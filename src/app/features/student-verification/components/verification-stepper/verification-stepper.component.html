@@ -1,0 +1,12 @@
+<ol class="verification-steps" aria-label="Verification progress">
+  @for (step of steps; track step.id) {
+    <li
+      class="verification-step"
+      [attr.aria-current]="isCurrent(step.id) ? 'step' : null"
+      [attr.data-done]="isDone(step.id)"
+      [class.verification-step--current]="isCurrent(step.id)">
+      <span class="verification-step__connector" aria-hidden="true"></span>
+      <span>{{ step.label }}</span>
+    </li>
+  }
+</ol>

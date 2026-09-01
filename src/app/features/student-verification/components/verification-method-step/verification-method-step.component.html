@@ -1,0 +1,111 @@
+<form class="verification-form" [formGroup]="form" (ngSubmit)="submitForm()" novalidate>
+  @if (submittedAttempt() && form.invalid) {
+    <p class="form-alert" role="alert">Please correct the highlighted verification fields before continuing.</p>
+  }
+
+  <div class="field">
+    <label class="field-label" for="verification-institution">College or university</label>
+    <input
+      id="verification-institution"
+      type="text"
+      formControlName="institutionName"
+      list="verification-institutions"
+      role="combobox"
+      aria-autocomplete="list"
+      aria-controls="verification-institutions"
+      autocomplete="organization"
+      placeholder="Start typing your institution"
+      aria-describedby="verification-institution-hint verification-institution-error"
+      [attr.aria-invalid]="showError(form.controls.institutionName) ? 'true' : null"
+      [disabled]="pending()"
+      (blur)="form.controls.institutionName.markAsTouched()" />
+    <datalist id="verification-institutions">
+      @for (institution of institutions(); track institution.id) {
+        <option [value]="institution.name"></option>
+      }
+    </datalist>
+    <p class="hint" id="verification-institution-hint">Pick from the list so we can match your email domain.</p>
+    @if (showError(form.controls.institutionName)) {
+      <p class="error" id="verification-institution-error" role="alert"><span class="error-icon" aria-hidden="true">!</span>{{ institutionError() }}</p>
+    }
+  </div>
+
+  <fieldset>
+    <legend>How would you like to prove enrolment?</legend>
+    <label class="choice">
+      <input type="radio" formControlName="method" value="email" [disabled]="pending()" (change)="onMethodChange()" />
+      <span><span class="choice-title">Institutional email</span><span class="choice-copy">We email a 6-digit code to your college address. Fastest option.</span></span>
+    </label>
+    <label class="choice">
+      <input type="radio" formControlName="method" value="document" [disabled]="pending()" (change)="onMethodChange()" />
+      <span><span class="choice-title">Upload student ID</span><span class="choice-copy">JPG, PNG or PDF up to 3 MB. Deleted once a decision is made.</span></span>
+    </label>
+  </fieldset>
+
+  <div class="field proof-field" [class.is-collapsed]="!emailFieldVisible()" [attr.aria-hidden]="!emailFieldVisible()" [attr.inert]="!emailFieldVisible() ? '' : null">
+    <label class="field-label" for="verification-email">Institutional email</label>
+    <input
+      id="verification-email"
+      type="email"
+      formControlName="institutionalEmail"
+      autocomplete="email"
+      placeholder="you@institution.example"
+      aria-describedby="verification-email-hint verification-email-error"
+      [attr.aria-invalid]="showError(form.controls.institutionalEmail) ? 'true' : null"
+      [disabled]="pending()"
+      (blur)="form.controls.institutionalEmail.markAsTouched()" />
+    <p class="hint" id="verification-email-hint">Must match your institution's domain.</p>
+    @if (showError(form.controls.institutionalEmail)) {
+      <p class="error" id="verification-email-error" role="alert"><span class="error-icon" aria-hidden="true">!</span>{{ emailError() }}</p>
+    }
+  </div>
+
+  <div class="field proof-field" [class.is-collapsed]="emailFieldVisible()" [attr.aria-hidden]="emailFieldVisible()" [attr.inert]="emailFieldVisible() ? '' : null">
+    <label class="field-label" for="verification-document">Student ID</label>
+    <div class="dropzone" [class.is-dragover]="isDragover()" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+      @if (hasValidFile()) {
+        @if (selectedFile(); as file) {
+          <div class="preview-card flex w-full flex-wrap items-center gap-3 text-start">
+            <div class="preview-media grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-lg border border-hairline bg-elevated text-2xl text-brand">
+              @if (isImageFile(file)) {
+                <img class="h-full w-full object-cover" [src]="previewUrl()" alt="Preview of selected student ID" />
+              } @else {
+                <span class="document-icon" aria-hidden="true">▤</span>
+                <span class="sr-only">PDF document placeholder</span>
+              }
+            </div>
+            <div class="preview-details min-w-0 flex-1">
+              <span class="file-name" id="verification-file-name" [attr.title]="file.name">{{ file.name }}</span>
+              <span class="file-meta text-xs text-ink-muted">{{ formatFileSize(file.size) }} · {{ fileTypeLabel(file) }}</span>
+            </div>
+            <div class="preview-actions flex w-full justify-end gap-2">
+              <button class="button button-quiet" type="button" [disabled]="pending()" (click)="openFilePicker(verificationDocument)">Replace</button>
+              <button class="button button-quiet" type="button" [disabled]="pending()" (click)="removeFile(verificationDocument)">Remove</button>
+            </div>
+          </div>
+        }
+      } @else {
+        <span class="dropzone-icon text-brand text-xl" aria-hidden="true">⇧</span>
+        <p class="hint">Drag your ID here, or</p>
+        <button class="button button-quiet" type="button" [disabled]="pending()" (click)="openFilePicker(verificationDocument)">Choose a student ID</button>
+      }
+      <input #verificationDocument id="verification-document" class="file-input" type="file" [accept]="'image/jpeg,image/png,application/pdf'" [attr.aria-describedby]="hasValidFile() ? 'verification-file-hint verification-file-name verification-file-error' : 'verification-file-hint verification-file-error'" [attr.aria-invalid]="showError(form.controls.document) ? 'true' : null" [disabled]="pending()" (change)="onFileChange($event)" />
+    </div>
+    <p class="hint" id="verification-file-hint">JPG, PNG or PDF up to 3 MB. Cover details other than your name, photo, institution and validity.</p>
+    @if (showError(form.controls.document)) {
+      <p class="error" id="verification-file-error" role="alert"><span class="error-icon" aria-hidden="true">!</span>{{ fileError() }}</p>
+    }
+  </div>
+
+  <label class="consent">
+    <input type="checkbox" formControlName="consentAccepted" [disabled]="pending()" aria-describedby="verification-consent-error" [attr.aria-invalid]="showError(form.controls.consentAccepted) ? 'true' : null" />
+    <span>I confirm I am currently enrolled and agree to Calmi verifying this with my institution, as described in the Privacy Policy.</span>
+  </label>
+  @if (showError(form.controls.consentAccepted)) {
+    <p class="error" id="verification-consent-error" role="alert"><span class="error-icon" aria-hidden="true">!</span>Confirm your enrolment and consent before continuing.</p>
+  }
+
+  <div class="actions">
+    <button class="button button-primary" type="submit" [disabled]="form.invalid || pending()" [attr.aria-busy]="pending()">Continue</button>
+  </div>
+</form>

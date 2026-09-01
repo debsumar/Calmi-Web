@@ -4,10 +4,9 @@ Student Premium (`₹99`/month, `₹999`/year) is gated behind proof of enrolmen
 `Verify Student Status` CTA opens a modal that collects the institution plus one proof, runs an
 automated check, and either unlocks Student Premium or falls back to a manual support review.
 
-The entry point already exists: `PricingComponent.startStudentVerification()` calls
-`OnboardingService.start({ studentVerification: true })` and the service exposes
-`studentVerificationRequested`. This plan replaces that intent hand-off with a dedicated flow so
-verification is not tangled into the 4-step onboarding wizard.
+The pricing card's `Verify Student Status` CTA now opens a dedicated dialog backed by
+`StudentVerificationService`. The current service is fixture-backed for UI development; real API
+binding remains deferred to the seams listed in [Current implementation status](#current-implementation-status).
 
 Static mockup: `mockups/student-verification.html` (open directly in a browser, no build step).
 
@@ -45,8 +44,9 @@ Touched:
   the dialog instead of onboarding
 - `src/app/features/pricing/pages/pricing/pricing.component.html` — CTA gets
   `aria-haspopup="dialog"`, and reflects verified state
-- `src/app/features/onboarding/services/onboarding.service.ts` — drop
-  `studentVerificationRequested` once the dialog owns the flow
+- `src/app/features/onboarding/services/onboarding.service.ts` — retain legacy
+  `studentVerificationRequested` because the onboarding wizard still consumes it; the pricing
+  entry point no longer sets the intent
 - `docs/pricing-plans.md` — cross-link this document
 
 ## States
@@ -64,7 +64,7 @@ Touched:
 | `otpExpired` | OTP TTL elapsed | Expiry copy, resend path, no data loss | Request code |
 | `alreadyVerified` | Existing valid record | Existing approval and valid-until date | Continue |
 
-Field-level errors: unknown institution, non-institutional domain, wrong file type, file over 5 MB,
+Field-level errors: unknown institution, non-institutional domain, wrong file type, file over 3 MB,
 expired code, too many attempts.
 
 ## Data model
@@ -204,7 +204,7 @@ Verification decides who pays less, so the client is never trusted.
   constant time and consume atomically only after a successful owned-request check. Never log or
   return the OTP. Enforce expiry, single use, and attempt limits. Return generic failure copy so
   institution membership and account state are not enumerable.
-- Client validation blocks unselected institutions, non-institutional domains, wrong MIME types, and files over 5 MB; repeat every check server-side.
+- Client validation blocks unselected institutions, non-institutional domains, wrong MIME types, and files over 3 MB; repeat every check server-side.
 - Resolve `institutionId` and allowed domains server-side; never trust a client-supplied institution
   record or domain list.
 - Cookie-authenticated mutations require CSRF protection; verify origin where supported.
@@ -287,38 +287,69 @@ font matches app `--font-sans`.
 
 ## Build phases
 
-1. Model, service, and API stubs returning fixtures. Done when `status` transitions drive the
-   mockup's states in a unit test.
-2. Dialog shell plus focus management, wired to the pricing CTA. Done when the CTA opens and closes
-   the dialog with focus returned and `Esc` handled.
-3. Method step form: institution lookup, validation, consent. Done when invalid submits are blocked
-   and errors are announced.
-4. Email OTP path end to end against the real endpoint. Done when a code confirms and the record
-   flips to `approved`.
-5. Document path: signed upload, size and type guards, provider check. Done when an oversized or
-   wrong-type file is rejected client and server side.
-6. Failure and manual review, including ticket reference and pending copy. Done when a rejected
-   check can be escalated.
-7. Entitlement enforcement at checkout plus `alreadyVerified` short-circuit. Done when a tampered
-   client state cannot buy Student Premium.
-8. Tests, docs, `docs/pricing-plans.md` cross-link.
+1. Model, fixture service, and fixture helpers. **Done.** `StudentVerificationService` exposes the
+   frozen contract and deterministic approved, failed, error, OTP-expired, and already-verified
+   outcomes. Every service seam remains explicitly marked `// TODO(api):`.
+2. Dialog shell, motion, accessibility, and pricing entry-point wiring. **UI implemented.** The
+   dialog is signal-driven, rendered from the pricing page, and the student CTA restores focus on
+   close and reflects the service's verified state.
+3. Method step form: institution lookup, validation, consent. **UI implemented against fixtures.**
+   Client-side validation and state transitions are covered without network calls.
+4. Email OTP flow against the real endpoint. **Deferred.** Bind the fixture seams to the documented
+   `/api/student-verification/confirm` endpoint when backend work is available.
+5. Document path: signed upload, size and type guards, provider check. **Fixture UI implemented;
+   API deferred.** Bind upload URL issuance and final submission to the documented endpoints.
+6. Failure and manual review, including ticket reference and pending copy. **Fixture UI implemented;
+   API deferred.**
+7. Entitlement enforcement at checkout plus `alreadyVerified` short-circuit. **Backend deferred.**
+   The browser signal changes copy only; checkout must re-read server entitlement.
+8. Tests and docs. **In progress/implemented for the fixture-backed UI.** Production API contract,
+   idempotency, persistence, polling, and server security remain backend work.
+
+## Current implementation status
+
+Created or updated files:
+
+- `src/app/features/student-verification/models/student-verification.model.ts` — frozen model contract.
+- `src/app/features/student-verification/services/student-verification.fixtures.ts` — institutions,
+  OTP/document constants, validators, and fixture result factory.
+- `src/app/features/student-verification/services/student-verification.service.ts` — fixture-backed
+  state machine and public signals/actions.
+- `src/app/features/student-verification/components/student-verification-dialog/` — accessible,
+  motion-aware dialog UI.
+- `src/app/features/pricing/pages/pricing/pricing.component.ts` — dialog state, outputs, focus return,
+  and service-derived verified state.
+- `src/app/features/pricing/pages/pricing/pricing.component.html` — dialog host and verified CTA copy.
+- `src/app/features/pricing/pages/pricing/pricing.component.spec.ts` — entry-point, focus, and verified-copy tests.
+- `docs/student-verification-plan.md` — implementation status and deferred API notes.
+
+Exact API binding seams currently present in `student-verification.service.ts`:
+
+```ts
+// TODO(api): bind institution lookup to GET /api/institutions?q=.
+// TODO(api): revalidate the institution domain on POST /api/student-verification.
+// TODO(api): bind submission to POST /api/student-verification; document uploads use POST /api/student-verification/upload-url first.
+// TODO(api): bind code confirmation to POST /api/student-verification/confirm.
+// TODO(api): bind OTP resend to POST /api/student-verification/confirm.
+// TODO(api): bind manual escalation to POST /api/student-verification/review.
+// TODO(api): bind retry to GET /api/student-verification/status and POST /api/student-verification.
+// TODO(api): bind restored verification state to GET /api/student-verification/status.
+// TODO(api): bind draft restoration to GET /api/student-verification/status.
+```
 
 ## Verification checklist
 
-- [ ] `npx ng build` passes.
-- [ ] `npx ng test --watch=false` passes.
-- [ ] CTA opens the dialog, `Esc` closes it, focus returns to the CTA.
-- [ ] Unknown institution, non-institutional domain, wrong file type, and 6 MB file are all rejected with announced errors.
-- [ ] OTP confirmation stays disabled until exactly six numeric digits are entered, and submits that code.
-- [ ] Approved path shows `₹99`/month unlocked and a valid-until date.
-- [ ] Failed path offers both retry and manual review; manual review shows a ticket reference.
-- [ ] Error/offline/5xx path preserves fields and retries without duplicate submission.
-- [ ] Expired OTP is announced, cannot confirm, and resend resets the TTL.
-- [ ] Already-verified status skips proof and shows the server valid-until date.
-- [ ] Server rejects a checkout attempt when the verification record is missing or expired.
-- [ ] Duplicate `Idempotency-Key` does not create a second request or ticket; conflicting request returns 409.
-- [ ] Rate limit returns 429 with `Retry-After` after the configured attempts.
-- [ ] Light and dark themes readable; keyboard-only pass completes the flow.
+- [x] `npx ng build` passes for the fixture-backed implementation when the parallel dialog component is present.
+- [x] Student verification service fixture specs pass.
+- [x] Student CTA opens the dialog, and closing returns focus to the CTA.
+- [x] Student CTA label and supporting copy change when `canUseStudentPlan()` becomes true.
+- [x] Unknown institution, non-institutional domain, wrong file type, and 4 MB file are rejected by fixture-side guards.
+- [x] OTP confirmation accepts only exactly six numeric digits; resend resets the fixture TTL/cooldown.
+- [x] Approved, failed, error, OTP-expired, already-verified, and manual-pending fixture states render through the dialog.
+- [ ] Real institution lookup, OTP confirmation/resend, document upload, submission, status polling, and manual review API bindings.
+- [ ] Server-side entitlement enforcement, idempotency, rate limits, persistence, and document lifecycle controls.
+- [ ] Full end-to-end verification against authenticated backend endpoints.
+- [ ] Light/dark themes and keyboard-only flow remain readable and accessible after API binding.
 
 ## Open questions
 

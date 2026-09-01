@@ -628,7 +628,7 @@
         <label class="choice">
           <input type="radio" name="method" value="document">
           <span>Upload student ID
-            <small>JPG, PNG or PDF up to 5 MB. Deleted once a decision is made.</small>
+            <small>JPG, PNG or PDF up to 3 MB. Deleted once a decision is made.</small>
           </span>
         </label>
       </fieldset>
@@ -651,9 +651,9 @@
           <button class="btn btn-outline" type="button" id="chooseFile">Choose a student ID</button>
           <input id="idFile" type="file" accept="image/jpeg,image/png,application/pdf" aria-describedby="fileHint fileError">
         </div>
-        <p class="hint" id="fileHint">JPG, PNG or PDF up to 5 MB. Cover any details other than your name, photo, institution and validity.</p>
+        <p class="hint" id="fileHint">JPG, PNG or PDF up to 3 MB. Cover any details other than your name, photo, institution and validity.</p>
         <p class="error" id="fileError" role="alert" hidden>
-          Choose a JPEG, PNG, or PDF no larger than 5 MB.
+          Choose a JPEG, PNG, or PDF no larger than 3 MB.
         </p>
       </div>
 
@@ -836,7 +836,7 @@
     ['Presidency University', ['presiuniv.ac.in']],
   ]);
   const allowedFileTypes = new Set(['image/jpeg', 'image/png', 'application/pdf']);
-  const maxFileSize = 5 * 1024 * 1024;
+  const maxFileSize = 3 * 1024 * 1024;
 
   const panes = {
     collect:  { el: form,                                  step: 'details', announce: 'Enter your institution and proof of enrolment.' },
@@ -921,7 +921,7 @@
       return false;
     }
     if (file.size > maxFileSize) {
-      setError(idFile, fileError, 'File must be no larger than 5 MB.');
+      setError(idFile, fileError, 'File must be no larger than 3 MB.');
       return false;
     }
     setError(idFile, fileError, '');
