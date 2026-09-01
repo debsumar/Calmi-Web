@@ -71,7 +71,7 @@ function addDays(date: Date, days: number): Date {
 function availabilityFor(id: string, experienceYears: number): TherapistAvailabilityDay[] {
   const start = new Date();
   const today = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-  const morningHour = 9 + (experienceYears % 3);
+  const morningHour = 9 + (Math.floor(experienceYears) % 3);
 
   return Array.from({ length: 60 }, (_, offset) => {
     const date = addDays(today, offset);
@@ -135,7 +135,7 @@ function createTherapist(
 export const THERAPISTS: Therapist[] = [
   createTherapist({
     id: 'gargi-yadav', name: 'Gargi Yadav', image: 'assets/users/gargi.avif', subtitle: 'Counselling Psychologist',
-    qualifications: ['M.Phil', 'M.Sc'], experienceYears: 8, price: 2000, duration: '50 mins',
+    qualifications: ['B.A', 'M.A. (Psychology)'], experienceYears: 4.5, price: 2000, duration: '50 mins',
     sessionMode: 'Video & Audio', rating: 4.9, reviews: 128,
     specialties: [
       'Relationship & Communication Issues',
