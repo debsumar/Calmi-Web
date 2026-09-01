@@ -37,8 +37,7 @@ The toggle's `Save 20%` label is the shared product message requested for annual
 6. Mood Insights & Progress
 7. Notice Your Patterns.
 
-The Student Premium card retains its `Recommended` ribbon and `Student Plan` badge. Its CTA
-continues to start onboarding with the student verification intent.
+The Student Premium card retains its `Recommended` ribbon and `Student Plan` badge. Its `Verify Student Status` CTA opens the dedicated verification dialog. See [Student Plan Verification](student-verification-plan.md).
 
 ### Premium
 1. Everything in Student Premium
