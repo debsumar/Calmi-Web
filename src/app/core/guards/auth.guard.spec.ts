@@ -45,9 +45,15 @@ describe('auth guards', () => {
     const restoreSession = vi.fn(() => sharedRestore);
     const auth = { restoreSession, isAuthenticated: () => true } as any;
     const router = { createUrlTree: vi.fn() } as any;
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AuthService, useValue: auth },
+        { provide: Router, useValue: router },
+      ],
+    });
 
-    const first = runGuard(authGuard, auth, router, '/home');
-    const second = runGuard(authGuard, auth, router, '/sleep');
+    const first = TestBed.runInInjectionContext(() => authGuard({} as any, { url: '/home' } as any));
+    const second = TestBed.runInInjectionContext(() => authGuard({} as any, { url: '/sleep' } as any));
     expect(restoreSession).toHaveBeenCalledTimes(2);
     resolveRestore();
     await expect(Promise.all([first, second])).resolves.toEqual([true, true]);

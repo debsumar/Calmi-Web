@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, RouterLink, RouterOutlet, Routes } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -31,13 +33,13 @@ import {
   LucideDynamicIcon,
   provideLucideIcons,
 } from '@lucide/angular';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { ChatStoreService } from '@/features/chat/services/chat-store.service';
 import { ChatWidgetComponent } from '@/features/chat/chat-widget.component';
 import { RUMI_SUPPORT_TOPICS } from '@/features/rumi-ai/data/rumi-ai.data';
 import { ScrollPositionService } from '@/core/services/scroll-position.service';
 import { AppLayout } from '@/layout/components/app.layout';
 import { RumiAiComponent } from './rumi-ai.component';
+import { provideAuthServiceStub } from '@/core/services/testing/auth.service.stub';
 
 describe('RumiAiComponent', () => {
   let fixture: ComponentFixture<RumiAiComponent>;
@@ -46,6 +48,7 @@ describe('RumiAiComponent', () => {
     await TestBed.configureTestingModule({
       imports: [RumiAiComponent],
       providers: [
+        provideAuthServiceStub(),
         provideRouter([]),
         provideLucideIcons(
           LucideArrowRight,
@@ -227,6 +230,7 @@ describe('RumiAiComponent in the production layout', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       providers: [
+        provideAuthServiceStub(),
         provideZonelessChangeDetection(),
         provideRouter(rumiIntegrationRoutes),
         provideLucideIcons(

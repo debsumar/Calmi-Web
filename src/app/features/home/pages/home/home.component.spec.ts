@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import {
@@ -14,8 +16,8 @@ import {
   LucideZap,
   provideLucideIcons,
 } from '@lucide/angular';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { HomeComponent } from './home.component';
+import { provideAuthServiceStub } from '@/core/services/testing/auth.service.stub';
 
 describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
@@ -24,6 +26,7 @@ describe('HomeComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
       providers: [
+        provideAuthServiceStub(),
         provideRouter([]),
         provideLucideIcons(
           LucideArrowRight,

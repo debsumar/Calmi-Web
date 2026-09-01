@@ -77,6 +77,18 @@ describe('AuthService', () => {
     expect(service.currentUser()).toBeNull();
   });
 
+  it('retries session restoration after a transient failure', async () => {
+    mocks.getSession
+      .mockRejectedValueOnce(new Error('provider unavailable'))
+      .mockResolvedValueOnce({ data: { session } });
+
+    await service.restoreSession();
+    await service.restoreSession();
+
+    expect(mocks.getSession).toHaveBeenCalledTimes(2);
+    expect(service.isAuthenticated()).toBe(true);
+  });
+
   it('passes login credentials to Supabase without logging them', async () => {
     const errorSpy = vi.spyOn(console, 'error');
     await service.login('person@example.com', 'correct horse battery staple');
@@ -92,9 +104,11 @@ describe('AuthService', () => {
 
   it('persists the selected role and clears it on logout', async () => {
     service.selectedRole.set('specialist');
+    TestBed.tick();
     expect(localStorage.getItem('calmi-auth-role')).toBe('specialist');
 
     await service.logout();
+    TestBed.tick();
     expect(service.selectedRole()).toBeNull();
     expect(localStorage.getItem('calmi-auth-role')).toBeNull();
   });

@@ -1,0 +1,1342 @@
+<!doctype html>
+<!--
+  Calmi — Student Plan Verification: STATIC MOCKUP.
+  Not wired to Angular, no network calls, no build step. Open this file directly.
+  Plan: docs/student-verification-plan.md
+  Colours are snapshots of the app's semantic tokens (src/tailwind.css) for the
+  default primary seed, hardcoded here because PrimeNG is not present to emit
+  --p-primary-*. Token NAMES mirror the real ones so markup ports over cleanly.
+  Contrast alignment: --color-on-brand is dark enough for normal text on the light
+  primary; status values are illustrative snapshots of runtime Prime palette roles.
+  Mirror resolved values from src/tailwind.css; never mirror mockup literals back
+  into the runtime token bridge.
+  Motion tokens: --dur-fast, --dur-base, --dur-slow, --dur-loop, --motion-grace,
+  --ease-out, --ease-spring, and --stagger-step; motion is transform/opacity-first and disabled
+  by the reviewer Animations control or prefers-reduced-motion.
+  Animation inventory: pricing stagger/hover/ribbon emphasis; button press, hover and
+  focus; dialog scrim open/close; directional pane and stepper transitions; method,
+  proof-field, dropzone, error, OTP, checking, result/receipt, theme, and alert states.
+-->
+<html lang="en" class="app-dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Student Plan Verification — Calmi mockup</title>
+<style>
+  :root {
+    --color-canvas: #faf8fb;
+    --color-surface: #ffffff;
+    --color-sunken: #f4f2f8;
+    --color-hairline: #f2f2f6;
+    --color-scrim: rgb(0 0 0 / 0.45);
+    --color-ink: #0f0c12;
+    --color-ink-soft: #525054;
+    --color-ink-muted: #6f6d70;
+    --color-brand: #967bb6;
+    --color-brand-light: #80699b;
+    --color-brand-dark: #69567f;
+    --color-on-brand: #241c2b;
+    --color-on-brand-dark: #ffffff;
+    --color-success: #256029;
+    --color-danger: #ad1717;
+    --color-accent-gold: #f5b731;
+    --shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.25);
+
+    --font-sans: 'Bricolage Grotesque', sans-serif;
+    --radius-panel: 1rem;
+    --radius-field: 0.75rem;
+    --step-1: 0.75rem;
+    --step-2: 0.875rem;
+    --step-3: 1rem;
+    --step-4: 1.25rem;
+    --step-5: 1.5rem;
+  }
+
+  :root.app-dark {
+    --color-canvas: #0b090d;
+    --color-surface: #30273a;
+    --color-sunken: #1d1723;
+    --color-hairline: #3c3149;
+    --color-ink: #f9f7fb;
+    --color-ink-soft: #ece7f2;
+    --color-ink-muted: #dbd2e6;
+    --color-success: #93d69a;
+    --color-danger: #f4b0b0;
+    --color-accent-gold: #f5b731;
+    --shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 2rem 1.25rem 4rem;
+    background: var(--color-canvas);
+    color: var(--color-ink-soft);
+    font-family: var(--font-sans);
+    font-size: var(--step-3);
+    line-height: 1.55;
+  }
+
+  h1, h2, h3 { color: var(--color-ink); line-height: 1.25; margin: 0; }
+  h1 { font-size: var(--step-5); }
+  h2 { font-size: var(--step-4); }
+  h3 { font-size: var(--step-3); }
+  p { margin: 0; }
+
+  .wrap { max-width: 72rem; margin: 0 auto; display: grid; gap: 2.5rem; }
+
+  .page-head { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; justify-content: space-between; }
+  .eyebrow { font-size: var(--step-1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-muted); }
+
+  /* ---------- primitives ---------- */
+  .btn {
+    font: inherit;
+    font-weight: 600;
+    border-radius: 9999px;
+    padding: 0.7rem 1.4rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-solid { background: var(--color-brand); color: var(--color-on-brand); }
+  .btn-solid:hover { background: var(--color-brand-dark); color: var(--color-on-brand-dark); }
+  .btn-outline { background: transparent; color: var(--color-ink); border-color: var(--color-brand); }
+  .btn-outline:hover { background: color-mix(in srgb, var(--color-brand) 12%, transparent); }
+  .btn-quiet { background: transparent; color: var(--color-ink-muted); border-color: var(--color-hairline); }
+  .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+  :is(button, input, select, textarea, a, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-brand-light);
+    outline-offset: 2px;
+  }
+
+  .panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-card);
+    padding: 1.5rem;
+  }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: var(--step-1); font-weight: 600;
+    padding: 0.25rem 0.7rem; border-radius: 9999px;
+    background: color-mix(in srgb, var(--color-brand) 18%, transparent);
+    color: var(--color-ink);
+  }
+
+  .field { display: grid; gap: 0.35rem; }
+  .field > label { font-size: var(--step-2); font-weight: 600; color: var(--color-ink); }
+  .hint { font-size: var(--step-1); color: var(--color-ink-muted); }
+  input[type="text"], input[type="email"], select, textarea {
+    font: inherit;
+    color: var(--color-ink);
+    background: var(--color-sunken);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-field);
+    padding: 0.65rem 0.8rem;
+    width: 100%;
+  }
+  input[aria-invalid="true"] { border-color: var(--color-danger); }
+  .error {
+    font-size: var(--step-1);
+    color: var(--color-danger);
+    display: flex; align-items: center; gap: 0.35rem;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0;
+    margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  /* ---------- entry point: pricing card ---------- */
+  .card-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+  .plan { position: relative; display: grid; gap: 0.9rem; align-content: start; }
+  .plan.is-student { border-color: color-mix(in srgb, var(--color-brand) 55%, transparent); }
+  .ribbon {
+    position: absolute; top: -0.75rem; right: 1.25rem;
+    background: var(--color-accent-gold); color: var(--color-on-brand);
+    font-size: var(--step-1); font-weight: 700;
+    padding: 0.2rem 0.7rem; border-radius: 9999px;
+  }
+  .price { display: flex; align-items: baseline; gap: 0.3rem; }
+  .price b { font-size: 2rem; color: var(--color-ink); }
+  .plan ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.3rem; font-size: var(--step-2); }
+
+  /* ---------- dialog ---------- */
+  .scrim {
+    position: fixed; inset: 0; background: var(--color-scrim);
+    display: grid; place-items: center; padding: 1rem; z-index: 20;
+  }
+  [hidden] { display: none !important; }
+  .dialog {
+    background: var(--color-surface);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-card);
+    width: min(34rem, 100%);
+    max-height: min(90vh, 46rem);
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: grid; gap: 1.25rem;
+  }
+  .pane { display: grid; gap: 1.1rem; }
+  .dialog-head { display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; }
+  .close {
+    background: transparent; border: 0; color: var(--color-ink-muted);
+    font-size: var(--step-4); line-height: 1; cursor: pointer; padding: 0.25rem;
+  }
+
+  .steps { display: flex; gap: 0.4rem; list-style: none; margin: 0; padding: 0; font-size: var(--step-1); }
+  .steps li { display: flex; align-items: center; gap: 0.4rem; color: var(--color-ink-muted); }
+  .steps li::before {
+    content: ""; width: 1.5rem; height: 0.25rem; border-radius: 9999px;
+    background: var(--color-hairline);
+  }
+  .steps li[aria-current="step"] { color: var(--color-ink); font-weight: 600; }
+  .steps li[aria-current="step"]::before,
+  .steps li[data-done="true"]::before { background: var(--color-brand); }
+
+  fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+  legend { font-size: var(--step-2); font-weight: 600; color: var(--color-ink); padding: 0 0 0.35rem; }
+  .choice {
+    display: flex; gap: 0.7rem; align-items: flex-start;
+    border: 1px solid var(--color-hairline); border-radius: var(--radius-field);
+    background: var(--color-sunken); padding: 0.8rem; cursor: pointer;
+  }
+  .choice:has(input:checked) { border-color: var(--color-brand); background: color-mix(in srgb, var(--color-brand) 14%, transparent); }
+  .choice input { margin-top: 0.25rem; accent-color: var(--color-brand); }
+  .choice span { display: block; color: var(--color-ink); font-weight: 600; font-size: var(--step-2); }
+  .choice small { color: var(--color-ink-muted); }
+
+  .dropzone {
+    border: 1px dashed color-mix(in srgb, var(--color-brand) 45%, transparent);
+    border-radius: var(--radius-field);
+    background: var(--color-sunken);
+    padding: 1.1rem; text-align: center; display: grid; gap: 0.5rem; justify-items: center;
+  }
+
+  .consent { display: flex; gap: 0.6rem; align-items: flex-start; font-size: var(--step-1); }
+  .consent input { accent-color: var(--color-brand); margin-top: 0.2rem; }
+
+  .otp { display: flex; gap: 0.5rem; }
+  .otp input {
+    width: 2.75rem; text-align: center; font-size: var(--step-4); font-weight: 700;
+    padding: 0.5rem 0;
+  }
+
+  .progress {
+    height: 0.4rem; border-radius: 9999px; background: var(--color-sunken); overflow: hidden;
+  }
+  .progress > i {
+    display: block; height: 100%; width: 40%; border-radius: 9999px;
+    background: var(--color-brand);
+    animation: slide var(--dur-loop) var(--ease-standard) infinite;
+  }
+  @keyframes slide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(250%); }
+  }
+
+  .result { display: grid; gap: 0.8rem; justify-items: start; }
+  .result-icon {
+    width: 2.75rem; height: 2.75rem; border-radius: 9999px;
+    display: grid; place-items: center;
+  }
+  .is-approved .result-icon { background: color-mix(in srgb, var(--color-success) 22%, transparent); color: var(--color-success); }
+  .is-failed .result-icon { background: color-mix(in srgb, var(--color-danger) 22%, transparent); color: var(--color-danger); }
+  .is-pending .result-icon { background: color-mix(in srgb, var(--color-accent-gold) 24%, transparent); color: var(--color-on-brand); }
+
+  .receipt {
+    width: 100%; background: var(--color-sunken); border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-field); padding: 0.9rem;
+    display: grid; gap: 0.35rem; font-size: var(--step-2);
+  }
+  .receipt div { display: flex; justify-content: space-between; gap: 1rem; }
+  .receipt b { color: var(--color-ink); }
+  .strike { text-decoration: line-through; color: var(--color-ink-muted); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+  .alert {
+    display: flex; gap: 0.6rem; align-items: flex-start;
+    border-radius: var(--radius-field); padding: 0.75rem 0.9rem; font-size: var(--step-2);
+    background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-danger) 40%, transparent);
+    color: var(--color-ink);
+  }
+
+  /* ---------- state gallery ---------- */
+  .gallery { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); }
+  .gallery .panel { display: grid; gap: 0.75rem; align-content: start; }
+  .gallery h3 { font-size: var(--step-2); }
+  .gallery .eyebrow { font-size: 0.7rem; }
+
+  .mock-control {
+    border: 1px dashed var(--color-hairline); border-radius: var(--radius-field);
+    padding: 0.7rem 0.8rem; font-size: var(--step-1); display: grid; gap: 0.4rem;
+  }
+  .mock-control strong { color: var(--color-ink); }
+
+  svg { flex: none; }
+
+  @media (max-width: 480px) {
+    body { padding: 1rem 0.85rem 3rem; }
+    .dialog { padding: 1.1rem; border-radius: 0.85rem; }
+    .otp input { width: 2.25rem; font-size: var(--step-3); }
+    .steps { flex-wrap: wrap; }
+    .actions .btn { width: 100%; justify-content: center; }
+  }
+
+  /* ---------- phase 2 motion system ---------- */
+  :root {
+    --dur-instant: 0ms;
+    --dur-fast: 180ms;
+    --dur-base: 320ms;
+    --dur-slow: 620ms;
+    --dur-loop: 1800ms;
+    --motion-grace: 40ms;
+    --stagger-step: 80ms;
+    --ease-out: cubic-bezier(.25, .8, .25, 1);
+    --ease-spring: cubic-bezier(.17, 1.4, .3, 1);
+    --ease-standard: ease;
+  }
+
+  :root.theme-ready body,
+  :root.theme-ready .panel,
+  :root.theme-ready .dialog,
+  :root.theme-ready .scrim,
+  :root.theme-ready input,
+  :root.theme-ready select,
+  :root.theme-ready .choice,
+  :root.theme-ready .dropzone,
+  :root.theme-ready .receipt,
+  :root.theme-ready .mock-control,
+  :root.theme-ready .alert,
+  :root.theme-ready .btn {
+    transition: background-color var(--dur-slow) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out),
+      box-shadow var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out);
+  }
+
+  :root.theme-ready :is(
+    h1, h2, h3, .eyebrow, .pill, .field > label, .hint, .error,
+    .close, .steps li, .choice span, .choice small, .receipt b,
+    .mock-control strong, .result-icon
+  ) {
+    transition: color var(--dur-base) var(--ease-out),
+      background-color var(--dur-slow) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out);
+  }
+
+  .panel.plan {
+    transform-origin: center bottom;
+    animation: gentleUp var(--dur-slow) var(--ease-spring) both;
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+  }
+  .card-grid .plan:nth-child(2) { animation-delay: calc(var(--stagger-step) * 1); }
+  .card-grid .plan:nth-child(3) { animation-delay: calc(var(--stagger-step) * 2); }
+  .panel.plan:hover { transform: translateY(-.35rem) scale(1.01); box-shadow: 0 .75rem 2rem color-mix(in srgb, var(--color-brand) 18%, transparent); }
+  .plan.is-student { box-shadow: 0 .35rem 1rem color-mix(in srgb, var(--color-brand) 22%, transparent); }
+  .plan.is-student:hover { box-shadow: 0 .9rem 2.25rem color-mix(in srgb, var(--color-brand) 30%, transparent); }
+  .ribbon { transform-origin: center top; animation: ribbonPulse var(--dur-loop) var(--ease-out) infinite alternate; }
+
+  .btn {
+    transform-origin: center;
+    transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out),
+      box-shadow var(--dur-base) var(--ease-out), outline-offset var(--dur-fast) var(--ease-out), opacity var(--dur-base) var(--ease-out);
+  }
+  .btn:hover:not(:disabled) { box-shadow: 0 .45rem 1rem color-mix(in srgb, var(--color-brand) 22%, transparent); }
+  .btn:active:not(:disabled) { transform: scale(.96); }
+  .btn:disabled { transform: none; }
+  :is(button, input, select, textarea, a, [tabindex]):focus-visible {
+    transition: outline-offset var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), outline-color var(--dur-fast) var(--ease-out);
+  }
+
+  .scrim.is-open { animation: scrimFadeIn var(--dur-base) var(--ease-out) both; }
+  .scrim.is-closing { animation: scrimFadeOut var(--dur-base) var(--ease-out) both; }
+  .scrim.is-open .dialog { animation: softSpring var(--dur-slow) var(--ease-spring) both; }
+  .scrim.is-closing .dialog { animation: dialogOut var(--dur-base) var(--ease-out) both; }
+
+  .pane.is-entering-forward { animation: paneForward var(--dur-base) var(--ease-out) both; }
+  .pane.is-entering-backward { animation: paneBackward var(--dur-base) var(--ease-out) both; }
+  .pane.is-exiting-forward { animation: paneExitForward var(--dur-base) var(--ease-out) both; }
+  .pane.is-exiting-backward { animation: paneExitBackward var(--dur-base) var(--ease-out) both; }
+
+  .steps li { transition: color var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out); }
+  .steps li::before { background-size: 100% 100%; transition: background-color var(--dur-base) var(--ease-out); }
+  /* Intentional paint-motion exception: connector fill uses background-size. */
+  .steps li[data-done="true"]::before { background: linear-gradient(90deg, var(--color-brand) 0 100%, var(--color-hairline) 100%); background-size: 0% 100%; animation: connectorFill var(--dur-base) var(--ease-out) both; }
+  .steps li[aria-current="step"] { animation: stepCurrent var(--dur-base) var(--ease-out) both; }
+
+  .choice { transition: border-color var(--dur-base) var(--ease-out), background-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+  .choice:hover { transform: translateY(-.08rem); }
+  .choice input { transition: accent-color var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-spring); }
+  .choice:has(input:checked) input { transform: scale(1.1); }
+
+  /* Intentional layout-motion exception: collapse must reflow following fields. */
+  .proof-field { max-height: 20rem; overflow: hidden; opacity: 1; transition: max-height var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out); }
+  .proof-field.is-collapsed { max-height: 0; opacity: 0; transform: translateY(-.35rem); pointer-events: none; }
+
+  .dropzone { transition: border-color var(--dur-base) var(--ease-out), background-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+  .dropzone:focus-within, .dropzone.is-dragover { border-color: var(--color-brand); background: color-mix(in srgb, var(--color-brand) 12%, var(--color-sunken)); box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--color-brand) 16%, transparent); animation: dropzonePulse var(--dur-loop) var(--ease-out) infinite alternate; }
+
+  input[aria-invalid="true"], select[aria-invalid="true"] { transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out); }
+  .error { animation: errorIn var(--dur-base) var(--ease-out) both; }
+
+  .otp { transform-origin: center; }
+  .pane.is-entering-forward .otp, .pane.is-entering-backward .otp { animation: gentleUp var(--dur-base) var(--ease-out) both; }
+  .otp input { transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-spring); }
+  .otp input:focus { transform: translateY(-.12rem) scale(1.03); box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--color-brand) 20%, transparent); }
+  .otp input.is-filled { animation: otpPop var(--dur-fast) var(--ease-spring) both; background: color-mix(in srgb, var(--color-brand) 12%, var(--color-sunken)); }
+  .otp.is-invalid { animation: shake var(--dur-base) var(--ease-out) both; }
+
+  .progress > i { animation: slide var(--dur-loop) var(--ease-standard) infinite; }
+  .checking-indicator { display: inline-block; width: .6rem; height: .6rem; margin-right: .35rem; border-radius: 50%; background: var(--color-brand); animation: breathe var(--dur-loop) var(--ease-out) infinite; }
+
+  .result-icon { transform-origin: center; }
+  .pane.is-entering-forward .result-icon { animation: successPop var(--dur-base) var(--ease-spring) both; }
+  .is-approved .result-icon svg path, .is-failed .result-icon svg path { stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw var(--dur-slow) var(--ease-out) both; }
+  .is-failed.pane.is-entering-forward .result-icon { animation: shake var(--dur-base) var(--ease-out) both; }
+  .is-pending.pane.is-entering-forward .result-icon { animation: breathe var(--dur-loop) var(--ease-out) infinite; }
+  .is-pending.pane.is-entering-forward .result-icon svg path { animation: clockTick var(--dur-loop) var(--ease-out) infinite; transform-origin: 12px 12px; }
+  .pane.is-entering-forward .receipt div { animation: gentleUp var(--dur-base) var(--ease-out) both; }
+  .pane.is-entering-forward .receipt div:nth-child(2) { animation-delay: calc(var(--stagger-step) * 1); }
+  .pane.is-entering-forward .receipt div:nth-child(3) { animation-delay: calc(var(--stagger-step) * 2); }
+  .pane.is-entering-forward .receipt div:nth-child(4) { animation-delay: calc(var(--stagger-step) * 3); }
+  .strike { position: relative; text-decoration: none; }
+  .strike::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: .1rem; background: currentColor; transform: scaleX(0); transform-origin: left center; animation: strikeDraw var(--dur-base) var(--ease-out) both; }
+
+  .alert { animation: alertIn var(--dur-base) var(--ease-out) both; }
+
+  @keyframes gentleUp { from { opacity: 0; transform: translateY(.9rem); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes ribbonPulse { from { transform: scale(1); } to { transform: scale(1.035); } }
+  @keyframes softSpring { 0% { opacity: 0; transform: scale(.92) translateY(.6rem); } 72% { opacity: 1; transform: scale(1.02) translateY(-.1rem); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes scrimFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes scrimFadeOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes dialogOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(.5rem) scale(.97); } }
+  @keyframes paneForward { from { opacity: 0; transform: translateX(1.25rem); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes paneBackward { from { opacity: 0; transform: translateX(-1.25rem); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes paneExitForward { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-1rem); } }
+  @keyframes paneExitBackward { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(1rem); } }
+  @keyframes connectorFill { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+  @keyframes stepCurrent { from { transform: scale(.98); } to { transform: scale(1); } }
+  @keyframes dropzonePulse { from { opacity: .96; transform: scale(1); } to { opacity: 1; transform: scale(1.005); } }
+  @keyframes errorIn { from { opacity: 0; transform: translateX(-.5rem); } 60% { opacity: 1; transform: translateX(.12rem); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes otpPop { 0% { transform: scale(.9); } 70% { transform: scale(1.08); } to { transform: scale(1); } }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-.35rem); } 75% { transform: translateX(.35rem); } }
+  @keyframes breathe { 0%, 100% { transform: scale(1); opacity: .72; } 50% { transform: scale(1.08); opacity: 1; } }
+  @keyframes successPop { from { opacity: 0; transform: scale(.7); } 70% { opacity: 1; transform: scale(1.08); } to { opacity: 1; transform: scale(1); } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes clockTick { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(8deg); } }
+  @keyframes strikeDraw { to { transform: scaleX(1); } }
+  @keyframes alertIn { from { opacity: 0; transform: translateY(-.5rem); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-duration: var(--dur-instant) !important; scroll-behavior: auto !important; }
+    .progress > i { width: 100%; transform: none; }
+    .scrim, .scrim.is-open, .scrim.is-closing { opacity: 1; }
+    .dialog, .pane, .panel.plan { opacity: 1; transform: none; }
+    .checking-indicator { opacity: 1; transform: none; }
+    .strike::after { transform: scaleX(1); }
+  }
+  :root.reduce-motion *, :root.reduce-motion *::before, :root.reduce-motion *::after { animation: none !important; transition-duration: var(--dur-instant) !important; }
+  :root.reduce-motion .progress > i { width: 100%; transform: none; }
+  :root.reduce-motion .scrim, :root.reduce-motion .dialog, :root.reduce-motion .pane { opacity: 1; transform: none; }
+  :root.reduce-motion .strike::after { transform: scaleX(1); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Verification Workflow</p>
+      <h1>Student Plan Verification</h1>
+      <p>Static mockup of the modal flow behind the Student Premium CTA.</p>
+    </div>
+    <button class="btn btn-quiet" id="themeToggle" aria-pressed="true">Dark theme</button>
+  </header>
+
+  <!-- ============ 1. ENTRY POINT ============ -->
+  <section aria-labelledby="entry-h">
+    <p class="eyebrow">Step 0 — entry point</p>
+    <h2 id="entry-h">Pricing card CTA</h2>
+    <div class="card-grid" style="margin-top:1rem">
+
+      <article class="panel plan">
+        <span class="pill">Free</span>
+        <p class="price"><b>₹0</b> <span class="hint">forever</span></p>
+        <p>Perfect for exploring Calmi.</p>
+        <ul><li>Daily Mood Check-ins</li><li>Basic Journaling</li><li>Limited Sleep Sessions</li></ul>
+        <button class="btn btn-outline" type="button">Get Started</button>
+      </article>
+
+      <article class="panel plan is-student">
+        <span class="ribbon">For Students</span>
+        <span class="pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5"/></svg>
+          Student Plan
+        </span>
+        <p class="price"><b>₹99</b> <span class="hint">/month</span></p>
+        <p>Everything you need for everyday self-reflection.</p>
+        <ul><li>Everything in Free</li><li>20–30 Rumi AI conversations/month</li><li>Unlimited Guided Journaling</li></ul>
+        <button class="btn btn-outline" type="button" id="openCta" aria-haspopup="dialog">
+          Verify Student Status
+        </button>
+      </article>
+
+      <article class="panel plan">
+        <span class="pill">Premium</span>
+        <p class="price"><b>₹249</b> <span class="hint">/month</span></p>
+        <p>More room to reflect, understand and explore.</p>
+        <ul><li>Everything in Student Premium</li><li>100–150 conversations/month</li><li>Priority Support</li></ul>
+        <button class="btn btn-solid" type="button">Start 7-Day Free Trial</button>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 2. STATE GALLERY ============ -->
+  <section aria-labelledby="gallery-h">
+    <p class="eyebrow">Reference</p>
+    <h2 id="gallery-h">All states at a glance</h2>
+    <p class="hint" style="margin-top:0.35rem">Click a card title to open the live dialog on that state.</p>
+    <div class="gallery" style="margin-top:1rem">
+
+      <article class="panel">
+        <p class="eyebrow">collecting</p>
+        <h3><button class="btn btn-quiet" data-goto="collect">Collect institution + proof</button></h3>
+        <p class="hint">College name, one proof method, consent. Continue is disabled until valid.</p>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">emailSent</p>
+        <h3><button class="btn btn-quiet" data-goto="code">Confirm emailed code</button></h3>
+        <p class="hint">A typed <code>.edu</code> address proves nothing on its own, so the OTP is required.</p>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">checking</p>
+        <h3><button class="btn btn-quiet" data-goto="checking">Automated check</button></h3>
+        <p class="hint">Indeterminate progress, <code>aria-busy</code>, polled with backoff.</p>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">approved</p>
+        <h3><button class="btn btn-quiet" data-goto="approved">Student Premium unlocked</button></h3>
+        <p class="hint">Price shown is cosmetic; entitlement is re-read server-side at checkout.</p>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">failed</p>
+        <h3><button class="btn btn-quiet" data-goto="failed">Could not verify</button></h3>
+        <p class="hint">Offers retry with the other method, or manual support review.</p>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">manualPending</p>
+        <h3><button class="btn btn-quiet" data-goto="pending">Manual review queued</button></h3>
+        <p class="hint">Ticket reference plus a 1–2 business day expectation.</p>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">error — field level</p>
+        <h3>Validation</h3>
+        <div class="field">
+          <label for="demoEmail">Institutional email</label>
+          <input id="demoEmail" type="email" value="me@gmail.com" aria-invalid="true" aria-describedby="demoEmailErr">
+          <p class="error" id="demoEmailErr">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+            Use the address issued by Jadavpur University.
+          </p>
+        </div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">error — request level</p>
+        <h3>Network</h3>
+        <div class="alert" role="alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+          <span>We could not reach the verification service. Your details are saved — try again.</span>
+        </div>
+        <button class="btn btn-outline" type="button">Try again</button>
+      </article>
+
+    </div>
+  </section>
+
+  <p class="hint">
+    Mockup only. No requests are made; outcomes are chosen with the control inside the dialog.
+    Full spec in <code>docs/student-verification-plan.md</code>.
+  </p>
+</div>
+
+<!-- ============ DIALOG ============ -->
+<div class="scrim" id="scrim" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" id="dialog">
+
+    <div class="dialog-head">
+      <div>
+        <p class="eyebrow">Student Premium</p>
+        <h2 id="dlgTitle" tabindex="-1">Verify your student status</h2>
+      </div>
+      <button class="close" type="button" id="closeBtn" aria-label="Close verification dialog">&times;</button>
+    </div>
+
+    <ol class="steps" id="stepper">
+      <li data-step="details" aria-current="step">Details</li>
+      <li data-step="check">Check</li>
+      <li data-step="result">Result</li>
+    </ol>
+
+    <p class="sr-only" role="status" aria-live="polite" id="liveRegion"></p>
+
+    <!-- step: collecting -->
+    <form id="paneCollect" class="pane" novalidate>
+      <div class="field">
+        <label for="college">College or university</label>
+        <input id="college" name="college" type="text" list="colleges" autocomplete="organization"
+               placeholder="Start typing your institution" aria-describedby="collegeHint collegeError" required>
+        <datalist id="colleges">
+          <option value="Jadavpur University"></option>
+          <option value="University of Calcutta"></option>
+          <option value="IIT Kharagpur"></option>
+          <option value="Presidency University"></option>
+        </datalist>
+        <p class="hint" id="collegeHint">Pick from the list so we can match your email domain.</p>
+        <p class="error" id="collegeError" role="alert" hidden>
+          Select an institution from the list.
+        </p>
+      </div>
+
+      <fieldset>
+        <legend>How would you like to prove enrolment?</legend>
+
+        <label class="choice">
+          <input type="radio" name="method" value="email" checked>
+          <span>Institutional email
+            <small>We email a 6-digit code to your college address. Fastest option.</small>
+          </span>
+        </label>
+
+        <label class="choice">
+          <input type="radio" name="method" value="document">
+          <span>Upload student ID
+            <small>JPG, PNG or PDF up to 5 MB. Deleted once a decision is made.</small>
+          </span>
+        </label>
+      </fieldset>
+
+      <div class="field proof-field" id="emailField">
+        <label for="eduEmail">Institutional email</label>
+        <input id="eduEmail" type="email" autocomplete="email" placeholder="you@jadavpuruniversity.in"
+               aria-describedby="eduHint eduEmailError">
+        <p class="hint" id="eduHint">Must match your institution's domain.</p>
+        <p class="error" id="eduEmailError" role="alert" hidden>
+          Use the address issued by your selected institution.
+        </p>
+      </div>
+
+      <div class="field proof-field is-collapsed" id="docField" aria-hidden="true" inert>
+        <label for="idFile">Student ID</label>
+        <div class="dropzone" id="dropzone">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand)" stroke-width="2" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></svg>
+          <p class="hint">Drag your ID here, or</p>
+          <button class="btn btn-outline" type="button" id="chooseFile">Choose a student ID</button>
+          <input id="idFile" type="file" accept="image/jpeg,image/png,application/pdf" aria-describedby="fileHint fileError">
+        </div>
+        <p class="hint" id="fileHint">JPG, PNG or PDF up to 5 MB. Cover any details other than your name, photo, institution and validity.</p>
+        <p class="error" id="fileError" role="alert" hidden>
+          Choose a JPEG, PNG, or PDF no larger than 5 MB.
+        </p>
+      </div>
+
+      <label class="consent">
+        <input type="checkbox" id="consent" required>
+        <span>I confirm I am currently enrolled and agree to Calmi verifying this with my institution,
+          as described in the Privacy Policy.</span>
+      </label>
+
+      <div class="mock-control">
+        <strong>Mockup control</strong>
+        <label for="outcome">Simulated API outcome</label>
+        <select id="outcome">
+          <option value="approved">approved</option>
+          <option value="failed">rejected — not enrolled</option>
+          <option value="error">error — service unavailable</option>
+          <option value="otpExpired">otp expired</option>
+          <option value="alreadyVerified">already verified</option>
+        </select>
+        <label><input type="checkbox" id="animationToggle" checked> Animations</label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-solid" type="submit" id="submitBtn" disabled>Continue</button>
+        <button class="btn btn-quiet" type="button" data-close>Cancel</button>
+      </div>
+    </form>
+
+    <!-- step: emailSent -->
+    <div id="paneCode" class="pane" hidden>
+      <p>Enter the 6-digit code we sent to <b id="codeTarget">you@jadavpuruniversity.in</b>.</p>
+      <div class="field">
+        <span id="otpLabel" class="sr-only">Verification code, 6 digits</span>
+        <div class="otp" id="otpGroup" role="group" aria-labelledby="otpLabel" aria-describedby="otpError">
+          <input inputmode="numeric" maxlength="1" aria-label="Digit 1">
+          <input inputmode="numeric" maxlength="1" aria-label="Digit 2">
+          <input inputmode="numeric" maxlength="1" aria-label="Digit 3">
+          <input inputmode="numeric" maxlength="1" aria-label="Digit 4">
+          <input inputmode="numeric" maxlength="1" aria-label="Digit 5">
+          <input inputmode="numeric" maxlength="1" aria-label="Digit 6">
+        </div>
+        <p class="error" id="otpError" role="alert" hidden>Enter all 6 digits before confirming the code.</p>
+        <p class="hint" id="otpHint">Code expires in 10 minutes. <span id="otpResendStatus">Resend available in 45 seconds.</span></p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-solid" type="button" id="confirmCode" disabled>Confirm code</button>
+        <button class="btn btn-outline" type="button" id="otpResend" aria-describedby="otpHint" disabled>Request a new code</button>
+        <button class="btn btn-quiet" type="button" data-goto="collect">Change email</button>
+      </div>
+    </div>
+
+    <!-- step: checking -->
+    <div id="paneChecking" class="pane" hidden>
+      <h3>Checking with your institution</h3>
+      <p>This usually takes a few seconds. You can leave this open.</p>
+      <div class="progress" aria-hidden="true"><i></i></div>
+      <p class="hint"><span class="checking-indicator" aria-hidden="true"></span>Verifying enrolment for <b id="checkingCollege">Jadavpur University</b></p>
+    </div>
+
+    <!-- step: approved -->
+    <div id="paneApproved" hidden class="pane result is-approved">
+      <span class="result-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m4 12 5 5L20 6"/></svg>
+      </span>
+      <h3>You're verified</h3>
+      <p>Student Premium is unlocked on this account.</p>
+      <div class="receipt">
+        <div><span>Institution</span><b>Jadavpur University</b></div>
+        <div><span>Plan</span><b>Student Premium</b></div>
+        <div><span>Price</span><b><span class="strike">₹249</span> ₹99 / month</b></div>
+        <div><span>Valid until</span><b><time datetime="2027-09-01">1 Sep 2027</time></b></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-solid" type="button" data-close>Continue to checkout</button>
+      </div>
+    </div>
+
+    <!-- step: failed -->
+    <div id="paneFailed" hidden class="pane result is-failed">
+      <span class="result-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </span>
+      <h3>We couldn't verify you automatically</h3>
+      <p>Your institution didn't confirm an active enrolment for those details. This happens often
+        when a college doesn't issue student email.</p>
+      <div class="actions">
+        <button class="btn btn-outline" type="button" data-goto="collect">Try another method</button>
+        <button class="btn btn-solid" type="button" id="escalate">Request manual review</button>
+      </div>
+      <p class="hint">Manual review is handled by a person and takes 1–2 business days.</p>
+    </div>
+
+    <!-- step: otpExpired -->
+    <div id="paneOtpExpired" hidden class="pane result is-failed">
+      <span class="result-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </span>
+      <h3>That code has expired</h3>
+      <p>Request a new code, then enter it within 10 minutes.</p>
+      <div class="actions">
+        <button class="btn btn-solid" type="button" data-goto="code">Request a new code</button>
+        <button class="btn btn-quiet" type="button" data-goto="collect">Change email</button>
+      </div>
+    </div>
+
+    <!-- step: alreadyVerified -->
+    <div id="paneAlreadyVerified" hidden class="pane result is-approved">
+      <span class="result-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m4 12 5 5L20 6"/></svg>
+      </span>
+      <h3>You are already verified</h3>
+      <p>Your existing Student Premium verification is still valid.</p>
+      <div class="receipt">
+        <div><span>Plan</span><b>Student Premium</b></div>
+        <div><span>Valid until</span><b><time datetime="2027-09-01">1 Sep 2027</time></b></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-solid" type="button" data-close>Continue to checkout</button>
+      </div>
+    </div>
+
+    <!-- step: error -->
+    <div id="paneError" hidden class="pane result is-failed">
+      <span class="result-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+      </span>
+      <h3>Verification service unavailable</h3>
+      <p>We could not reach the verification service. Your details remain on this screen.</p>
+      <div class="actions">
+        <button class="btn btn-solid" type="button" data-goto="collect">Try again</button>
+      </div>
+    </div>
+
+    <!-- step: manualPending -->
+    <div id="panePending" hidden class="pane result is-pending">
+      <span class="result-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </span>
+      <h3>Sent for manual review</h3>
+      <p>A support reviewer will check your documents and email you a decision.</p>
+      <div class="receipt">
+        <div><span>Reference</span><b>CAL-SV-48213</b></div>
+        <div><span>Submitted</span><b><time datetime="2026-09-01T03:45">1 Sep 2026, 3:45 AM</time></b></div>
+        <div><span>Expected by</span><b><time datetime="2026-09-03">3 Sep 2026</time></b></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-solid" type="button" data-close>Done</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(() => {
+  const scrim = document.getElementById('scrim');
+  const dialog = document.getElementById('dialog');
+  const title = document.getElementById('dlgTitle');
+  const live = document.getElementById('liveRegion');
+  const stepper = document.getElementById('stepper');
+  const form = document.getElementById('paneCollect');
+  const consent = document.getElementById('consent');
+  const college = document.getElementById('college');
+  const collegeError = document.getElementById('collegeError');
+  const submitBtn = document.getElementById('submitBtn');
+  const eduEmail = document.getElementById('eduEmail');
+  const eduEmailError = document.getElementById('eduEmailError');
+  const idFile = document.getElementById('idFile');
+  const fileError = document.getElementById('fileError');
+  const confirmCode = document.getElementById('confirmCode');
+  const otpResend = document.getElementById('otpResend');
+  const otpResendStatus = document.getElementById('otpResendStatus');
+  const otpError = document.getElementById('otpError');
+  const otpGroup = document.getElementById('otpGroup');
+  const otp = [...document.querySelectorAll('.otp input')];
+  const institutions = new Map([
+    ['Jadavpur University', ['jadavpuruniversity.in']],
+    ['University of Calcutta', ['caluniv.ac.in']],
+    ['IIT Kharagpur', ['iitkgp.ac.in']],
+    ['Presidency University', ['presiuniv.ac.in']],
+  ]);
+  const allowedFileTypes = new Set(['image/jpeg', 'image/png', 'application/pdf']);
+  const maxFileSize = 5 * 1024 * 1024;
+
+  const panes = {
+    collect:  { el: form,                                  step: 'details', announce: 'Enter your institution and proof of enrolment.' },
+    code:     { el: document.getElementById('paneCode'),     step: 'details', announce: 'Enter the 6-digit code sent to your institutional email.' },
+    checking: { el: document.getElementById('paneChecking'), step: 'check',   announce: 'Checking your enrolment. Please wait.' },
+    approved: { el: document.getElementById('paneApproved'), step: 'result',  announce: 'Verified. Student Premium is unlocked.' },
+    failed:   { el: document.getElementById('paneFailed'),   step: 'result',  announce: 'We could not verify you automatically.' },
+    pending:  { el: document.getElementById('panePending'),  step: 'result',  announce: 'Sent for manual review. We will email a decision.' },
+    otpExpired: { el: document.getElementById('paneOtpExpired'), step: 'details', announce: 'Your verification code expired. Request a new code.' },
+    alreadyVerified: { el: document.getElementById('paneAlreadyVerified'), step: 'result', announce: 'Already verified. Student Premium is unlocked.' },
+    error:    { el: document.getElementById('paneError'),    step: 'check',   announce: 'Verification service unavailable. Try again.' },
+  };
+  const order = ['details', 'check', 'result'];
+  const stateRank = { collect: 0, otpExpired: 0, code: 1, checking: 2, approved: 3, failed: 3, pending: 3, alreadyVerified: 3, error: 3 };
+  let lastFocused = null;
+  let timer = null;
+  let otpResendTimer = null;
+  let otpResendUntil = 0;
+  let pendingOutcome = 'approved';
+  let otpExpiredForRequest = false;
+  let otpExpiresAt = 0;
+  const resendCooldownMs = 45 * 1000;
+  let currentName = null;
+  let closeHandler = null;
+  let closeTimer = null;
+  const paneMotion = new WeakMap();
+  const animationToggle = document.getElementById('animationToggle');
+
+  function setError(input, error, message) {
+    error.textContent = message;
+    error.hidden = !message;
+    if (message) input.setAttribute('aria-invalid', 'true');
+    else input.removeAttribute('aria-invalid');
+  }
+
+  function resolveInstitution() {
+    const value = college.value.trim().toLowerCase();
+    return [...institutions.entries()].find(([name]) => name.toLowerCase() === value) || null;
+  }
+
+  function validateInstitution() {
+    if (!college.value.trim()) {
+      setError(college, collegeError, '');
+      return null;
+    }
+    const institution = resolveInstitution();
+    setError(college, collegeError, institution ? '' : 'Select an institution from the list.');
+    return institution;
+  }
+
+  function validateEmail(institution) {
+    const value = eduEmail.value.trim();
+    if (!value) {
+      setError(eduEmail, eduEmailError, '');
+      return false;
+    }
+    const at = value.lastIndexOf('@');
+    const domain = at > 0 ? value.slice(at + 1).toLowerCase() : '';
+    const syntaxOk = at > 0 && at < value.length - 1 && !/[\s@]/.test(value);
+    const domainOk = Boolean(institution && domain && institutions.get(institution[0]).some((allowed) =>
+      domain === allowed || domain.endsWith(`.${allowed}`)));
+    if (!syntaxOk) {
+      setError(eduEmail, eduEmailError, 'Enter a valid institutional email address.');
+      return false;
+    }
+    if (!domainOk) {
+      setError(eduEmail, eduEmailError, `Use an address issued by ${institution ? institution[0] : 'your selected institution'}.`);
+      return false;
+    }
+    setError(eduEmail, eduEmailError, '');
+    return true;
+  }
+
+  function validateFile() {
+    const file = idFile.files[0];
+    if (!file) {
+      setError(idFile, fileError, '');
+      return false;
+    }
+    if (!allowedFileTypes.has(file.type)) {
+      setError(idFile, fileError, 'Use a JPEG, PNG, or PDF file.');
+      return false;
+    }
+    if (file.size > maxFileSize) {
+      setError(idFile, fileError, 'File must be no larger than 5 MB.');
+      return false;
+    }
+    setError(idFile, fileError, '');
+    return true;
+  }
+
+  function syncSubmit() {
+    const institution = validateInstitution();
+    const method = form.querySelector('input[name="method"]:checked').value;
+    const proofOk = method === 'email' ? validateEmail(institution) : validateFile();
+    if (method === 'email') setError(idFile, fileError, '');
+    submitBtn.disabled = !(institution && consent.checked && proofOk);
+    return !submitBtn.disabled;
+  }
+
+  function syncOtp() {
+    const code = otp.map((input) => input.value).join('');
+    const complete = /^\d{6}$/.test(code);
+    confirmCode.disabled = !complete;
+    otp.forEach((input) => input.toggleAttribute('aria-invalid', Boolean(code) && !complete));
+    if (complete || !code) {
+      otpError.hidden = true;
+    } else {
+      otpError.textContent = 'Enter all 6 digits before confirming the code.';
+      otpError.hidden = false;
+    }
+    return code;
+  }
+
+  function updateOtpResend() {
+    const remaining = Math.max(0, otpResendUntil - Date.now());
+    const seconds = Math.ceil(remaining / 1000);
+    otpResend.disabled = remaining > 0;
+    otpResendStatus.textContent = remaining
+      ? `Resend available in ${seconds} seconds.`
+      : 'You can request a new code now.';
+    if (!remaining && otpResendTimer) {
+      clearInterval(otpResendTimer);
+      otpResendTimer = null;
+    }
+  }
+
+  function startOtp(fresh = false) {
+    pendingOutcome = fresh && document.getElementById('outcome').value === 'otpExpired'
+      ? 'approved'
+      : document.getElementById('outcome').value;
+    otpExpiredForRequest = !fresh && pendingOutcome === 'otpExpired';
+    otpExpiresAt = Date.now() + 10 * 60 * 1000;
+    otpResendUntil = Date.now() + resendCooldownMs;
+    clearInterval(otpResendTimer);
+    otpResendTimer = window.setInterval(updateOtpResend, 1000);
+    updateOtpResend();
+    otp.forEach((input) => { input.value = ''; input.classList.remove('is-filled'); });
+    syncOtp();
+  }
+
+  function confirmOtp(code) {
+    if (!/^\d{6}$/.test(code)) {
+      syncOtp();
+      otpGroup.classList.remove('is-invalid');
+      void otpGroup.offsetWidth;
+      otpGroup.classList.add('is-invalid');
+      otpError.hidden = false;
+      live.textContent = 'Enter all 6 digits before confirming the code.';
+      return;
+    }
+    if (otpExpiredForRequest || Date.now() >= otpExpiresAt) {
+      show('otpExpired');
+      return;
+    }
+    // Static mock: code is passed as the confirmation request payload.
+    show('checking');
+  }
+
+  function motionEnabled() {
+    return animationToggle.checked && !document.documentElement.classList.contains('reduce-motion') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function motionDuration(token) {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+    const amount = parseFloat(value);
+    if (!Number.isFinite(amount)) return 0;
+    return value.endsWith('s') && !value.endsWith('ms') ? amount * 1000 : amount;
+  }
+
+  function paneMotionState(el) {
+    let state = paneMotion.get(el);
+    if (!state) {
+      state = { enterHandler: null, enterTimer: null, exitHandler: null, exitTimer: null };
+      paneMotion.set(el, state);
+    }
+    return state;
+  }
+
+  function clearPaneEnter(el) {
+    const state = paneMotionState(el);
+    if (state.enterTimer) window.clearTimeout(state.enterTimer);
+    state.enterTimer = null;
+    if (state.enterHandler) {
+      el.removeEventListener('animationend', state.enterHandler);
+      el.removeEventListener('animationcancel', state.enterHandler);
+    }
+    state.enterHandler = null;
+    el.classList.remove('is-entering-forward', 'is-entering-backward');
+  }
+
+  function clearPaneExit(el) {
+    const state = paneMotionState(el);
+    if (state.exitTimer) window.clearTimeout(state.exitTimer);
+    state.exitTimer = null;
+    if (state.exitHandler) {
+      el.removeEventListener('animationend', state.exitHandler);
+      el.removeEventListener('animationcancel', state.exitHandler);
+    }
+    state.exitHandler = null;
+    el.classList.remove('is-exiting-forward', 'is-exiting-backward');
+  }
+
+  function finishPaneExit(el) {
+    clearPaneExit(el);
+    el.hidden = true;
+    el.inert = true;
+    el.setAttribute('aria-hidden', 'true');
+  }
+
+  function animatePaneExit(el, direction) {
+    clearPaneEnter(el);
+    clearPaneExit(el);
+    void el.offsetWidth;
+    const state = paneMotionState(el);
+    const exitClass = `is-exiting-${direction}`;
+    el.inert = true;
+    el.setAttribute('aria-hidden', 'true');
+    el.classList.add(exitClass);
+    if (!motionEnabled()) { finishPaneExit(el); return; }
+    let settled = false;
+    const finish = (event) => {
+      if (settled || (event && event.target !== el)) return;
+      settled = true;
+      finishPaneExit(el);
+    };
+    state.exitHandler = finish;
+    el.addEventListener('animationend', finish);
+    el.addEventListener('animationcancel', finish);
+    state.exitTimer = window.setTimeout(finish, motionDuration('--dur-base') + motionDuration('--motion-grace'));
+  }
+
+  function animatePaneEnter(el, direction) {
+    clearPaneEnter(el);
+    clearPaneExit(el);
+    if (!motionEnabled()) return;
+    void el.offsetWidth;
+    const state = paneMotionState(el);
+    const enterClass = `is-entering-${direction}`;
+    el.classList.add(enterClass);
+    let settled = false;
+    const finish = (event) => {
+      if (settled || (event && event.target !== el)) return;
+      settled = true;
+      clearPaneEnter(el);
+    };
+    state.enterHandler = finish;
+    el.addEventListener('animationend', finish);
+    el.addEventListener('animationcancel', finish);
+    state.enterTimer = window.setTimeout(finish, motionDuration('--dur-base') + motionDuration('--motion-grace'));
+  }
+
+  function show(name, requestedDirection) {
+    clearTimeout(timer);
+    const next = panes[name];
+    if (!next) return;
+    const previous = currentName && panes[currentName];
+    const direction = requestedDirection || (previous && stateRank[name] < stateRank[currentName] ? 'backward' : 'forward');
+    if (previous && previous.el !== next.el && !previous.el.hidden) {
+      const active = document.activeElement;
+      if (previous.el.contains(active)) title.focus({ preventScroll: true });
+      animatePaneExit(previous.el, direction);
+    }
+    clearPaneEnter(next.el);
+    clearPaneExit(next.el);
+
+    Object.entries(panes).forEach(([key, pane]) => {
+      if (key === name) return;
+      if (pane !== previous || pane.el.hidden) {
+        clearPaneEnter(pane.el);
+        clearPaneExit(pane.el);
+        pane.el.hidden = true;
+        pane.el.inert = true;
+        pane.el.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    next.el.hidden = false;
+    next.el.inert = false;
+    next.el.setAttribute('aria-hidden', 'false');
+    animatePaneEnter(next.el, direction);
+    currentName = name;
+    if (name === 'code' || name === 'collect') {
+      const focusTarget = name === 'code' ? otp[0] : college;
+      window.requestAnimationFrame(() => focusTarget.focus({ preventScroll: true }));
+    }
+
+    const current = next.step;
+    const idx = order.indexOf(current);
+    stepper.querySelectorAll('li').forEach((li) => {
+      const at = order.indexOf(li.dataset.step);
+      if (at === idx) li.setAttribute('aria-current', 'step');
+      else li.removeAttribute('aria-current');
+      li.dataset.done = at < idx ? 'true' : 'false';
+    });
+
+    dialog.setAttribute('aria-busy', name === 'checking' ? 'true' : 'false');
+    live.textContent = next.announce;
+    if (name === 'checking') timer = window.setTimeout(() => show(pendingOutcome, 'forward'), motionDuration('--dur-loop'));
+  }
+
+  function finishClose() {
+    if (closeTimer) window.clearTimeout(closeTimer);
+    closeTimer = null;
+    if (closeHandler) {
+      scrim.removeEventListener('animationend', closeHandler);
+      scrim.removeEventListener('animationcancel', closeHandler);
+      closeHandler = null;
+    }
+    scrim.classList.remove('is-open', 'is-closing');
+    Object.values(panes).forEach(({ el }) => {
+      clearPaneEnter(el);
+      clearPaneExit(el);
+    });
+    scrim.hidden = true;
+    clearInterval(otpResendTimer);
+    otpResendTimer = null;
+    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+  }
+
+  function open(state = 'collect') {
+    lastFocused = document.activeElement;
+    scrim.hidden = false;
+    scrim.inert = false;
+    scrim.setAttribute('aria-hidden', 'false');
+    dialog.inert = false;
+    dialog.setAttribute('aria-hidden', 'false');
+    scrim.classList.remove('is-closing');
+    scrim.classList.add('is-open');
+    show(state, 'forward');
+    window.requestAnimationFrame(() => title.focus({ preventScroll: true }));
+  }
+
+  function close() {
+    if (scrim.hidden || scrim.classList.contains('is-closing')) return;
+    clearTimeout(timer);
+    clearInterval(otpResendTimer);
+    otpResendTimer = null;
+    const returnTarget = lastFocused?.isConnected ? lastFocused : document.getElementById('openCta');
+    returnTarget?.focus({ preventScroll: true });
+    scrim.inert = true;
+    scrim.setAttribute('aria-hidden', 'true');
+    dialog.inert = true;
+    dialog.setAttribute('aria-hidden', 'true');
+    scrim.classList.remove('is-open');
+    scrim.classList.add('is-closing');
+    if (!motionEnabled()) { finishClose(); return; }
+    closeHandler = (event) => { if (event.target === scrim) finishClose(); };
+    scrim.addEventListener('animationend', closeHandler);
+    scrim.addEventListener('animationcancel', closeHandler);
+    closeTimer = window.setTimeout(finishClose, motionDuration('--dur-base') + motionDuration('--motion-grace'));
+  }
+
+  function setProofVisibility() {
+    const email = form.querySelector('input[name="method"]:checked').value === 'email';
+    const emailField = document.getElementById('emailField');
+    const docField = document.getElementById('docField');
+    emailField.classList.toggle('is-collapsed', !email);
+    docField.classList.toggle('is-collapsed', email);
+    emailField.setAttribute('aria-hidden', String(!email));
+    docField.setAttribute('aria-hidden', String(email));
+    emailField.inert = !email;
+    docField.inert = email;
+  }
+
+  document.getElementById('openCta').addEventListener('click', () => open('collect'));
+  document.getElementById('closeBtn').addEventListener('click', close);
+  scrim.addEventListener('click', (e) => { if (e.target === scrim) close(); });
+  document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+
+  document.getElementById('chooseFile').addEventListener('click', () => idFile.click());
+
+  document.querySelectorAll('[data-goto]').forEach((b) => {
+    b.addEventListener('click', () => {
+      if (b.dataset.goto === 'code') startOtp(true);
+      if (scrim.hidden) open(b.dataset.goto);
+      else show(b.dataset.goto);
+    });
+  });
+
+  form.addEventListener('input', syncSubmit);
+  form.addEventListener('change', () => {
+    const method = form.querySelector('input[name="method"]:checked').value;
+    setProofVisibility();
+    if (method === 'email') setError(idFile, fileError, '');
+    else setError(eduEmail, eduEmailError, '');
+    syncSubmit();
+  });
+  idFile.addEventListener('change', syncSubmit);
+  const dropzone = document.getElementById('dropzone');
+  ['dragenter', 'dragover'].forEach((eventName) => dropzone.addEventListener(eventName, (event) => {
+    event.preventDefault();
+    dropzone.classList.add('is-dragover');
+  }));
+  dropzone.addEventListener('dragleave', (event) => {
+    event.preventDefault();
+    dropzone.classList.remove('is-dragover');
+  });
+  dropzone.addEventListener('drop', (event) => {
+    event.preventDefault();
+    dropzone.classList.remove('is-dragover');
+    const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+    if (!file) return;
+    if (typeof DataTransfer !== 'function') {
+      live.textContent = 'Use the Choose a student ID button to select your document.';
+      return;
+    }
+    try {
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      idFile.files = transfer.files;
+    } catch {
+      live.textContent = 'Use the Choose a student ID button to select your document.';
+      return;
+    }
+    syncSubmit();
+    live.textContent = fileError.hidden
+      ? 'Document selected. Review the file details, then continue.'
+      : fileError.textContent;
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const institution = validateInstitution();
+    if (!syncSubmit()) {
+      live.textContent = 'Please correct the highlighted verification fields before continuing.';
+      return;
+    }
+    document.getElementById('checkingCollege').textContent = institution[0];
+    const method = form.querySelector('input[name="method"]:checked').value;
+    pendingOutcome = document.getElementById('outcome').value;
+    if (method === 'email') {
+      document.getElementById('codeTarget').textContent = eduEmail.value.trim();
+      startOtp();
+      show('code');
+    } else {
+      show('checking');
+    }
+  });
+
+  confirmCode.addEventListener('click', () => confirmOtp(otp.map((input) => input.value).join('')));
+  otpResend.addEventListener('click', () => {
+    if (otpResend.disabled) return;
+    startOtp(true);
+    if (currentName !== 'code') show('code', 'backward');
+    live.textContent = 'A new verification code was sent. Enter the 6-digit code.';
+  });
+  document.getElementById('escalate').addEventListener('click', () => show('pending'));
+
+  // Focus trap + Esc.
+  document.addEventListener('keydown', (e) => {
+    if (scrim.hidden) return;
+    if (e.key === 'Escape') { close(); return; }
+    if (e.key !== 'Tab') return;
+    const nodes = [...dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+      .filter((n) => !n.disabled && !n.inert && !n.closest('[inert]') && n.offsetParent !== null);
+    if (!nodes.length) return;
+    const first = nodes[0], last = nodes[nodes.length - 1];
+    const active = document.activeElement;
+    const outsideDialog = !dialog.contains(active);
+    if (e.shiftKey && (active === title || active === first || outsideDialog)) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (active === last || outsideDialog)) { e.preventDefault(); first.focus(); }
+  });
+
+  // OTP auto-advance.
+  otp.forEach((input, i) => {
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/\D/g, '').slice(0, 1);
+      input.classList.toggle('is-filled', Boolean(input.value));
+      syncOtp();
+      if (input.value && i < otp.length - 1) otp[i + 1].focus();
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && i > 0) otp[i - 1].focus();
+    });
+  });
+
+  const toggle = document.getElementById('themeToggle');
+  toggle.addEventListener('click', () => {
+    const dark = document.documentElement.classList.toggle('app-dark');
+    toggle.setAttribute('aria-pressed', String(dark));
+    toggle.textContent = dark ? 'Dark theme' : 'Light theme';
+  });
+  animationToggle.addEventListener('change', () => {
+    document.documentElement.classList.toggle('reduce-motion', !animationToggle.checked);
+    if (!animationToggle.checked) {
+      Object.values(panes).forEach(({ el }) => {
+        clearPaneEnter(el);
+        if (el.classList.contains('is-exiting-forward') || el.classList.contains('is-exiting-backward')) finishPaneExit(el);
+        else clearPaneExit(el);
+      });
+      if (scrim.classList.contains('is-closing')) finishClose();
+    }
+  });
+
+  setProofVisibility();
+  syncSubmit();
+  syncOtp();
+  window.requestAnimationFrame(() => document.documentElement.classList.add('theme-ready'));
+})();
+</script>
+</body>
+</html>
