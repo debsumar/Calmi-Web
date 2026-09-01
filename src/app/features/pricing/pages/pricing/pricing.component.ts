@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { PrimaryButtonComponent } from '@/shared/components/primary-button/primary-button.component';
 import { OnboardingService } from '@/features/onboarding/services/onboarding.service';
+import { StudentVerificationDialogComponent } from '@/features/student-verification/components/student-verification-dialog/student-verification-dialog.component';
+import { StudentVerificationService } from '@/features/student-verification/services/student-verification.service';
+import { StudentVerificationResult } from '@/features/student-verification/models/student-verification.model';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 
 type PlanEmphasis = 'none' | 'recommended' | 'popular';
@@ -36,14 +46,24 @@ type DisplayedPricingPlan = PricingPlan & BillingPrice & {
 
 @Component({
   selector: 'app-pricing',
-  imports: [LucideDynamicIcon, PrimaryButtonComponent, AnimateOnScrollDirective],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [
+    LucideDynamicIcon,
+    PrimaryButtonComponent,
+    AnimateOnScrollDirective,
+    StudentVerificationDialogComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './pricing.component.html',
 })
 export class PricingComponent {
   onboardingService = inject(OnboardingService);
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly studentVerificationService = inject(StudentVerificationService);
 
   readonly billingPeriod = signal<BillingPeriod>('monthly');
+  readonly studentVerificationDialogOpen = signal(false);
+  readonly studentPlanVerified = computed(() => this.studentVerificationService.canUseStudentPlan());
+  private studentVerificationTrigger: HTMLButtonElement | null = null;
 
   readonly plans: readonly PricingPlan[] = [
     {
@@ -60,7 +80,7 @@ export class PricingComponent {
         'Limited Rumi AI Conversations'
       ],
       buttonText: 'Get Started',
-      buttonVariant: 'outline',
+      buttonVariant: 'solid',
       emphasis: 'none',
       action: 'start'
     },
@@ -80,7 +100,7 @@ export class PricingComponent {
         'Notice Your Patterns.'
       ],
       buttonText: 'Verify Student Status',
-      buttonVariant: 'outline',
+      buttonVariant: 'solid',
       emphasis: 'recommended',
       badgeIcon: 'graduation-cap',
       badgeLabel: 'Student Plan',
@@ -147,6 +167,24 @@ export class PricingComponent {
   }
 
   startStudentVerification(): void {
-    this.onboardingService.start({ studentVerification: true });
+    this.studentVerificationTrigger = (this.host.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      'app-primary-button[aria-haspopup="dialog"] button',
+    );
+    this.studentVerificationDialogOpen.set(true);
+  }
+
+  onStudentVerificationClosed(): void {
+    this.studentVerificationDialogOpen.set(false);
+    this.restoreStudentVerificationFocus();
+  }
+
+  onStudentVerificationVerified(_result: StudentVerificationResult): void {
+    // Service signal owns entitlement state; keep dialog open so its success panel remains available.
+    this.studentVerificationDialogOpen.set(true);
+  }
+
+  private restoreStudentVerificationFocus(): void {
+    this.studentVerificationTrigger?.focus();
+    this.studentVerificationTrigger = null;
   }
 }

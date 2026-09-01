@@ -36,7 +36,8 @@
     --calmi-on-coral: white;
     --calmi-success: var(--p-success-700);
     --calmi-danger: var(--p-danger-700);
-    --calmi-on-brand: white;
+    /* Dark ink keeps normal CTA labels contrast-safe on the lavender brand fill. */
+    --calmi-on-brand: color-mix(in srgb, var(--color-brand) 12%, black);
     /* Text roles are near-neutral on purpose: content reads as ink, not brand.
        The small brand percentage keeps them seed-tracking without tinting copy
        lavender. Retune the percentage, never swap in a literal gray. */
@@ -76,6 +77,7 @@
     --calmi-shadow-aurora: 0 12px 34px color-mix(in srgb, var(--color-brand) 42%, transparent);
     --calmi-success: var(--p-success-300);
     --calmi-danger: var(--p-danger-300);
+    --calmi-on-brand: color-mix(in srgb, var(--color-brand) 12%, black);
     --calmi-ink: color-mix(in srgb, var(--color-brand) 6%, white);
     --calmi-ink-soft: color-mix(in srgb, var(--color-brand) 18%, white);
     --calmi-ink-muted: color-mix(in srgb, var(--color-brand) 34%, white);
@@ -167,3 +169,68 @@
   --breakpoint-2xl: 1920px;
 }
 
+
+
+/* Shared verification and app motion contract. Components consume these tokens;
+   keyframes stay global so motion can be cancelled consistently across panes. */
+@layer base {
+  :root {
+    --dur-instant: 0ms;
+    --dur-fast: 180ms;
+    --dur-base: 320ms;
+    --dur-slow: 620ms;
+    --dur-loop: 1800ms;
+    --motion-grace: 40ms;
+    --stagger-step: 80ms;
+    --ease-out: cubic-bezier(.25, .8, .25, 1);
+    --ease-spring: cubic-bezier(.17, 1.4, .3, 1);
+    --ease-standard: ease;
+  }
+}
+
+@keyframes gentleUp { from { opacity: 0; transform: translateY(.9rem); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ribbonPulse { from { transform: scale(1); } to { transform: scale(1.035); } }
+@keyframes softSpring { 0% { opacity: 0; transform: scale(.92) translateY(.6rem); } 72% { opacity: 1; transform: scale(1.02) translateY(-.1rem); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes scrimFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scrimFadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes dialogOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(.5rem) scale(.97); } }
+@keyframes paneForward { from { opacity: 0; transform: translateX(1.25rem); } to { opacity: 1; transform: translateX(0); } }
+@keyframes paneBackward { from { opacity: 0; transform: translateX(-1.25rem); } to { opacity: 1; transform: translateX(0); } }
+@keyframes paneExitForward { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-1rem); } }
+@keyframes paneExitBackward { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(1rem); } }
+@keyframes connectorFill { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+@keyframes stepCurrent { from { transform: scale(.98); } to { transform: scale(1); } }
+@keyframes dropzonePulse { from { opacity: .96; transform: scale(1); } to { opacity: 1; transform: scale(1.005); } }
+@keyframes errorIn { from { opacity: 0; transform: translateX(-.5rem); } 60% { opacity: 1; transform: translateX(.12rem); } to { opacity: 1; transform: translateX(0); } }
+@keyframes otpPop { 0% { transform: scale(.9); } 70% { transform: scale(1.08); } to { transform: scale(1); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-.35rem); } 75% { transform: translateX(.35rem); } }
+@keyframes breathe { 0%, 100% { transform: scale(1); opacity: .72; } 50% { transform: scale(1.08); opacity: 1; } }
+@keyframes successPop { from { opacity: 0; transform: scale(.7); } 70% { opacity: 1; transform: scale(1.08); } to { opacity: 1; transform: scale(1); } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes clockTick { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(8deg); } }
+@keyframes strikeDraw { to { transform: scaleX(1); } }
+@keyframes alertIn { from { opacity: 0; transform: translateY(-.5rem); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: var(--dur-instant) !important;
+    scroll-behavior: auto !important;
+  }
+  .progress > i { width: 100%; transform: none; }
+  .scrim, .scrim.is-open, .scrim.is-closing,
+  .verification-scrim, .verification-scrim--open, .verification-scrim--closing { opacity: 1; }
+  .dialog, .pane, .panel.plan,
+  .verification-dialog, .verification-pane { opacity: 1; transform: none; }
+  .checking-indicator { opacity: 1; transform: none; }
+  .strike::after { transform: scaleX(1); }
+}
+
+:root.reduce-motion *,
+:root.reduce-motion *::before,
+:root.reduce-motion *::after {
+  animation: none !important;
+  transition-duration: var(--dur-instant) !important;
+  scroll-behavior: auto !important;
+}

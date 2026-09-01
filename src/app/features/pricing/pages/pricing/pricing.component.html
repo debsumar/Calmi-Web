@@ -103,17 +103,24 @@
             </ul>
 
             <div class="mt-auto pt-4">
-              <!-- CTAs disabled until checkout/onboarding flow ships. -->
               <app-primary-button
                 class="w-full block"
-                title="Coming soon"
-                [disabled]="true"
+                [attr.title]="plan.action === 'verifyStudent' ? null : 'Coming soon'"
+                [attr.aria-haspopup]="plan.action === 'verifyStudent' ? 'dialog' : null"
+                [disabled]="plan.action !== 'verifyStudent'"
                 [fullWidth]="true"
+                [icon]="'arrow-right'"
                 (clicked)="onPlanAction(plan)"
-                [label]="plan.buttonText" 
+                [label]="plan.action === 'verifyStudent' && studentPlanVerified() ? 'Student Premium Unlocked' : plan.buttonText"
                 [variant]="plan.buttonVariant">
               </app-primary-button>
-              <p class="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">Coming soon</p>
+              @if (plan.action === 'verifyStudent') {
+                <p class="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+                  {{ studentPlanVerified() ? 'Verified — Student Premium is unlocked.' : 'Verify your student status to unlock this plan.' }}
+                </p>
+              } @else {
+                <p class="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">Coming soon</p>
+              }
             </div>
           </div>
         </div>
@@ -122,3 +129,9 @@
   </section>
 
 </div>
+
+<app-student-verification-dialog
+  [open]="studentVerificationDialogOpen()"
+  (closed)="onStudentVerificationClosed()"
+  (verified)="onStudentVerificationVerified($event)">
+</app-student-verification-dialog>

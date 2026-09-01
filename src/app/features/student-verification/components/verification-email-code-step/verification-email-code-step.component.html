@@ -1,0 +1,32 @@
+<section class="code-pane" aria-labelledby="verification-code-heading">
+  <p class="lead" id="verification-code-heading">Enter the 6-digit code we sent to <strong>{{ email() }}</strong>.</p>
+  <div class="field">
+    <span class="sr-only" id="verification-otp-label">Verification code, 6 digits</span>
+    <div class="otp" [class.is-invalid]="invalid()" role="group" aria-labelledby="verification-otp-label" aria-describedby="verification-otp-error verification-otp-hint" (paste)="onPaste($event)">
+      @for (digit of digits(); track $index; let index = $index) {
+        <input
+          #otpInput
+          class="otp-input"
+          type="text"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="1"
+          [value]="valueAt(index)"
+          [attr.aria-label]="'Digit ' + (index + 1) + ' of 6'"
+          [attr.aria-invalid]="invalid()"
+          (input)="onInput($event, index)"
+          (keydown)="onKeydown($event, index)"
+          [class.is-filled]="valueAt(index)" />
+      }
+    </div>
+    @if (invalid()) {
+      <p class="error" id="verification-otp-error" role="alert">Enter all 6 digits before confirming the code.</p>
+    }
+    <p class="hint" id="verification-otp-hint">Code expires in 10 minutes. {{ resendCopy() }}</p>
+  </div>
+  <div class="actions">
+    <button class="button button-primary" type="button" [disabled]="!complete()" (click)="confirm()">Confirm code</button>
+    <button class="button button-outline" type="button" [disabled]="!canResend()" aria-describedby="verification-otp-hint" (click)="requestResend()">Request a new code</button>
+    <button class="button button-quiet" type="button" (click)="changeEmail.emit()">Change email</button>
+  </div>
+</section>

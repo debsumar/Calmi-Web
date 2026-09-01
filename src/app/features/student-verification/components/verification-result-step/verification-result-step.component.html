@@ -1,0 +1,75 @@
+@switch (status()) {
+  @case ('approved') {
+    <section class="result" aria-labelledby="verification-approved-heading">
+      <span class="result-icon approved" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m4 12 5 5L20 6" /></svg></span>
+      <h3 id="verification-approved-heading">You're verified</h3>
+      <p>Student Premium is unlocked on this account.</p>
+      @if (approvedResult(); as approval) {
+        <div class="receipt" aria-label="Verification receipt">
+          <div class="receipt-row"><span>Institution</span><strong>Institutional enrolment</strong></div>
+          <div class="receipt-row"><span>Plan</span><strong>Student Premium</strong></div>
+          <div class="receipt-row"><span>Price</span><strong><span class="strike">₹249</span> ₹99 / month</strong></div>
+          <div class="receipt-row"><span>Valid until</span><strong><time [attr.datetime]="approval.verifiedUntil">{{ formatDate(approval.verifiedUntil) }}</time></strong></div>
+        </div>
+      }
+      <div class="actions"><button class="button button-primary" type="button" (click)="continued.emit()">Continue to checkout</button></div>
+    </section>
+  }
+  @case ('alreadyVerified') {
+    <section class="result" aria-labelledby="verification-already-heading">
+      <span class="result-icon approved" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m4 12 5 5L20 6" /></svg></span>
+      <h3 id="verification-already-heading">You are already verified</h3>
+      <p>Your existing Student Premium verification is still valid.</p>
+      @if (approvedResult(); as approval) {
+        <div class="receipt" aria-label="Existing verification receipt">
+          <div class="receipt-row"><span>Plan</span><strong>Student Premium</strong></div>
+          <div class="receipt-row"><span>Valid until</span><strong><time [attr.datetime]="approval.verifiedUntil">{{ formatDate(approval.verifiedUntil) }}</time></strong></div>
+        </div>
+      }
+      <div class="actions"><button class="button button-primary" type="button" (click)="continued.emit()">Continue to checkout</button></div>
+    </section>
+  }
+  @case ('failed') {
+    <section class="result" aria-labelledby="verification-failed-heading">
+      <span class="result-icon failed" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12" /></svg></span>
+      <h3 id="verification-failed-heading">We couldn't verify you automatically</h3>
+      <p>{{ reasonCopy() }}</p>
+      <div class="actions"><button class="button button-outline" type="button" (click)="changeMethod.emit()">Try another method</button><button class="button button-primary" type="button" (click)="escalate.emit()">Request manual review</button></div>
+      <p class="hint">Manual review is handled by a person and takes 1–2 business days.</p>
+    </section>
+  }
+  @case ('otpExpired') {
+    <section class="result" aria-labelledby="verification-expired-heading">
+      <span class="result-icon failed" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg></span>
+      <h3 id="verification-expired-heading">That code has expired</h3>
+      <p>Request a new code, then enter it within 10 minutes.</p>
+      <div class="actions"><button class="button button-primary" type="button" (click)="requestNewCode.emit()">Request a new code</button><button class="button button-quiet" type="button" (click)="changeMethod.emit()">Change email</button></div>
+    </section>
+  }
+  @case ('error') {
+    <section class="result" aria-labelledby="verification-error-heading">
+      <span class="result-icon failed" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01" /><path d="m10.3 3.9-8.5 14.1a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /></svg></span>
+      <h3 id="verification-error-heading">Verification service unavailable</h3>
+      <p>We could not reach the verification service. Your details remain on this screen.</p>
+      <div class="actions"><button class="button button-primary" type="button" (click)="retry.emit()">Try again</button></div>
+    </section>
+  }
+  @case ('manualPending') {
+    <section class="result" aria-labelledby="verification-pending-heading">
+      <span class="result-icon pending" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg></span>
+      <h3 id="verification-pending-heading">Sent for manual review</h3>
+      <p>A support reviewer will check your documents and email you a decision.</p>
+      @if (manualReview(); as review) {
+        <div class="receipt" aria-label="Manual review receipt">
+          <div class="receipt-row"><span>Reference</span><strong>{{ review.supportTicketRef }}</strong></div>
+          <div class="receipt-row"><span>Submitted</span><strong><time [attr.datetime]="review.submittedAt">{{ formatDate(review.submittedAt, true) }}</time></strong></div>
+          <div class="receipt-row"><span>Expected by</span><strong><time [attr.datetime]="review.expectedBy">{{ formatDate(review.expectedBy) }}</time></strong></div>
+        </div>
+      }
+      <div class="actions"><button class="button button-primary" type="button" (click)="continued.emit()">Done</button></div>
+    </section>
+  }
+  @default {
+    <section class="result"><h3>Verification result</h3><p>Your verification details are ready for the next step.</p></section>
+  }
+}
