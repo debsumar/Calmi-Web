@@ -1,9 +1,11 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { Component } from '@angular/core';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { provideLucideIcons, LucideMoon, LucideSun, LucideUser, LucideMenu, LucideX, LucideLogOut } from '@lucide/angular';
 import { AuthService } from '../../core/services/auth.service';
+import { provideAuthServiceStub } from '../../core/services/testing/auth.service.stub';
 import { AppTopbar } from './app.topbar';
 
 @Component({ template: '' })
@@ -35,6 +37,7 @@ describe('AppTopbar', () => {
     await TestBed.configureTestingModule({
       imports: [AppTopbar],
       providers: [
+        provideAuthServiceStub(),
         provideRouter([
           { path: 'home', component: BlankComponent },
           { path: 'pricing', component: BlankComponent },

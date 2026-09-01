@@ -65,6 +65,7 @@ export class AuthService {
    * One shared restore operation prevents concurrent guards racing Supabase.
    * getSession() awaits Supabase auth initialization, including OAuth URL-fragment processing,
    * before this promise applies the resulting session to guard-visible signals.
+   * Failed restores clear the shared promise so later callers can retry transient provider errors.
    */
   restoreSession(): Promise<void> {
     if (!this.restorePromise) {
@@ -73,6 +74,7 @@ export class AuthService {
         .catch(() => {
           // Fail closed. Provider errors must never leave a stale authenticated state.
           this.applySession(null);
+          this.restorePromise = null;
         });
     }
     return this.restorePromise;

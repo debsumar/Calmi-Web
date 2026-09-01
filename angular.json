@@ -71,6 +71,8 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "watch": false,
+            "isolate": true,
+            "runnerConfig": "vitest.config.ts",
             "setupFiles": ["src/test-setup.ts"]
           }
         }
