@@ -2,6 +2,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { STUDENT_VERIFICATION_INSTITUTIONS } from '../../services/student-verification.fixtures';
+import { StudentVerificationService } from '../../services/student-verification.service';
 import { VerificationMethodStepComponent } from './verification-method-step.component';
 
 function mockObjectUrls() {
@@ -34,6 +35,21 @@ describe('VerificationMethodStepComponent', () => {
     expect(root.querySelector('button[type="submit"]')?.hasAttribute('disabled')).toBe(true);
   });
 
+  it('starts the institution directory load once without blocking focus', () => {
+    const service = TestBed.inject(StudentVerificationService);
+    const load = vi.spyOn(service, 'loadInstitutionDirectory').mockResolvedValue(undefined);
+    const combobox = fixture.nativeElement.querySelector('#verification-institution') as HTMLInputElement;
+
+    combobox.focus();
+    combobox.dispatchEvent(new Event('focus', { bubbles: true }));
+    combobox.dispatchEvent(new Event('focus', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(combobox.getAttribute('aria-expanded')).toBe('true');
+    load.mockRestore();
+  });
+
   it('filters institutions and exposes their allowed domain as secondary text', () => {
     const root = fixture.nativeElement as HTMLElement;
     const combobox = root.querySelector('#verification-institution') as HTMLInputElement;
@@ -46,6 +62,20 @@ describe('VerificationMethodStepComponent', () => {
     expect(options).toHaveLength(1);
     expect(options[0].textContent).toContain('IIT Kharagpur');
     expect(options[0].querySelector('.institution-domain')?.textContent).toContain('iitkgp.ac.in');
+    expect(options[0].querySelector('.institution-domain')?.textContent).not.toBe('');
+  });
+
+  it('labels domainless institutions as requiring student ID upload', () => {
+    const domainless = { id: 'ror-only-university', name: 'ROR Only University', domains: [] as const };
+    fixture.componentRef.setInput('institutions', [...STUDENT_VERIFICATION_INSTITUTIONS, domainless]);
+    fixture.detectChanges();
+    const combobox = fixture.nativeElement.querySelector('#verification-institution') as HTMLInputElement;
+    combobox.value = 'ROR Only';
+    combobox.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    const option = fixture.nativeElement.querySelector('[role="option"]') as HTMLElement;
+    expect(option.querySelector('.institution-domain')?.textContent).toBe('Student ID upload required');
   });
 
   it('selects an institution with Home and Enter keyboard navigation', () => {
@@ -142,6 +172,53 @@ describe('VerificationMethodStepComponent', () => {
     expect(component.form.invalid).toBe(true);
     expect(fixture.nativeElement.querySelector('#verification-institution-error')?.textContent).toContain('Select an institution');
     expect(fixture.nativeElement.querySelector('#verification-institution')?.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('disables email proof and announces document upload for a domainless institution', () => {
+    const domainless = { id: 'ror-only-university', name: 'ROR Only University', domains: [] as const };
+    fixture.componentRef.setInput('institutions', [...STUDENT_VERIFICATION_INSTITUTIONS, domainless]);
+    fixture.detectChanges();
+
+    fixture.componentInstance.selectInstitution(domainless);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const emailRadio = root.querySelector('input[value="email"]') as HTMLInputElement;
+    const documentRadio = root.querySelector('input[value="document"]') as HTMLInputElement;
+    const hint = root.querySelector('#verification-email-method-hint') as HTMLElement;
+    expect(emailRadio.disabled).toBe(true);
+    expect(documentRadio.disabled).toBe(false);
+    expect(emailRadio.getAttribute('aria-describedby')).toBe('verification-email-method-hint');
+    expect(hint.textContent).toContain('no published email domain');
+    expect(hint.getAttribute('role')).toBe('status');
+    expect(hint.getAttribute('aria-live')).toBe('polite');
+  });
+
+  it('keeps email proof available for a domain-bearing institution', () => {
+    fixture.componentInstance.selectInstitution(STUDENT_VERIFICATION_INSTITUTIONS[0]);
+    fixture.detectChanges();
+
+    const emailRadio = fixture.nativeElement.querySelector('input[value="email"]') as HTMLInputElement;
+    expect(emailRadio.disabled).toBe(false);
+    expect(emailRadio.getAttribute('aria-describedby')).toBeNull();
+    expect(fixture.nativeElement.querySelector('#verification-email-method-hint')).toBeNull();
+  });
+
+  it('explains why email proof is unavailable for a domainless institution', () => {
+    const domainless = { id: 'ror-only-university', name: 'ROR Only University', domains: [] as const };
+    fixture.componentRef.setInput('institutions', [...STUDENT_VERIFICATION_INSTITUTIONS, domainless]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    component.form.controls.institutionName.setValue('ROR Only University');
+    component.form.controls.institutionalEmail.setValue('student@ror-only.example');
+    component.form.controls.consentAccepted.setValue(true);
+    component.submitForm();
+    fixture.detectChanges();
+
+    expect(component.form.invalid).toBe(true);
+    expect(fixture.nativeElement.querySelector('#verification-email-error')?.textContent)
+      .toContain('This institution has no published email domain');
   });
 
   it('emits frozen request only for an allowed institutional domain', () => {

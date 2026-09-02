@@ -74,7 +74,8 @@ describe('VerificationEmailCodeStepComponent', () => {
 
     expect(fixture.componentInstance.code()).toBe('123456');
     expect(fixture.componentInstance.invalid()).toBe(true);
-    expect(Array.from(fixture.nativeElement.querySelectorAll<HTMLInputElement>('.otp-input')).map((input) => input.value))
+    const host = fixture.nativeElement as HTMLElement;
+    expect(Array.from(host.querySelectorAll<HTMLInputElement>('.otp-input')).map((input) => input.value))
       .toEqual(['1', '2', '3', '4', '5', '6']);
   });
 });

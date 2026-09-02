@@ -14,6 +14,11 @@ import { defineConfig } from 'vitest/config';
  *   `[vitest-pool]: Timeout starting forks runner`, so use the threads pool instead:
  *   same isolation guarantee, much cheaper start-up. Worker count is capped because
  *   booting Angular + jsdom in every worker at once also times out pool start-up.
+ * - A worker cannot exit while a timer is still pending, and this app schedules long
+ *   ones (`OTP_TTL_SECONDS` is 10 minutes). `teardownTimeout` bounds shutdown so a
+ *   straggler surfaces as an error instead of an apparent freeze; `src/test-setup.ts`
+ *   also clears leaked handles after every test. Prefer `npm run test:safe`, which
+ *   kills the process tree if the run still refuses to exit.
  */
 export default defineConfig({
   test: {
@@ -21,5 +26,6 @@ export default defineConfig({
     isolate: true,
     maxWorkers: 4,
     minWorkers: 1,
+    teardownTimeout: 5_000,
   },
 });

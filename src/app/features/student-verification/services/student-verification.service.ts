@@ -17,6 +17,7 @@ import {
   VerificationMethodDraft,
   VerificationOtpDraft,
 } from '../models/student-verification.model';
+import { INSTITUTION_DIRECTORY_LOADER } from './institution-directory.loader';
 import {
   FIXTURE_CHECK_DELAY_MS,
   OTP_TTL_SECONDS,
@@ -24,6 +25,23 @@ import {
   STUDENT_VERIFICATION_INSTITUTIONS,
   createFixtureResult,
 } from './student-verification.fixtures';
+
+// Maintained India PSL policy for the offline directory. One-label public
+// suffixes are rejected by the dot guard below; these are the multi-label
+// effective suffixes that must never become institution-owned domains.
+const INDIA_PUBLIC_SUFFIXES = new Set([
+  'ac.in',
+  'co.in',
+  'ernet.in',
+  'firm.in',
+  'gen.in',
+  'gov.in',
+  'ind.in',
+  'mil.in',
+  'net.in',
+  'org.in',
+  'res.in',
+]);
 
 interface VerificationHistorySnapshot {
   status: VerificationStatus;
@@ -44,6 +62,7 @@ interface VerificationHistorySnapshot {
 @Injectable({ providedIn: 'root' })
 export class StudentVerificationService {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly institutionDirectoryLoader = inject(INSTITUTION_DIRECTORY_LOADER);
 
   private readonly _status = signal<VerificationStatus>('idle');
   private readonly _result = signal<StudentVerificationResult | null>(null);
@@ -51,10 +70,15 @@ export class StudentVerificationService {
   private readonly _resendIn = signal(0);
   private readonly _otpTarget = signal('');
   private readonly _institutions = signal<readonly Institution[]>(STUDENT_VERIFICATION_INSTITUTIONS);
+  private readonly _institutionDirectoryStatus = signal<'fixtures' | 'loading' | 'loaded' | 'failed'>('fixtures');
+  private institutionDirectoryLoad: Promise<void> | null = null;
+  private institutionDirectoryLoaded = false;
+  private institutionDirectoryFailureLogged = false;
 
   readonly status: Signal<VerificationStatus> = this._status.asReadonly();
   readonly result: Signal<StudentVerificationResult | null> = this._result.asReadonly();
   readonly institutions: Signal<readonly Institution[]> = this._institutions.asReadonly();
+  readonly institutionDirectoryStatus: Signal<'fixtures' | 'loading' | 'loaded' | 'failed'> = this._institutionDirectoryStatus.asReadonly();
   readonly resendIn: Signal<number> = this._resendIn.asReadonly();
   readonly canResend: Signal<boolean> = computed(() => (
     this._resendIn() === 0
@@ -98,22 +122,121 @@ export class StudentVerificationService {
   readonly methodDraft: Signal<VerificationMethodDraft> = this._methodDraft.asReadonly();
   readonly otpDraft: Signal<VerificationOtpDraft> = this._otpDraft.asReadonly();
   readonly canUseStudentPlan: Signal<boolean> = computed(() => this._verifiedResult() !== null);
+
+  loadInstitutionDirectory(): Promise<void> {
+    if (this.institutionDirectoryLoaded) return Promise.resolve();
+    if (this.institutionDirectoryLoad) return this.institutionDirectoryLoad;
+
+    this._institutionDirectoryStatus.set('loading');
+    const load = this.institutionDirectoryLoader()
+      .then(({ GENERATED_INSTITUTIONS }) => {
+        this._institutions.set(this.mergeInstitutions(GENERATED_INSTITUTIONS));
+        this.institutionDirectoryLoaded = true;
+        this._institutionDirectoryStatus.set('loaded');
+      })
+      .catch((error: unknown) => {
+        this.institutionDirectoryLoaded = true;
+        this._institutionDirectoryStatus.set('failed');
+        if (!this.institutionDirectoryFailureLogged) {
+          this.institutionDirectoryFailureLogged = true;
+          console.error('Unable to load the generated institution directory; using fixtures.', error);
+        }
+      })
+      .finally(() => {
+        this.institutionDirectoryLoad = null;
+      });
+
+    this.institutionDirectoryLoad = load;
+    return load;
+  }
+
   resolveInstitution(name: string): Institution | null {
     // TODO(api): bind institution lookup to GET /api/institutions?q=.
-    const normalizedName = name.trim().toLocaleLowerCase();
+    const normalizedName = name.trim().toLowerCase();
     return this.institutions().find((institution) => (
-      institution.name.toLocaleLowerCase() === normalizedName
+      institution.name.toLowerCase() === normalizedName
     )) ?? null;
   }
 
+  supportsEmailVerification(institution: Institution | null): boolean {
+    return institution?.domains.some((domain) => this.isInstitutionDomain(domain.trim().toLowerCase())) ?? false;
+  }
+
   isAllowedDomain(email: string, institution: Institution | null): boolean {
-    // TODO(api): revalidate the institution domain on POST /api/student-verification.
-    if (!institution) return false;
-    const atIndex = email.lastIndexOf('@');
-    if (atIndex < 1 || atIndex === email.length - 1) return false;
-    const domain = email.slice(atIndex + 1).trim().toLocaleLowerCase();
-    return institution.domains.some((allowedDomain) => (
-      domain === allowedDomain.trim().toLocaleLowerCase()
+    // Departmental/campus subdomains such as @pilani.bits-pilani.ac.in and
+    // @cse.iitb.ac.in are why this accepts descendants. This is a UX affordance;
+    // the server must re-check the domain before approving verification.
+    if (!institution || !this.supportsEmailVerification(institution)) return false;
+    const normalizedEmail = email.trim();
+    if (/\s/.test(normalizedEmail)) return false;
+    const atIndex = normalizedEmail.lastIndexOf('@');
+    if (
+      atIndex < 1
+      || atIndex !== normalizedEmail.indexOf('@')
+      || atIndex === normalizedEmail.length - 1
+    ) return false;
+
+    const domain = normalizedEmail.slice(atIndex + 1).trim().toLowerCase();
+    if (this.hasInvalidDomain(domain)) return false;
+
+    return institution.domains.some((allowedDomain) => {
+      const allowed = allowedDomain.trim().toLowerCase();
+      if (!this.isInstitutionDomain(allowed)) return false;
+      return domain === allowed || domain.endsWith(`.${allowed}`);
+    });
+  }
+
+  private mergeInstitutions(generated: readonly Institution[]): readonly Institution[] {
+    const byId = new Map<string, Institution>();
+    for (const institution of generated) {
+      byId.set(institution.id, {
+        ...institution,
+        domains: this.normalizeDomains(institution.domains),
+      });
+    }
+
+    // Fixtures are the compatibility layer: they win the collision's name and
+    // retain their known fields, while domains and generated rorId are unioned.
+    for (const fixture of STUDENT_VERIFICATION_INSTITUTIONS) {
+      const generatedInstitution = byId.get(fixture.id);
+      byId.set(fixture.id, generatedInstitution
+        ? {
+          ...generatedInstitution,
+          ...fixture,
+          domains: this.unionDomains(generatedInstitution.domains, fixture.domains),
+        }
+        : {
+          ...fixture,
+          domains: this.normalizeDomains(fixture.domains),
+        });
+    }
+
+    return [...byId.values()].sort((left, right) => left.name.localeCompare(right.name));
+  }
+
+  private normalizeDomains(domains: readonly string[]): readonly string[] {
+    return this.unionDomains(domains, []);
+  }
+
+  private unionDomains(first: readonly string[], second: readonly string[]): readonly string[] {
+    const unique = new Set<string>();
+    for (const domain of [...first, ...second]) {
+      const normalized = domain.trim().toLowerCase();
+      if (this.isInstitutionDomain(normalized)) unique.add(normalized);
+    }
+    return [...unique];
+  }
+
+  private isInstitutionDomain(domain: string): boolean {
+    return domain.includes('.')
+      && !this.hasInvalidDomain(domain)
+      && !INDIA_PUBLIC_SUFFIXES.has(domain);
+  }
+
+  private hasInvalidDomain(domain: string): boolean {
+    return domain.split('.').some((label) => (
+      label.length === 0
+      || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label)
     ));
   }
 

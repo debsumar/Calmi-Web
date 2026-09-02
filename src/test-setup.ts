@@ -1,3 +1,5 @@
+import { afterEach } from 'vitest';
+
 /**
  * Global test setup, executed after the Angular TestBed is initialised and
  * before any spec file runs.
@@ -38,3 +40,55 @@ if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
     value: (query: string) => createMediaQueryList(query),
   });
 }
+
+/**
+ * Leaked-timer guard.
+ *
+ * `pool: 'threads'` + `isolate: true` means a worker cannot exit while a timer
+ * is still pending, and the app schedules genuinely long ones —
+ * `OTP_TTL_SECONDS` is 10 minutes. A spec that walks the email verification
+ * path without fake timers therefore leaves a 600s handle behind and the whole
+ * run looks frozen instead of failing. Clearing stragglers after each test
+ * turns that hang into a visible warning.
+ *
+ * This is a safety net, not a licence: specs that assert timing behaviour
+ * should still use `vi.useFakeTimers()`.
+ */
+const pendingHandles = new Set<ReturnType<typeof setTimeout>>();
+const realSetTimeout = globalThis.setTimeout;
+const realSetInterval = globalThis.setInterval;
+const realClearTimeout = globalThis.clearTimeout;
+const realClearInterval = globalThis.clearInterval;
+
+globalThis.setTimeout = ((...args: Parameters<typeof setTimeout>) => {
+  const handle = realSetTimeout(...args);
+  pendingHandles.add(handle);
+  return handle;
+}) as typeof setTimeout;
+
+globalThis.setInterval = ((...args: Parameters<typeof setInterval>) => {
+  const handle = realSetInterval(...args);
+  pendingHandles.add(handle);
+  return handle;
+}) as typeof setInterval;
+
+globalThis.clearTimeout = ((handle: Parameters<typeof clearTimeout>[0]) => {
+  if (handle !== undefined) pendingHandles.delete(handle as ReturnType<typeof setTimeout>);
+  realClearTimeout(handle);
+}) as typeof clearTimeout;
+
+globalThis.clearInterval = ((handle: Parameters<typeof clearInterval>[0]) => {
+  if (handle !== undefined) pendingHandles.delete(handle as ReturnType<typeof setTimeout>);
+  realClearInterval(handle);
+}) as typeof clearInterval;
+
+afterEach(() => {
+  if (pendingHandles.size === 0) return;
+  const leaked = pendingHandles.size;
+  for (const handle of pendingHandles) {
+    realClearTimeout(handle);
+    realClearInterval(handle as unknown as ReturnType<typeof setInterval>);
+  }
+  pendingHandles.clear();
+  console.warn(`[test-setup] cleared ${leaked} leaked timer handle(s) after this test.`);
+});

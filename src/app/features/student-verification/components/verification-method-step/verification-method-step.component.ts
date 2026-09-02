@@ -32,6 +32,7 @@ import {
   VerificationMethod,
   VerificationMethodDraft,
 } from '../../models/student-verification.model';
+import { StudentVerificationService } from '../../services/student-verification.service';
 
 interface VerificationForm {
   institutionName: FormControl<string>;
@@ -67,10 +68,10 @@ export class VerificationMethodStepComponent {
     maxHeight: '16rem',
   });
   readonly filteredInstitutions = computed(() => {
-    const query = this.institutionQuery().trim().toLocaleLowerCase();
+    const query = this.institutionQuery().trim().toLowerCase();
     if (!query) return this.institutions();
     return this.institutions().filter((institution) =>
-      `${institution.name} ${institution.domains.join(' ')}`.toLocaleLowerCase().includes(query),
+      `${institution.name} ${institution.domains.join(' ')}`.toLowerCase().includes(query),
     );
   });
   readonly activeInstitutionId = computed(() => {
@@ -80,8 +81,10 @@ export class VerificationMethodStepComponent {
   });
   private readonly destroyRef = inject(DestroyRef);
   private readonly hostElement = inject(ElementRef<HTMLElement>);
+  readonly studentVerificationService = inject(StudentVerificationService);
   @ViewChild('institutionInput') private institutionInput?: ElementRef<HTMLInputElement>;
   private restoringInstitutionFocus = false;
+  private institutionDirectoryLoadStarted = false;
 
   readonly form = new FormGroup<VerificationForm>({
     institutionName: new FormControl('', { nonNullable: true, validators: [Validators.required, this.institutionValidator()] }),
@@ -125,6 +128,12 @@ export class VerificationMethodStepComponent {
       }
     });
 
+    effect(() => {
+      this.institutions();
+      this.form.controls.institutionName.updateValueAndValidity({ emitEvent: false });
+      this.form.controls.institutionalEmail.updateValueAndValidity({ emitEvent: false });
+    });
+
     this.form.controls.method.valueChanges.subscribe(() => {
       this.syncProofValidators();
       this.emitDraft();
@@ -154,6 +163,9 @@ export class VerificationMethodStepComponent {
     const control = this.form.controls.institutionalEmail;
     if (control.hasError('required')) return 'Enter your institutional email address.';
     if (control.hasError('email')) return 'Enter a valid institutional email address.';
+    if (!this.studentVerificationService.supportsEmailVerification(this.selectedInstitution())) {
+      return 'This institution has no published email domain. Upload a student ID instead.';
+    }
     return `Use an address issued by ${this.selectedInstitution()?.name ?? 'your selected institution'}.`;
   }
 
@@ -168,11 +180,36 @@ export class VerificationMethodStepComponent {
   }
 
   selectedInstitution(): Institution | null {
-    const value = this.form.controls.institutionName.value.trim().toLocaleLowerCase();
-    return this.institutions().find((institution) => institution.name.toLocaleLowerCase() === value) ?? null;
+    const value = this.form.controls.institutionName.value.trim().toLowerCase();
+    return this.institutions().find((institution) => institution.name.toLowerCase() === value) ?? null;
+  }
+
+  institutionSecondaryText(institution: Institution): string {
+    return this.studentVerificationService.supportsEmailVerification(institution)
+      ? institution.domains.join(', ')
+      : 'Student ID upload required';
+  }
+
+  emailVerificationUnavailable(): boolean {
+    const institution = this.selectedInstitution();
+    return institution !== null && !this.studentVerificationService.supportsEmailVerification(institution);
+  }
+
+  emailMethodDescriptionId(): string | null {
+    return this.emailVerificationUnavailable() ? 'verification-email-method-hint' : null;
+  }
+
+  emailMethodHint(): string | null {
+    return this.emailVerificationUnavailable()
+      ? 'This institution has no published email domain. Upload a student ID instead.'
+      : null;
   }
 
   onInstitutionFocus(): void {
+    if (!this.institutionDirectoryLoadStarted) {
+      this.institutionDirectoryLoadStarted = true;
+      void this.studentVerificationService.loadInstitutionDirectory().catch(() => undefined);
+    }
     if (this.restoringInstitutionFocus) {
       this.restoringInstitutionFocus = false;
       return;
@@ -555,8 +592,8 @@ export class VerificationMethodStepComponent {
   private institutionValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       if (!control.value) return null;
-      const normalized = String(control.value).trim().toLocaleLowerCase();
-      return this.institutions().some((institution) => institution.name.toLocaleLowerCase() === normalized)
+      const normalized = String(control.value).trim().toLowerCase();
+      return this.institutions().some((institution) => institution.name.toLowerCase() === normalized)
         ? null
         : { institution: true };
     };
@@ -567,10 +604,10 @@ export class VerificationMethodStepComponent {
       if (!control.value) return null;
       const institution = this.selectedInstitution();
       const email = String(control.value).trim();
-      const at = email.lastIndexOf('@');
-      if (!institution || at < 1 || at === email.length - 1) return { institutionDomain: true };
-      const domain = email.slice(at + 1).toLocaleLowerCase();
-      return institution.domains.some((allowed) => domain === allowed.toLocaleLowerCase()) ? null : { institutionDomain: true };
+      return this.studentVerificationService.supportsEmailVerification(institution)
+        && this.studentVerificationService.isAllowedDomain(email, institution)
+        ? null
+        : { institutionDomain: true };
     };
   }
 
