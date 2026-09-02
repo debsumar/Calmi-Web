@@ -93,9 +93,12 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
     }
 
     .orb-slot {
+      --orb-size: clamp(8rem, 24dvmin, 12rem);
+      --orb-size: clamp(8rem, max(8rem, min(38cqi, 24cqh)), 12rem);
       flex: 0 0 auto;
-      inline-size: clamp(5.5rem, 24cqh, 12rem);
-      block-size: clamp(5.5rem, 24cqh, 12rem);
+      inline-size: min(var(--orb-size), 100%);
+      block-size: min(var(--orb-size), 100%);
+      aspect-ratio: 1;
     }
 
     .voice > * {
@@ -125,7 +128,7 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
       position: absolute;
       inset: 0;
       border-radius: 50%;
-      filter: blur(14px);
+      filter: blur(min(14px, calc(var(--orb-size) * 0.0972222)));
       mix-blend-mode: var(--calmi-aurora-composite);
       opacity: .9;
     }

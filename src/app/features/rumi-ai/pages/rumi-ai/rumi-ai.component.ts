@@ -35,6 +35,10 @@ import {
 export class RumiAiComponent {
   readonly chatStore = inject(ChatStoreService);
 
+  constructor() {
+    this.chatStore.ensureWelcomeMessage();
+  }
+
   readonly heroBullets = signal(RUMI_HERO_BULLETS);
   readonly helpCards = signal(RUMI_HELP_CARDS);
   readonly supportTopics = signal(RUMI_SUPPORT_TOPICS);

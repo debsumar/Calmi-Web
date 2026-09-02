@@ -6,6 +6,7 @@ import { LucideDynamicIcon, LucideArrowDown, provideLucideIcons } from '@lucide/
 import { ChatMessageListComponent } from './chat-message-list.component';
 import { ChatTypingComponent } from '../chat-typing/chat-typing.component';
 import { ChatStoreService } from '../../services/chat-store.service';
+import { ChatMessage } from '../../models/chat-message.model';
 
 @Component({
   selector: 'app-chat-message',
@@ -19,6 +20,14 @@ class ChatMessageStubComponent {
 }
 
 describe('ChatMessageListComponent', () => {
+
+const seedMessages = (store: ChatStoreService): void => {
+  (store as unknown as { _messages: { set: (messages: ChatMessage[]) => void } })._messages.set([
+    { id: 'one', role: 'ai', text: 'One', timestamp: new Date(), status: 'sent' },
+    { id: 'two', role: 'ai', text: 'Two', timestamp: new Date(), status: 'sent' },
+  ]);
+};
+
   let fixture: ComponentFixture<ChatMessageListComponent>;
   let store: ChatStoreService;
 
@@ -36,7 +45,15 @@ describe('ChatMessageListComponent', () => {
     fixture.detectChanges();
   });
 
+  const renderSeededFixture = (): void => {
+    fixture.destroy();
+    seedMessages(store);
+    fixture = TestBed.createComponent(ChatMessageListComponent);
+    fixture.detectChanges();
+  };
+
   it('renders the conversation log', () => {
+    renderSeededFixture();
     const log = fixture.nativeElement.querySelector('[role="log"]');
     expect(log).not.toBeNull();
     expect(log.getAttribute('aria-label')).toBe('Conversation with Rumi AI');
@@ -44,6 +61,7 @@ describe('ChatMessageListComponent', () => {
   });
 
   it('passes shared stagger entry and indexed inputs to rendered messages', () => {
+    renderSeededFixture();
     const articles = fixture.nativeElement.querySelectorAll('app-chat-message article');
 
     expect(articles.length).toBeGreaterThanOrEqual(2);
@@ -66,6 +84,7 @@ describe('ChatMessageListComponent', () => {
     }) as MediaQueryList);
 
     const reducedFixture = TestBed.createComponent(ChatMessageListComponent);
+    seedMessages(store);
     reducedFixture.detectChanges();
 
     expect(reducedFixture.componentInstance.animateMessages()).toBe(false);

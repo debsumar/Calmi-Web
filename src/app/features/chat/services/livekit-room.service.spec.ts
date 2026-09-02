@@ -2,7 +2,7 @@
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Room } from 'livekit-client';
-import { LivekitRoomService } from './livekit-room.service';
+import { LivekitRoomService, VoiceRoomServiceError } from './livekit-room.service';
 import { VoiceTokenService } from './voice-token.service';
 
 vi.mock('livekit-client', () => ({
@@ -15,6 +15,7 @@ vi.mock('livekit-client', () => ({
     TrackUnsubscribed: 'trackUnsubscribed',
     MediaDevicesError: 'mediaDevicesError',
     ActiveSpeakersChanged: 'activeSpeakersChanged',
+    TranscriptionReceived: 'transcriptionReceived',
   },
 }));
 
@@ -22,7 +23,11 @@ type Listener = (...args: unknown[]) => void;
 
 class FakeRoom {
   readonly listeners = new Map<string, Listener>();
-  readonly localParticipant = { setMicrophoneEnabled: vi.fn().mockResolvedValue(undefined) };
+  readonly textStreamHandlers = new Map<string, unknown>();
+  readonly localParticipant = {
+    identity: 'local-user',
+    setMicrophoneEnabled: vi.fn().mockResolvedValue(undefined),
+  };
   readonly connect = vi.fn().mockResolvedValue(undefined);
   readonly disconnect = vi.fn().mockResolvedValue(undefined);
   state = 'disconnected';
@@ -35,6 +40,14 @@ class FakeRoom {
   off(event: string, listener: Listener): this {
     if (this.listeners.get(event) === listener) this.listeners.delete(event);
     return this;
+  }
+
+  registerTextStreamHandler(topic: string, handler: unknown): void {
+    this.textStreamHandlers.set(topic, handler);
+  }
+
+  unregisterTextStreamHandler(topic: string): void {
+    this.textStreamHandlers.delete(topic);
   }
 
   emit(event: string, ...args: unknown[]): void {
@@ -51,7 +64,7 @@ describe('LivekitRoomService', () => {
 
   beforeEach(() => {
     room = new FakeRoom();
-    vi.mocked(Room).mockImplementation(() => room as unknown as Room);
+    vi.mocked(Room).mockImplementation(function () { return room as unknown as Room; });
     tokenService = { getToken: vi.fn().mockResolvedValue(token) };
     TestBed.configureTestingModule({
       providers: [LivekitRoomService, { provide: VoiceTokenService, useValue: tokenService }],
@@ -122,6 +135,31 @@ describe('LivekitRoomService', () => {
     expect(service.speaking()).toBe(false);
   });
 
+  it('publishes normalized user, remote, and undefined-participant transcripts', async () => {
+    await service.connect();
+    const segment = { id: 'segment-1', text: 'Hello', final: false };
+
+    room.emit('transcriptionReceived', [segment], room.localParticipant);
+    expect(service.transcript()).toEqual({ id: 'segment-1', text: 'Hello', final: false, speaker: 'user' });
+
+    room.emit('transcriptionReceived', [{ ...segment, text: 'Hi there', final: true }], { identity: 'remote-agent' });
+    expect(service.transcript()).toEqual({ id: 'segment-1', text: 'Hi there', final: true, speaker: 'agent' });
+
+    room.emit('transcriptionReceived', [{ ...segment, text: 'Agent reply' }]);
+    expect(service.transcript()?.speaker).toBe('agent');
+  });
+
+  it('normalizes the lk.transcription text stream and unregisters it on disconnect', async () => {
+    await service.connect();
+    const handler = room.textStreamHandlers.get('lk.transcription') as ((reader: unknown, participant: unknown) => void) | undefined;
+    const readAll = vi.fn().mockResolvedValue(JSON.stringify({ id: 'stream-segment', text: 'Streamed text', final: true }));
+    handler?.({ readAll, info: { id: 'stream-id', attributes: {} } }, { identity: 'remote-agent' });
+    await Promise.resolve();
+
+    expect(service.transcript()).toEqual({ id: 'stream-segment', text: 'Streamed text', final: true, speaker: 'agent' });
+    await service.disconnect();
+    expect(room.textStreamHandlers.size).toBe(0);
+  });
   it('mutes and unmutes the local microphone', async () => {
     await service.connect();
     await service.setMuted(true);
@@ -136,7 +174,7 @@ describe('LivekitRoomService', () => {
     await service.connect();
     room.emit('mediaDevicesError', new Error('permission denied'));
 
-    expect(service.error()).toEqual({ code: 'device-error', message: 'permission denied' });
+    expect(service.error()).toEqual(new VoiceRoomServiceError('device-error', 'permission denied'));
   });
 
   it('reports an unexpected disconnect', async () => {
@@ -144,7 +182,7 @@ describe('LivekitRoomService', () => {
     room.emit('disconnected');
 
     expect(service.connected()).toBe(false);
-    expect(service.error()).toEqual({ code: 'unexpected-disconnect', message: 'The voice connection ended unexpectedly.' });
+    expect(service.error()).toEqual(new VoiceRoomServiceError('unexpected-disconnect', 'The voice connection ended unexpectedly.'));
   });
 
   it('cannot revive a room after a late token resolution following disconnect', async () => {

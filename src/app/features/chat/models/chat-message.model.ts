@@ -9,6 +9,7 @@ export interface ChatMessage {
   text: string;
   timestamp: Date;
   status: ChatMessageStatus;
+  source?: 'text' | 'voice';
   latency?: ChatLatency;
   meta?: ChatDoneMeta;
   rag?: RagQueryResponse;
