@@ -10,10 +10,10 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
   template: `
     <section class="min-w-0" aria-labelledby="about-heading">
       <div class="flex items-center gap-3">
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand" aria-hidden="true">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand-deep" aria-hidden="true">
           <svg lucideStethoscope [size]="20" aria-hidden="true"></svg>
         </span>
-        <h2 appAnimateOnScroll style="--index:0" id="about-heading" class="font-sans text-xl font-bold text-ink md:text-2xl">About {{ firstName() }}</h2>
+        <h2 appAnimateOnScroll style="--index:0" id="about-heading" class="font-sans text-3xl font-bold text-ink md:text-4xl">About {{ firstName() }}</h2>
       </div>
       <p appAnimateOnScroll style="--index:1" class="mt-5 text-base leading-relaxed text-ink-soft">{{ profile().bio }}</p>
     </section>

@@ -1,5 +1,7 @@
-import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, effect, inject, Injectable, signal } from '@angular/core';
 import { LivekitRoomService, VoiceRoomServiceError } from './livekit-room.service';
+import { ChatStoreService } from './chat-store.service';
+import { VoiceTranscriptSegment } from './voice-session.model';
 import {
   ChatConversationSurface,
   VoiceSessionError,
@@ -10,12 +12,15 @@ import {
 @Injectable({ providedIn: 'root' })
 export class VoiceSessionService {
   private readonly room = inject(LivekitRoomService);
+  private readonly chatStore = inject(ChatStoreService);
   private readonly opener = { current: null as HTMLElement | null };
   private readonly _surface = signal<ChatConversationSurface | null>(null);
   private readonly _phase = signal<VoiceSessionPhase>('idle');
   private readonly _isMuted = signal(false);
   private readonly _error = signal<VoiceSessionError | null>(null);
   private readonly _connectGeneration = signal(0);
+  private readonly pendingTranscripts = new Map<string, VoiceTranscriptSegment>();
+  private transcriptCursor = 0;
 
   readonly phase = this._phase.asReadonly();
   readonly surface = this._surface.asReadonly();
@@ -38,10 +43,26 @@ export class VoiceSessionService {
   });
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => this.promotePendingTranscripts());
     effect(() => {
       const roomError = this.room.error();
       if (!this.isActive() || !roomError) return;
       this.handleRoomError(roomError.code, roomError.message);
+    });
+    effect(() => {
+      const transcriptEvents = this.room.transcripts?.();
+      if (transcriptEvents !== undefined) {
+        if (!this.isActive()) {
+          this.transcriptCursor = transcriptEvents.length;
+          return;
+        }
+        for (const segment of transcriptEvents.slice(this.transcriptCursor)) this.forwardTranscript(segment);
+        this.transcriptCursor = transcriptEvents.length;
+        return;
+      }
+      const segment = this.room.transcript?.();
+      if (!this.isActive() || !segment) return;
+      this.forwardTranscript(segment);
     });
     effect(() => {
       const connected = this.room.connected();
@@ -56,6 +77,9 @@ export class VoiceSessionService {
     if (this.isActive()) return;
 
     const surface = typeof surfaceOrTrigger === 'string' ? surfaceOrTrigger : 'floating-panel';
+    const transcriptEvents = this.room.transcripts?.();
+    if (transcriptEvents !== undefined) this.transcriptCursor = transcriptEvents.length;
+    this.pendingTranscripts.clear();
     this._surface.set(surface);
     this.opener.current = typeof surfaceOrTrigger === 'string' ? trigger ?? null : surfaceOrTrigger ?? null;
     this._isMuted.set(false);
@@ -134,6 +158,8 @@ export class VoiceSessionService {
   private endInternal(announce: boolean): void {
     if (!this.isActive()) return;
 
+    this.forwardUnprocessedTranscripts();
+    this.promotePendingTranscripts();
     this._connectGeneration.update((generation) => generation + 1);
     void this.room.disconnect();
     this._phase.set('idle');
@@ -157,6 +183,30 @@ export class VoiceSessionService {
     }
     const message = error instanceof Error && error.message.trim() ? error.message : 'Voice connection failed. Try again.';
     this.handleRoomError('connection-error', message);
+  }
+
+  private forwardTranscript(segment: VoiceTranscriptSegment): void {
+    this.chatStore.upsertVoiceTranscript(segment);
+    if (segment.final) this.pendingTranscripts.delete(segment.id);
+    else this.pendingTranscripts.set(segment.id, segment);
+  }
+
+  private forwardUnprocessedTranscripts(): void {
+    const transcriptEvents = this.room.transcripts?.();
+    if (transcriptEvents !== undefined) {
+      for (const segment of transcriptEvents.slice(this.transcriptCursor)) this.forwardTranscript(segment);
+      this.transcriptCursor = transcriptEvents.length;
+      return;
+    }
+    const segment = this.room.transcript?.();
+    if (segment) this.forwardTranscript(segment);
+  }
+
+  private promotePendingTranscripts(): void {
+    for (const segment of this.pendingTranscripts.values()) {
+      this.chatStore.upsertVoiceTranscript({ ...segment, final: true });
+    }
+    this.pendingTranscripts.clear();
   }
 
   private normalizeErrorCode(code: string): VoiceSessionRecognitionErrorCode {

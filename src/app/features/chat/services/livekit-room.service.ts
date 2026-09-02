@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
-import type { ConnectionState, Participant, RemoteTrack, Room } from 'livekit-client';
-import { VoiceRoomError } from './voice-session.model';
+import type { ConnectionState, Participant, RemoteTrack, Room, TranscriptionSegment } from 'livekit-client';
+import { VoiceRoomError, VoiceTranscriptSegment } from './voice-session.model';
 import { VoiceTokenService } from './voice-token.service';
 
 type VoiceConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'signalReconnecting';
@@ -33,6 +33,8 @@ export class LivekitRoomService {
   private readonly _muted = signal(false);
   private readonly _error = signal<VoiceRoomError | null>(null);
   private readonly _connectionState = signal<VoiceConnectionState>('disconnected');
+  private readonly _transcript = signal<VoiceTranscriptSegment | null>(null);
+  private readonly _transcripts = signal<VoiceTranscriptSegment[]>([]);
   private readonly audioElements = new Map<RemoteTrack, HTMLAudioElement>();
 
   private room: Room | null = null;
@@ -45,6 +47,8 @@ export class LivekitRoomService {
   readonly muted = this._muted.asReadonly();
   readonly error = this._error.asReadonly();
   readonly connectionState = this._connectionState.asReadonly();
+  readonly transcript = this._transcript.asReadonly();
+  readonly transcripts = this._transcripts.asReadonly();
 
   constructor() {
     inject(DestroyRef).onDestroy(() => {
@@ -211,14 +215,22 @@ export class LivekitRoomService {
       if (this.room !== room) return;
       this._speaking.set(speakers.some((speaker) => !speaker.isLocal));
     };
+    const onTranscriptionReceived = (segments: TranscriptionSegment[], participant?: Participant): void => {
+      if (this.room !== room) return;
+      for (const segment of segments) {
+        this.emitTranscript(room, segment, participant);
+      }
+    };
+    const onTextStream: Parameters<Room['registerTextStreamHandler']>[1] = (reader, participantInfo) => {
+      void reader.readAll().then((payload) => {
+        if (this.room !== room) return;
+        const attributes = reader.info.attributes?.['lk.transcription_final'];
+        this.handleTextStream(room, reader.info.id, payload, participantInfo.identity, attributes);
+      }).catch(() => {
+        // A stream can reject while the room is disconnecting; cleanup remains best-effort.
+      });
+    };
 
-    room.on(roomEvents.Connected, onConnected);
-    room.on(roomEvents.Disconnected, onDisconnected);
-    room.on(roomEvents.ConnectionStateChanged, onConnectionStateChanged);
-    room.on(roomEvents.TrackSubscribed, onTrackSubscribed);
-    room.on(roomEvents.TrackUnsubscribed, onTrackUnsubscribed);
-    room.on(roomEvents.MediaDevicesError, onMediaDevicesError);
-    room.on(roomEvents.ActiveSpeakersChanged, onActiveSpeakersChanged);
     this.unregisterHandlers = () => {
       room.off(roomEvents.Connected, onConnected);
       room.off(roomEvents.Disconnected, onDisconnected);
@@ -227,7 +239,19 @@ export class LivekitRoomService {
       room.off(roomEvents.TrackUnsubscribed, onTrackUnsubscribed);
       room.off(roomEvents.MediaDevicesError, onMediaDevicesError);
       room.off(roomEvents.ActiveSpeakersChanged, onActiveSpeakersChanged);
+      room.off(roomEvents.TranscriptionReceived, onTranscriptionReceived);
+      room.unregisterTextStreamHandler('lk.transcription');
     };
+
+    room.on(roomEvents.Connected, onConnected);
+    room.on(roomEvents.Disconnected, onDisconnected);
+    room.on(roomEvents.ConnectionStateChanged, onConnectionStateChanged);
+    room.on(roomEvents.TrackSubscribed, onTrackSubscribed);
+    room.on(roomEvents.TrackUnsubscribed, onTrackUnsubscribed);
+    room.on(roomEvents.MediaDevicesError, onMediaDevicesError);
+    room.on(roomEvents.ActiveSpeakersChanged, onActiveSpeakersChanged);
+    room.on(roomEvents.TranscriptionReceived, onTranscriptionReceived);
+    room.registerTextStreamHandler('lk.transcription', onTextStream);
   }
 
   private removeAudioElement(track: RemoteTrack): void {
@@ -254,6 +278,80 @@ export class LivekitRoomService {
   private isCurrent(generation: number): boolean {
     return generation === this.generation;
   }
+
+  private emitTranscript(room: Room, segment: TranscriptionSegment, participant?: Participant): void {
+    this.publishTranscript({
+      id: segment.id,
+      text: segment.text,
+      final: segment.final,
+      speaker: this.speakerFor(room, participant),
+    });
+  }
+
+  private publishTranscript(normalized: VoiceTranscriptSegment): void {
+    this._transcript.set(normalized);
+    this._transcripts.update((transcripts) => [...transcripts, normalized]);
+  }
+
+  private handleTextStream(room: Room, streamId: string, payload: string, participantIdentity: string, finalAttribute?: string): void {
+    const defaultFinal = this.booleanValue(finalAttribute, true);
+    let parsed: unknown = payload;
+    try {
+      parsed = JSON.parse(payload) as unknown;
+    } catch {
+      // A text stream may carry plain transcript text instead of JSON.
+    }
+
+    if (Array.isArray(parsed)) {
+      for (const value of parsed) this.emitTextStreamRecord(room, streamId, value, participantIdentity, defaultFinal);
+      return;
+    }
+    if (this.isRecord(parsed) && Array.isArray(parsed['segments'])) {
+      for (const value of parsed['segments']) this.emitTextStreamRecord(room, streamId, value, participantIdentity, defaultFinal);
+      return;
+    }
+    if (this.emitTextStreamRecord(room, streamId, parsed, participantIdentity, defaultFinal)) return;
+
+    const text = typeof parsed === 'string' ? parsed : payload;
+    if (!streamId || !text.trim()) return;
+    this.publishTranscript({ id: streamId, text, final: defaultFinal, speaker: this.speakerFor(room, undefined, participantIdentity) });
+  }
+
+  private emitTextStreamRecord(room: Room, streamId: string, value: unknown, participantIdentity: string, defaultFinal: boolean): boolean {
+    if (!this.isRecord(value)) return false;
+    const textValue = value['text'] ?? value['transcript'];
+    if (typeof textValue !== 'string') return false;
+    const idValue = value['id'] ?? value['segmentId'];
+    const id = typeof idValue === 'string' && idValue ? idValue : streamId;
+    if (!id) return false;
+    this.publishTranscript({
+      id,
+      text: textValue,
+      final: this.booleanValue(value['final'], defaultFinal),
+      speaker: this.speakerFor(room, undefined, participantIdentity),
+    });
+    return true;
+  }
+
+  private speakerFor(room: Room, participant?: Participant, participantIdentity?: string): 'user' | 'agent' {
+    const identity = participant?.identity ?? participantIdentity;
+    if (!identity) {
+      // LiveKit commonly omits the participant for agent transcripts; assume agent in that case.
+      return 'agent';
+    }
+    return identity === room.localParticipant.identity ? 'user' : 'agent';
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  private booleanValue(value: unknown, fallback: boolean): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value.toLowerCase() === 'true' ? true : value.toLowerCase() === 'false' ? false : fallback;
+    return fallback;
+  }
+
 
   private staleConnectionError(): VoiceRoomServiceError {
     return new VoiceRoomServiceError('connection-error', 'Voice connection was cancelled.');

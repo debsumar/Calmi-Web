@@ -83,7 +83,7 @@ describe('ChatStoreService', () => {
       callbacks.push(onEvent);
       const cancel = vi.fn();
       cancelMocks.push(cancel);
-      return { completed: Promise.resolve(), cancel };
+      return { completed: new Promise<void>(() => undefined), cancel };
     });
 
     TestBed.configureTestingModule({
@@ -112,6 +112,34 @@ describe('ChatStoreService', () => {
     await Promise.resolve();
   };
 
+  it('upserts voice transcripts in place and ignores empty text', () => {
+    service.upsertVoiceTranscript({ id: 'segment-1', text: 'Hello', final: false, speaker: 'user' });
+    expect(service.messages()).toHaveLength(1);
+    expect(service.messages()[0]).toMatchObject({
+      id: 'voice:segment-1', role: 'user', text: 'Hello', status: 'streaming', source: 'voice',
+    });
+
+    service.upsertVoiceTranscript({ id: 'segment-1', text: 'Hello there', final: true, speaker: 'user' });
+    expect(service.messages()).toHaveLength(1);
+    expect(service.messages()[0]?.text).toBe('Hello there');
+    expect(service.messages()[0]?.status).toBe('sent');
+
+    service.upsertVoiceTranscript({ id: 'segment-2', text: '   ', final: true, speaker: 'agent' });
+    expect(service.messages()).toHaveLength(1);
+  });
+
+  it('does not interfere with an in-flight text generation', async () => {
+    service.setDraft('Keep this generation running');
+    service.send();
+    await settle();
+    expect(service.isStreaming()).toBe(true);
+    expect(service.isTyping()).toBe(true);
+
+    service.upsertVoiceTranscript({ id: 'voice-while-text', text: 'Voice update', final: false, speaker: 'agent' });
+    expect(service.isStreaming()).toBe(true);
+    expect(service.isTyping()).toBe(true);
+    expect(service.messages().some((message) => message.id === 'voice:voice-while-text')).toBe(true);
+  });
   it('sends the exact contract request body with the generated session ID', async () => {
     service.setDraft('I need a quiet moment');
     service.send();

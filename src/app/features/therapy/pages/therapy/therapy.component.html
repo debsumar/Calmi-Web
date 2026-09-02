@@ -1,3 +1,7 @@
+<!-- The shell (AppLayout) already owns the <main> landmark, so this page wrapper
+     stays a plain element: nesting a second <main> is invalid and duplicates the
+     landmark for screen readers. -->
+<div class="min-h-screen bg-canvas text-ink">
 <!-- Hero -->
 <section class="relative w-full overflow-hidden bg-hero dark:bg-gradient-to-b dark:from-hero-grad-from dark:to-hero-grad-to min-h-[400px] md:min-h-[500px] flex items-center justify-center">
   <img src="assets/Illustration_2.avif" alt="" class="absolute left-0 top-0 h-full w-auto object-cover object-left pointer-events-none z-0 hidden sm:block opacity-80">
@@ -18,7 +22,7 @@
   <div class="flex flex-wrap items-center gap-3 md:gap-4" role="group" aria-label="Therapist filters">
     <button type="button"
             appAnimateOnScroll style="--index:0"
-            class="inline-flex items-center gap-2 bg-surface shadow-card rounded-full px-5 py-3 text-sm font-semibold text-ink hover:bg-sunken transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            class="inline-flex items-center gap-2 bg-surface shadow-card rounded-full px-5 py-3 text-xs font-semibold text-ink hover:bg-sunken transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
       <span>All Filters</span>
       <svg [lucideIcon]="'funnel'" [size]="16" class="text-ink-soft"></svg>
     </button>
@@ -29,7 +33,7 @@
               (click)="toggleFilter(filter.id)"
               [attr.aria-expanded]="openFilter() === filter.id"
               aria-haspopup="listbox"
-              class="inline-flex items-center gap-2 bg-surface shadow-card rounded-full px-5 py-3 text-sm font-semibold text-ink hover:bg-sunken transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+              class="inline-flex items-center gap-2 bg-surface shadow-card rounded-full px-5 py-3 text-xs font-semibold text-ink hover:bg-sunken transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
         <span>{{ filter.label }}</span>
         <svg [lucideIcon]="'chevron-down'" [size]="16"
              class="text-ink-soft transition-transform"
@@ -42,9 +46,9 @@
 <!-- Top Psychologists -->
 <section id="top-psychologists" class="pt-2 pb-8 md:pt-4 md:pb-12 px-4 md:px-8 max-w-6xl mx-auto overflow-hidden">
   <div class="flex items-center justify-between mb-8">
-    <h2 appAnimateOnScroll style="--index:0" class="text-2xl md:text-3xl font-bold text-ink">Top Psychologists</h2>
+    <h2 appAnimateOnScroll style="--index:0" class="text-3xl md:text-4xl font-bold text-ink">Top Psychologists</h2>
     <div class="flex items-center gap-4">
-      <a href="/therapy" class="text-sm font-semibold text-brand hover:text-brand-dark transition-colors">View all</a>
+      <a href="/therapy" class="text-sm font-semibold text-brand-dark dark:text-brand-light underline-offset-2 hover:underline transition-colors">View all</a>
       <div class="hidden md:flex gap-2">
         <button type="button" aria-label="Previous psychologists" (click)="carousel.scrollBy({left: -320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-hairline flex items-center justify-center text-ink-muted hover:bg-sunken transition-colors">
           <svg [lucideIcon]="'chevron-left'" [size]="20"></svg>
@@ -96,3 +100,4 @@
 <!-- Frequently Asked Questions -->
 <app-faq-accordion [faqs]="faqs" />
 
+</div>

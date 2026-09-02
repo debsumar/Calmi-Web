@@ -1,6 +1,7 @@
 import { computed, DestroyRef, inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { ChatMessage } from '../models/chat-message.model';
+import { VoiceTranscriptSegment } from './voice-session.model';
 import {
   ChatDoneEvent,
   ChatStreamEvent,
@@ -102,6 +103,53 @@ export class ChatStoreService implements OnDestroy {
 
   setDraft(value: string): void {
     this._draft.set(value);
+  }
+
+  /** Keeps Rumi's embedded live conversation from rendering an empty transcript on first visit. */
+  ensureWelcomeMessage(): void {
+    if (this.messages().length > 0) return;
+    this._messages.set([{
+      id: 'rumi-welcome',
+      role: 'ai',
+      text: 'Hi there, I’m Rumi. How are you feeling today?',
+      timestamp: new Date(0),
+      status: 'sent',
+    }]);
+  }
+
+  upsertVoiceTranscript(segment: VoiceTranscriptSegment): void {
+    const text = segment.text;
+    const segmentId = segment.id.trim();
+    if (!segmentId || !text.trim()) return;
+
+    const id = `voice:${segmentId}`;
+    const existing = this.messages().find((message) => message.id === id);
+    const status = segment.final ? 'sent' : 'streaming';
+    const role = segment.speaker === 'user' ? 'user' : 'ai';
+
+    if (existing) {
+      this._messages.update((messages) => messages.map((message) => (
+        message.id === id
+          ? { ...message, role, text, status, source: 'voice' }
+          : message
+      )));
+      if (segment.speaker === 'agent' && segment.final && existing.status !== 'sent' && !this.isConversationVisible()) {
+        this._unreadCount.update((count) => count + 1);
+      }
+      return;
+    }
+
+    this._messages.update((messages) => [...messages, {
+      id,
+      role,
+      text,
+      timestamp: new Date(),
+      status,
+      source: 'voice',
+    }]);
+    if (segment.speaker === 'agent' && segment.final && !this.isConversationVisible()) {
+      this._unreadCount.update((count) => count + 1);
+    }
   }
 
   send(): void {

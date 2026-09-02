@@ -30,8 +30,8 @@ const MESSAGE_MAX = 200;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <aside class="min-w-0 rounded-2xl border border-hairline bg-surface shadow-card lg:sticky lg:top-6" aria-labelledby="booking-heading">
-      <header class="rounded-t-2xl bg-brand-deep p-8 text-center text-on-brand">
-        <h2 appAnimateOnScroll style="--index:0" id="booking-heading" class="font-sans text-2xl font-bold leading-tight md:text-3xl">Book a Session</h2>
+      <header class="rounded-t-2xl bg-brand-deep p-8 text-center text-on-brand-deep">
+        <h2 appAnimateOnScroll style="--index:0" id="booking-heading" class="font-sans text-3xl font-bold leading-tight md:text-4xl">Book a Session</h2>
         <p appAnimateOnScroll style="--index:1" class="mt-2 text-base">Choose your preferred date and time</p>
       </header>
 
@@ -54,15 +54,15 @@ const MESSAGE_MAX = 200;
             <ng-template #date let-date let-selected="selected">
               <span class="relative flex h-8 w-11 items-center justify-center rounded-md text-xs"
                     [class.bg-sunken]="dateMetaState(date) === 'past'"
-                    [class.text-ink-muted]="dateMetaState(date) === 'past'"
+                    [class.text-ink-soft]="dateMetaState(date) === 'past'"
                     [class.bg-brand-deep]="selected || isSelectedMeta(date)"
-                    [class.text-on-brand]="selected || isSelectedMeta(date)"
+                    [class.text-on-brand-deep]="selected || isSelectedMeta(date)"
                     [class.text-ink]="dateMetaState(date) !== 'past' && !selected && !isSelectedMeta(date)">
                 <span>{{ date.day }}</span>
                 @if (dateMetaState(date) === 'available') {
                   <span class="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-success" [class.ring-1]="selected || isSelectedMeta(date)" [class.ring-surface]="selected || isSelectedMeta(date)" aria-hidden="true"></span>
                 } @else if (dateMetaState(date) === 'unavailable') {
-                  <span class="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-danger" [class.ring-1]="selected || isSelectedMeta(date)" [class.ring-surface]="selected || isSelectedMeta(date)" aria-hidden="true"></span>
+                  <span class="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-none bg-danger" [class.ring-1]="selected || isSelectedMeta(date)" [class.ring-surface]="selected || isSelectedMeta(date)" aria-hidden="true"></span>
                 }
                 <span class="sr-only">{{ dateLabel(date) }}</span>
               </span>
@@ -71,7 +71,7 @@ const MESSAGE_MAX = 200;
           <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft" aria-label="Calendar legend">
             <span class="inline-flex items-center gap-2"><span class="h-4 w-7 rounded-full border border-hairline bg-sunken" aria-hidden="true"></span>Past</span>
             <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-success" aria-hidden="true"></span>Available</span>
-            <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-danger" aria-hidden="true"></span>Unavailable</span>
+            <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-none bg-danger" aria-hidden="true"></span>Unavailable</span>
           </div>
           @if (dateInvalid()) {
             <p class="mt-2 flex items-center gap-2 text-xs text-danger" role="alert"><svg lucideCircleAlert [size]="16" class="text-danger" aria-hidden="true"></svg>Choose an available date.</p>
@@ -87,7 +87,7 @@ const MESSAGE_MAX = 200;
                         (click)="selectSlot(slot.id)"
                         class="min-w-0 truncate rounded-full border border-brand px-2 py-3 text-xs font-semibold text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                         [class.bg-brand-deep]="selectedSlot() === slot.id"
-                        [class.text-on-brand]="selectedSlot() === slot.id"
+                        [class.text-on-brand-deep]="selectedSlot() === slot.id"
                         [class.bg-surface]="selectedSlot() !== slot.id">{{ slot.label }}</button>
               }
             </div>
@@ -107,7 +107,7 @@ const MESSAGE_MAX = 200;
             <label for="booking-name" class="sr-only">Your name</label>
             <input id="booking-name" name="name" autocomplete="name" type="text" placeholder="Your name" [value]="name()" (input)="setName($event)"
                    [attr.aria-invalid]="nameInvalid() ? 'true' : null" [attr.aria-describedby]="nameInvalid() ? 'booking-name-error' : 'booking-name-help'"
-                   class="w-full rounded-lg border bg-surface px-4 py-3 text-base text-ink outline-none placeholder:text-ink-muted focus-visible:ring-2 focus-visible:ring-brand"
+                   class="w-full rounded-lg border bg-surface px-4 py-3 text-base text-ink outline-none placeholder:text-ink-soft focus-visible:ring-2 focus-visible:ring-brand"
                    [class.border-danger]="nameInvalid()" [class.border-hairline]="!nameInvalid()" />
             @if (nameInvalid()) { <p id="booking-name-error" class="mt-1 flex items-center gap-2 text-xs text-danger" role="alert"><svg lucideCircleAlert [size]="15" class="text-danger" aria-hidden="true"></svg>Enter your name (2–80 characters).</p> }
             @if (!nameInvalid()) { <p id="booking-name-help" class="sr-only">Name must be 2 to 80 characters.</p> }
@@ -116,7 +116,7 @@ const MESSAGE_MAX = 200;
             <label for="booking-phone" class="sr-only">Phone number</label>
             <input id="booking-phone" name="phone" autocomplete="tel" type="tel" inputmode="tel" placeholder="Phone number" [value]="phone()" (input)="setPhone($event)"
                    [attr.aria-invalid]="phoneInvalid() ? 'true' : null" [attr.aria-describedby]="phoneInvalid() ? 'booking-phone-error' : 'booking-phone-help'"
-                   class="w-full rounded-lg border bg-surface px-4 py-3 text-base text-ink outline-none placeholder:text-ink-muted focus-visible:ring-2 focus-visible:ring-brand"
+                   class="w-full rounded-lg border bg-surface px-4 py-3 text-base text-ink outline-none placeholder:text-ink-soft focus-visible:ring-2 focus-visible:ring-brand"
                    [class.border-danger]="phoneInvalid()" [class.border-hairline]="!phoneInvalid()" />
             @if (phoneInvalid()) { <p id="booking-phone-error" class="mt-1 flex items-center gap-2 text-xs text-danger" role="alert"><svg lucideCircleAlert [size]="15" class="text-danger" aria-hidden="true"></svg>Enter a valid phone number.</p> }
             @if (!phoneInvalid()) { <p id="booking-phone-help" class="sr-only">Use an international phone number, for example plus country code followed by digits.</p> }
@@ -125,13 +125,13 @@ const MESSAGE_MAX = 200;
             <label for="booking-message" class="sr-only">What would you like support with?</label>
             <textarea id="booking-message" name="message" autocomplete="off" placeholder="What would you like support with?" rows="4" maxlength="200" [value]="message()" (input)="setMessage($event)"
                       [attr.aria-invalid]="messageInvalid() ? 'true' : null" [attr.aria-describedby]="messageInvalid() ? 'booking-message-error' : 'booking-message-help'"
-                      class="w-full resize-y rounded-lg border bg-surface px-4 py-3 text-base text-ink outline-none placeholder:text-ink-muted focus-visible:ring-2 focus-visible:ring-brand"
+                      class="w-full resize-y rounded-lg border bg-surface px-4 py-3 text-base text-ink outline-none placeholder:text-ink-soft focus-visible:ring-2 focus-visible:ring-brand"
                       [class.border-danger]="messageInvalid()" [class.border-hairline]="!messageInvalid()"></textarea>
             @if (messageInvalid()) { <p id="booking-message-error" class="mt-1 flex items-center gap-2 text-xs text-danger" role="alert"><svg lucideCircleAlert [size]="15" class="text-danger" aria-hidden="true"></svg>Keep your message under 200 characters.</p> }
             @if (!messageInvalid()) { <p id="booking-message-help" class="mt-1 text-xs text-ink-soft" aria-live="polite">{{ messageRemaining() }} of 200 characters left.</p> }
           </div>
           <button #submitButton type="submit" [disabled]="!formValid()"
-                  class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-deep px-5 py-3 text-base font-semibold text-on-brand transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
+                  class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-deep px-5 py-3 text-base font-semibold text-on-brand-deep transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
             <span>Book a Session</span>
           </button>
           <p class="flex items-center justify-center gap-2 text-xs text-ink-soft">
@@ -148,18 +148,18 @@ const MESSAGE_MAX = 200;
       <div #reviewBackdrop class="fixed inset-0 z-50 grid place-items-center bg-scrim p-4" (click)="cancelReview()">
         <div #review role="dialog" aria-modal="true" aria-labelledby="booking-review-title"
              tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="cancelReview()"
-             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-elevated/10 p-8 shadow-2xl backdrop-blur-sm dark:border-white/10">
-          <h3 id="booking-review-title" class="dialog-stagger-item text-center font-sans text-2xl font-bold text-white" style="--index: 0">
+             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-brand-light/40 bg-brand-deep p-8 shadow-card">
+          <h3 id="booking-review-title" class="dialog-stagger-item text-center font-sans text-2xl font-bold text-on-brand-deep" style="--index: 0">
             Confirm your booking?
           </h3>
-          <p class="dialog-stagger-item mt-2 text-center text-sm tracking-wide text-white/80" style="--index: 1">
+          <p class="dialog-stagger-item mt-2 text-center text-base text-on-brand-deep" style="--index: 1">
             Please check these details before we reserve your slot.
           </p>
 
-          <dl class="dialog-stagger-item mt-6 space-y-2 rounded-xl border border-white/20 bg-white/10 p-4 text-sm text-white dark:border-white/10" style="--index: 2">
+          <dl class="dialog-stagger-item mt-6 space-y-2 rounded-xl border border-hairline bg-surface p-4 text-sm text-ink" style="--index: 2">
             @for (row of reviewRows(); track row.label) {
               <div class="flex items-baseline justify-between gap-4">
-                <dt class="text-white/70">{{ row.label }}</dt>
+                <dt class="text-ink-soft">{{ row.label }}</dt>
                 <dd class="min-w-0 text-right font-semibold break-words">{{ row.value }}</dd>
               </div>
             }
@@ -167,11 +167,11 @@ const MESSAGE_MAX = 200;
 
           <div class="dialog-stagger-item mt-6 flex gap-3" style="--index: 3">
             <button type="button" (click)="cancelReview()"
-                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-white/30 bg-white/10 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-hairline bg-surface px-4 py-3 text-base font-semibold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
               Go back
             </button>
             <button #confirmBookingButton type="button" (click)="confirmBooking()"
-                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand-deep transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-brand-deep">
               Yes, book it
             </button>
           </div>
@@ -186,16 +186,16 @@ const MESSAGE_MAX = 200;
       <div #backdrop class="fixed inset-0 z-50 grid place-items-center bg-scrim p-4" (click)="dismissConfirmation()">
         <div #confirmation role="dialog" aria-modal="true" aria-labelledby="booking-confirmed-title"
              tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="dismissConfirmation()"
-             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-elevated/10 p-8 text-center shadow-2xl backdrop-blur-sm dark:border-white/10">
-          <span class="dialog-stagger-item mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md" style="--index: 0" aria-hidden="true">
+             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-brand-light/40 bg-brand-deep p-8 text-center shadow-card">
+          <span class="dialog-stagger-item mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-surface text-brand-dark dark:text-brand-light" style="--index: 0" aria-hidden="true">
             <svg viewBox="0 0 52 52" class="h-10 w-10" fill="none" stroke="currentColor" stroke-width="4"
                  stroke-linecap="round" stroke-linejoin="round">
               <circle class="confirmation-ring" cx="26" cy="26" r="22" />
               <path class="confirmation-tick" d="M15 27.5 L23 35 L38 19" />
             </svg>
           </span>
-          <h3 id="booking-confirmed-title" class="dialog-stagger-item mt-5 font-sans text-2xl font-bold text-white" style="--index: 1">Booking confirmed</h3>
-          <p class="dialog-stagger-item mt-2 text-sm tracking-wide text-white/80" style="--index: 2">Your session is reserved for {{ confirmationSummary() }}.</p>
+          <h3 id="booking-confirmed-title" class="dialog-stagger-item mt-5 font-sans text-2xl font-bold text-on-brand-deep" style="--index: 1">Booking confirmed</h3>
+          <p class="dialog-stagger-item mt-2 text-base text-on-brand-deep" style="--index: 2">Your session is reserved for {{ confirmationSummary() }}.</p>
         </div>
       </div>
     }

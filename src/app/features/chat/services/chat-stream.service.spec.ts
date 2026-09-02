@@ -55,7 +55,7 @@ describe('ChatStreamService', () => {
   it('uses the exact POST URL, headers, and body while appending split deltas', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(responseFromChunks([
       'data: {"type":"delta","text":"Hel',
-      'lo"}\r\n\r\ndata: {"type":"delta","text":" world"}\r\ndata: {"type":"done"}\r\n\r\n',
+      'lo"}\r\n\r\ndata: {"type":"delta","text":" world"}\r\n\r\ndata: {"type":"done"}\r\n\r\n',
     ]));
     vi.stubGlobal('fetch', fetchMock);
     const events: ChatStreamEvent[] = [];

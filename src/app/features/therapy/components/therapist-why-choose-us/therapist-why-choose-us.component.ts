@@ -10,10 +10,10 @@ import { TherapistWhyChooseUs } from '@/features/therapy/data/therapist.data';
   template: `
     <section class="min-w-0 pt-10 md:pt-14" aria-labelledby="why-heading">
       <div class="flex items-center gap-3">
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand" aria-hidden="true">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand-deep" aria-hidden="true">
           <svg lucideCircleQuestionMark [size]="20" aria-hidden="true"></svg>
         </span>
-        <h2 appAnimateOnScroll style="--index:0" id="why-heading" class="font-sans text-xl font-bold text-ink md:text-2xl">Why Choose Us?</h2>
+        <h2 appAnimateOnScroll style="--index:0" id="why-heading" class="font-sans text-3xl font-bold text-ink md:text-4xl">Why Choose Us?</h2>
       </div>
       <ul class="mt-6 grid grid-cols-2 gap-x-6 gap-y-8" aria-label="Reasons to choose this therapist">
         @for (benefit of benefits(); track benefit.id) {

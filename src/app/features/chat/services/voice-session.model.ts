@@ -22,6 +22,13 @@ export interface VoiceSessionError {
   message: string;
 }
 
+export interface VoiceTranscriptSegment {
+  id: string;
+  text: string;
+  final: boolean;
+  speaker: 'user' | 'agent';
+}
+
 export type VoiceRoomErrorCode = 'unsupported' | 'connection-error' | 'device-error' | 'unexpected-disconnect';
 
 export interface VoiceRoomError {

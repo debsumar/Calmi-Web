@@ -65,7 +65,7 @@ const RIPPLE_DURATION_MS = 420;
         @if (authService.currentUser(); as user) {
           <div class="relative">
             <!-- Profile Trigger -->
-            <button (click)="dropdownOpen.set(!dropdownOpen())" 
+            <button #profileTrigger (click)="dropdownOpen.set(!dropdownOpen())"
                     class="w-9 h-9 flex items-center justify-center rounded-full overflow-hidden border border-hairline hover:ring-2 hover:ring-brand/50 transition-all">
               @if (user.user_metadata['avatar_url']) {
                 <img [src]="user.user_metadata['avatar_url']" alt="Avatar" class="w-full h-full object-cover">
@@ -95,7 +95,7 @@ const RIPPLE_DURATION_MS = 420;
                   <svg [lucideIcon]="'circle-user'" [size]="16" aria-hidden="true"></svg>
                   View Profile
                 </button>
-                <button type="button" (click)="logout()" 
+                <button type="button" (click)="requestLogout($event)"
                         class="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-sunken rounded-lg transition-colors text-left">
                   <svg [lucideIcon]="'log-out'" [size]="16" aria-hidden="true"></svg>
                   Logout
@@ -105,14 +105,14 @@ const RIPPLE_DURATION_MS = 420;
           </div>
         } @else {
           <a routerLink="/auth/identify"
-             class="inline-flex min-h-11 items-center gap-2 rounded-full border border-transparent bg-brand-dark px-4 py-2 text-sm font-semibold text-on-brand transition-all hover:bg-brand-deep dark:border-hairline dark:bg-elevated dark:text-brand-light dark:hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+             class="inline-flex min-h-11 items-center gap-2 rounded-full border border-transparent bg-brand-dark px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-brand-deep dark:border-hairline dark:bg-elevated dark:text-brand-light dark:hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
             <svg [lucideIcon]="'user'" [size]="16" aria-hidden="true"></svg>
             Sign In
           </a>
         }
 
         <!-- Mobile hamburger -->
-        <button (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+        <button #mobileMenuToggle (click)="mobileMenuOpen.set(!mobileMenuOpen())"
                 [attr.aria-label]="mobileMenuOpen() ? 'Close navigation menu' : 'Open navigation menu'"
                 [attr.aria-expanded]="mobileMenuOpen()"
                 aria-controls="mobile-menu"
@@ -134,7 +134,7 @@ const RIPPLE_DURATION_MS = 420;
           </a>
         }
         @if (authService.currentUser()) {
-          <button type="button" (click)="logout(); mobileMenuOpen.set(false)"
+          <button type="button" (click)="requestLogout($event)"
                   class="stagger-enter mt-2 inline-flex items-center justify-center gap-2 rounded-full border border-hairline px-4 py-3 text-base font-semibold text-danger hover:bg-sunken"
                   [style.--index]="navLinks().length + 1">
             <svg [lucideIcon]="'log-out'" [size]="18" aria-hidden="true"></svg>
@@ -142,13 +142,43 @@ const RIPPLE_DURATION_MS = 420;
           </button>
         } @else {
           <a routerLink="/auth/identify" (click)="mobileMenuOpen.set(false)"
-             class="stagger-enter mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-transparent bg-brand-dark px-4 py-3 text-base font-semibold text-on-brand hover:bg-brand-deep dark:border-hairline dark:bg-elevated dark:text-brand-light dark:hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+             class="stagger-enter mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-transparent bg-brand-dark px-4 py-3 text-base font-semibold text-white hover:bg-brand-deep dark:border-hairline dark:bg-elevated dark:text-brand-light dark:hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
              [style.--index]="navLinks().length + 1">
             <svg [lucideIcon]="'user'" [size]="18" aria-hidden="true"></svg>
             Sign In
           </a>
         }
       </div>
+    }
+
+    @if (logoutConfirmOpen()) {
+      <div class="fixed inset-0 z-50 grid place-items-center bg-scrim p-4" (click)="cancelLogout()">
+        <div role="dialog" aria-modal="true" aria-labelledby="logout-confirm-title"
+             tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="cancelLogout()"
+             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-elevated/10 p-8 shadow-2xl backdrop-blur-sm dark:border-white/10">
+          <h3 id="logout-confirm-title" class="dialog-stagger-item text-center font-sans text-2xl font-bold text-white" style="--index: 0">
+            Log out?
+          </h3>
+          <p class="dialog-stagger-item mt-2 text-center text-sm tracking-wide text-white/80" style="--index: 1">
+            You will need to sign in again to continue where you left off.
+          </p>
+          <div class="dialog-stagger-item mt-6 flex gap-3" style="--index: 2">
+            <button #logoutConfirmCancelButton type="button" (click)="cancelLogout()"
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-white/30 bg-white/10 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+              Cancel
+            </button>
+            <button type="button" (click)="confirmLogout()"
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+              Yes, log out
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  `,
+  styles: `
+    @media (prefers-reduced-transparency: reduce) {
+      .confirmation-panel { background-color: var(--color-brand-deep); backdrop-filter: none; }
     }
   `,
 })
@@ -157,6 +187,7 @@ export class AppTopbar {
   authService = inject(AuthService);
   mobileMenuOpen = signal(false);
   dropdownOpen = signal(false);
+  logoutConfirmOpen = signal(false);
 
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
@@ -164,6 +195,11 @@ export class AppTopbar {
   private readonly desktopNav = viewChild<ElementRef<HTMLElement>>('desktopNav');
   private readonly inkIndicator = viewChild<ElementRef<HTMLElement>>('inkIndicator');
   private readonly inkRipple = viewChild<ElementRef<HTMLElement>>('inkRipple');
+  private readonly profileTrigger = viewChild<ElementRef<HTMLButtonElement>>('profileTrigger');
+  private readonly mobileMenuToggle = viewChild<ElementRef<HTMLButtonElement>>('mobileMenuToggle');
+  private readonly logoutConfirmCancelButton = viewChild<ElementRef<HTMLButtonElement>>('logoutConfirmCancelButton');
+  private logoutTrigger: HTMLElement | null = null;
+  private logoutFallback: HTMLElement | null = null;
 
   /** Last resting position, so the next move knows where to stretch from. */
   private previous: { left: number; width: number } | null = null;
@@ -214,9 +250,48 @@ export class AppTopbar {
     void this.router.navigate(['/profile']);
   }
 
-  logout(): void {
-    void this.authService.logout().catch(() => undefined);
+  requestLogout(event: Event): void {
+    const trigger = event.currentTarget;
+    this.logoutTrigger = trigger instanceof HTMLElement
+      ? trigger
+      : this.document.activeElement instanceof HTMLElement
+        ? this.document.activeElement
+        : null;
+    this.logoutFallback = trigger instanceof HTMLElement && trigger.closest('#mobile-menu') !== null
+      ? this.mobileMenuToggle()?.nativeElement ?? null
+      : this.profileTrigger()?.nativeElement ?? null;
+
     this.dropdownOpen.set(false);
+    this.mobileMenuOpen.set(false);
+    this.logoutConfirmOpen.set(true);
+    afterNextRender({
+      write: () => this.logoutConfirmCancelButton()?.nativeElement.focus(),
+    }, { injector: this.injector });
+  }
+
+  cancelLogout(): void {
+    this.logoutConfirmOpen.set(false);
+    this.restoreLogoutFocus();
+  }
+
+  confirmLogout(): void {
+    void this.authService.logout().catch(() => undefined);
+    this.logoutConfirmOpen.set(false);
+    this.dropdownOpen.set(false);
+    this.restoreLogoutFocus();
+  }
+
+  private restoreLogoutFocus(): void {
+    const trigger = this.logoutTrigger;
+    const fallback = this.logoutFallback;
+    this.logoutTrigger = null;
+    this.logoutFallback = null;
+
+    if (trigger?.isConnected) {
+      trigger.focus();
+    } else {
+      fallback?.focus();
+    }
   }
 
   private prefersReducedMotion(): boolean {
