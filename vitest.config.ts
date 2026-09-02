@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -19,8 +20,16 @@ import { defineConfig } from 'vitest/config';
  *   straggler surfaces as an error instead of an apparent freeze; `src/test-setup.ts`
  *   also clears leaked handles after every test. Prefer `npm run test:safe`, which
  *   kills the process tree if the run still refuses to exit.
+ * - `resolve.alias` mirrors the `@/*` path mapping in tsconfig.json. The builder passes
+ *   the tsconfig paths through when tests run via `ng test`, but a bare `npx vitest`
+ *   only reads this file, so the alias has to be declared here too.
  */
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src/app', import.meta.url)),
+    },
+  },
   test: {
     pool: 'threads',
     isolate: true,
