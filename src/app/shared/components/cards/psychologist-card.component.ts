@@ -23,7 +23,10 @@ const DRAG_TOLERANCE_PX = 10;
             {{ initials() }}
           </span>
         }
-        <div class="absolute inset-0 bg-gradient-to-t from-scrim via-transparent to-transparent"></div>
+        <!-- Scrim holds the strong stop across the whole name/badge band, so the
+             name's contrast comes from the scrim and not from whatever the photo
+             happens to be behind it. -->
+        <div class="absolute inset-0 bg-gradient-to-t from-scrim-strong from-0% via-scrim-strong via-20% to-transparent to-72%"></div>
 
         @if (available()) {
           <span class="absolute bottom-14 left-3 inline-flex items-center gap-1.5 bg-surface border border-hairline rounded-full px-2.5 py-1 text-xs font-semibold text-ink">
@@ -31,7 +34,7 @@ const DRAG_TOLERANCE_PX = 10;
             Available
           </span>
         }
-        <p class="absolute bottom-3 left-3 right-3 text-on-brand text-xl font-bold truncate">{{ name() }}</p>
+        <p class="absolute bottom-3 left-3 right-3 text-on-media text-xl font-bold truncate">{{ name() }}</p>
       </div>
 
       <!-- Price + rating -->

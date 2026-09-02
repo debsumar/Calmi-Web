@@ -47,7 +47,7 @@ describe('TherapistTestimonialsComponent', () => {
     expect(component.index()).toBe(0);
   });
 
-  it('clamps a long quote to a fixed-height card, expands on Show more, and collapses when navigating', () => {
+  it('clamps a long quote to a min-height card, expands on Show more, and collapses when navigating', () => {
     const root = fixture.nativeElement as HTMLElement;
     const component = fixture.componentInstance;
     const quote = () => root.querySelector('blockquote') as HTMLElement;
@@ -57,11 +57,11 @@ describe('TherapistTestimonialsComponent', () => {
     // rather than appear on every card.
     expect(component.quoteOverflows()).toBe(false);
     expect(toggle()).toBeNull();
-    // Collapsed cards are a fixed height for every testimonial; only expanding
-    // is allowed to change it.
+    // The card height is a floor in both states: collapsed cards line up, but a
+    // quote that needs more room grows instead of being clipped.
     const card = () => root.querySelector('.testimonial-card') as HTMLElement;
-    expect(card().classList.contains('h-72')).toBe(true);
-    expect(card().classList.contains('min-h-72')).toBe(false);
+    expect(card().classList.contains('min-h-72')).toBe(true);
+    expect(card().classList.contains('h-72')).toBe(false);
     expect(quote().classList.contains('line-clamp-4')).toBe(true);
 
     // Simulate a quote the clamp actually truncates.
@@ -82,7 +82,7 @@ describe('TherapistTestimonialsComponent', () => {
     fixture.detectChanges();
     expect(component.expanded()).toBe(false);
     expect(component.quoteOverflows()).toBe(false);
-    expect(card().classList.contains('h-72')).toBe(true);
+    expect(card().classList.contains('min-h-72')).toBe(true);
     expect(quote().classList.contains('line-clamp-4')).toBe(true);
     expect(toggle()).toBeNull();
   });

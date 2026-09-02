@@ -14,12 +14,12 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
   imports: [RouterLink, LucideArrowLeft, LucideTarget, LucideBriefcaseBusiness, LucideMedal, AnimateOnScrollDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="w-full bg-brand-deep text-on-brand">
+    <div class="w-full bg-brand-deep text-on-brand-deep">
       <nav aria-label="Breadcrumb" class="mx-auto max-w-6xl px-4 py-4 md:px-8">
         <ol class="flex flex-wrap items-center gap-2 text-xs">
           <li>
             <a [routerLink]="['/therapy']" fragment="top-psychologists"
-               class="inline-flex items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-brand focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep">
+               class="inline-flex items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-brand-deep focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep">
               <svg lucideArrowLeft [size]="16" aria-hidden="true"></svg>
               <span>Top Psychologists</span>
             </a>
@@ -65,10 +65,10 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
 
           <section class="min-w-0 border-t border-hairline pt-8 md:col-span-2 lg:col-span-1 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0" aria-labelledby="expertise-heading">
             <div class="flex items-center gap-3">
-              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand" aria-hidden="true">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand-deep" aria-hidden="true">
                 <svg lucideTarget [size]="20" aria-hidden="true"></svg>
               </span>
-              <h2 appAnimateOnScroll style="--index:3" id="expertise-heading" class="font-sans text-xl font-bold leading-tight whitespace-nowrap text-ink md:text-2xl">Areas of Expertise</h2>
+              <h2 appAnimateOnScroll style="--index:3" id="expertise-heading" class="font-sans text-3xl font-bold leading-tight text-ink md:text-4xl">Areas of Expertise</h2>
             </div>
             <div class="mt-6 flex flex-wrap gap-3">
               @for (specialty of profile().specialties; track specialty) {
@@ -78,7 +78,7 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
           </section>
         </div>
 
-        <div class="grid grid-cols-1 bg-brand-deep text-on-brand sm:grid-cols-2 md:grid-cols-4">
+        <div class="grid grid-cols-1 bg-brand-deep text-on-brand-deep sm:grid-cols-2 md:grid-cols-4">
           @for (stat of stats(); track stat.label) {
             <div class="border-b border-brand-light/40 p-5 text-center last:border-b-0 sm:border-r sm:border-b-0 md:last:border-r-0">
               <p class="break-words text-base font-bold">{{ stat.value }}</p>

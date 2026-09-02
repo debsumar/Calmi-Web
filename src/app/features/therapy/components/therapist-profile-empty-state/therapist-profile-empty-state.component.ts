@@ -11,7 +11,7 @@ import { RouterLink } from '@angular/router';
         <h1 id="profile-not-found" class="font-sans text-3xl font-bold leading-tight text-ink md:text-5xl">Profile not found</h1>
         <p class="mt-4 text-base text-ink-soft">This therapist profile is unavailable. Return to Top Psychologists to choose another therapist.</p>
         <a [routerLink]="['/therapy']" fragment="top-psychologists"
-           class="mt-6 inline-flex rounded-full bg-brand-deep px-5 py-3 text-base font-semibold text-on-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+           class="mt-6 inline-flex rounded-full bg-brand-deep px-5 py-3 text-base font-semibold text-on-brand-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface">
           Browse psychologists
         </a>
       </div>

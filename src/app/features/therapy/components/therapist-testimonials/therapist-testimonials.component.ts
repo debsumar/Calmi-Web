@@ -19,10 +19,10 @@ import { TherapistTestimonial } from '@/features/therapy/data/therapist.data';
   template: `
     <section class="min-w-0 pt-10 md:pt-14" aria-labelledby="testimonials-heading">
       <div class="flex items-center gap-3">
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand" aria-hidden="true">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand-deep" aria-hidden="true">
           <svg lucideMessageSquareQuote [size]="20" aria-hidden="true"></svg>
         </span>
-        <h2 appAnimateOnScroll style="--index:0" id="testimonials-heading" class="font-sans text-xl font-bold text-ink md:text-2xl">Hear from Clients!</h2>
+        <h2 appAnimateOnScroll style="--index:0" id="testimonials-heading" class="font-sans text-3xl font-bold text-ink md:text-4xl">Hear from Clients!</h2>
       </div>
 
       <!-- Stack wrapper: the two layers behind are decorative depth only, so the
@@ -40,9 +40,7 @@ import { TherapistTestimonial } from '@/features/therapy/data/therapist.data';
 
         @for (item of [testimonial()]; track index()) {
           <div #card
-               class="testimonial-card relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface p-5 shadow-card md:p-6"
-               [class.h-72]="!expanded()"
-               [class.min-h-72]="expanded()"
+               class="testimonial-card relative flex min-h-72 min-w-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface p-5 shadow-card md:p-6"
                [attr.data-index]="index()"
                [attr.data-direction]="direction()">
             <div class="flex items-center gap-1" [attr.aria-label]="'Rating ' + item.rating + ' out of 5'">
@@ -52,20 +50,20 @@ import { TherapistTestimonial } from '@/features/therapy/data/therapist.data';
               }
               <span class="ml-2 text-xs font-semibold text-ink-soft">{{ item.rating }}/5</span>
             </div>
-            <blockquote #quote id="testimonial-quote" class="mt-4 pr-12 text-xs leading-relaxed text-ink-soft"
+            <blockquote #quote id="testimonial-quote" class="mt-4 pr-12 text-base leading-relaxed text-ink-soft"
                         [class.line-clamp-4]="!expanded()">“{{ item.quote }}”</blockquote>
             <!-- Rendered only when the clamp actually truncates this quote,
                  measured from the DOM rather than guessed from length. -->
             @if (showToggle()) {
               <button type="button" (click)="toggleExpanded()"
                       [attr.aria-expanded]="expanded()" aria-controls="testimonial-quote"
-                      class="mt-2 self-start rounded-full text-xs font-semibold text-brand-deep underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                      class="mt-2 self-start rounded-full text-xs font-semibold text-brand-dark dark:text-brand-light underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                 {{ expanded() ? 'Show less' : 'Show more' }}
               </button>
             }
             <div class="mt-auto flex items-center justify-between gap-3 pt-5">
               <div class="flex min-w-0 items-center gap-3">
-                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sunken text-xs font-bold text-brand-deep"
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sunken text-xs font-bold text-brand-dark dark:text-brand-light"
                       role="img" [attr.aria-label]="'Placeholder avatar for ' + item.author">{{ initials(item.author) }}</span>
                 <p class="min-w-0 truncate text-xs font-semibold text-ink">– {{ item.author }}</p>
               </div>
@@ -77,7 +75,7 @@ import { TherapistTestimonial } from '@/features/therapy/data/therapist.data';
                     <svg lucideArrowLeft [size]="16" aria-hidden="true"></svg>
                   </button>
                   <button type="button" aria-label="Show next testimonial" (click)="next()"
-                          class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-deep text-on-brand transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                          class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-deep text-on-brand-deep transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface">
                     <svg lucideArrowRight [size]="16" aria-hidden="true"></svg>
                   </button>
                 </div>
@@ -93,9 +91,10 @@ import { TherapistTestimonial } from '@/features/therapy/data/therapist.data';
     </section>
   `,
   styles: `
-    /* Height is owned by the template (fixed while collapsed, auto once
-       expanded); the swipe itself runs through the Web Animations API in the
-       component so it cannot be silently dropped by a stylesheet rule. */
+    /* Height is a floor, not a cap (min-h-72 in the template): every collapsed
+       card lines up, but a quote that needs more room at large text sizes grows
+       instead of being clipped. The swipe itself runs through the Web Animations
+       API in the component so it cannot be silently dropped by a stylesheet rule. */
     .testimonial-card {
       will-change: transform;
     }
