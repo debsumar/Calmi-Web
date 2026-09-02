@@ -1,7 +1,47 @@
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { StudentVerificationRequest } from '../models/student-verification.model';
-import { FIXTURE_CHECK_DELAY_MS, OTP_TTL_SECONDS, RESEND_COOLDOWN_SECONDS } from './student-verification.fixtures';
+import { Institution, StudentVerificationRequest } from '../models/student-verification.model';
+import { FIXTURE_CHECK_DELAY_MS, OTP_TTL_SECONDS, RESEND_COOLDOWN_SECONDS, STUDENT_VERIFICATION_INSTITUTIONS } from './student-verification.fixtures';
+import { INSTITUTION_DIRECTORY_LOADER, InstitutionDirectoryLoader } from './institution-directory.loader';
+
+/**
+ * The generated directory is injected rather than module-mocked: the Angular
+ * unit-test system rejects `vi.mock()` on relative imports and points at TestBed.
+ */
+const directoryMock: { shouldFail: boolean; institutions: readonly Institution[] } = {
+  shouldFail: false,
+  institutions: [
+    {
+      id: 'jadavpur-university',
+      name: 'Generated Jadavpur University',
+      domains: ['jadavpur.edu'],
+      rorId: 'ror-jadavpur',
+    },
+    {
+      id: 'ror-only-university',
+      name: 'ROR Only University',
+      domains: [],
+      rorId: 'ror-only',
+    },
+    {
+      id: 'generated-only-university',
+      name: 'Generated Only University',
+      domains: ['generated.example'],
+    },
+    {
+      id: 'generated-public-suffix',
+      name: 'Generated Public Suffix',
+      domains: ['ac.in'],
+    },
+  ],
+};
+
+const directoryLoaderStub: InstitutionDirectoryLoader = () => (
+  directoryMock.shouldFail
+    ? Promise.reject(new Error('generated directory unavailable'))
+    : Promise.resolve({ GENERATED_INSTITUTIONS: directoryMock.institutions })
+);
+
 import { StudentVerificationService } from './student-verification.service';
 
 describe('StudentVerificationService', () => {
@@ -22,7 +62,13 @@ describe('StudentVerificationService', () => {
   };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [StudentVerificationService] });
+    directoryMock.shouldFail = false;
+    TestBed.configureTestingModule({
+      providers: [
+        StudentVerificationService,
+        { provide: INSTITUTION_DIRECTORY_LOADER, useValue: directoryLoaderStub },
+      ],
+    });
     service = TestBed.inject(StudentVerificationService);
     vi.useFakeTimers();
   });
@@ -32,7 +78,7 @@ describe('StudentVerificationService', () => {
     vi.useRealTimers();
   });
 
-  it('resolves institutions and checks exact institutional domains', () => {
+  it('resolves institutions and checks exact and departmental institutional domains', () => {
     const institution = service.resolveInstitution(' jadavpur university ');
 
     expect(institution?.id).toBe('jadavpur-university');
@@ -40,6 +86,85 @@ describe('StudentVerificationService', () => {
     expect(service.isAllowedDomain('student@example.com', institution)).toBe(false);
     expect(service.isAllowedDomain('not-an-email', institution)).toBe(false);
     expect(service.isAllowedDomain('student@jadavpuruniversity.in', null)).toBe(false);
+
+    const iitBombay = service.resolveInstitution('IIT Bombay');
+    expect(service.supportsEmailVerification(iitBombay)).toBe(true);
+    expect(service.supportsEmailVerification({ id: 'ror-only', name: 'ROR Only', domains: [] })).toBe(false);
+    expect(service.supportsEmailVerification({ id: 'suffix', name: 'Suffix', domains: ['ac.in'] })).toBe(false);
+    expect(service.isAllowedDomain('student@cse.iitb.ac.in', iitBombay)).toBe(true);
+    expect(service.isAllowedDomain('student@iitb.ac.in', iitBombay)).toBe(true);
+  });
+
+  it('rejects malformed, lookalike, and sibling domains while normalizing uppercase independent of locale', () => {
+    const iitBombay = service.resolveInstitution('IIT Bombay');
+
+    const cases = [
+      ['student@CSE.IITB.AC.IN', true],
+      ['student@iitb.ac.in.', false],
+      ['student@evil-iitb.ac.in', false],
+      ['student@xn--iitb-9za.ac.in', false],
+      ['student@cse.iіtb.ac.in', false],
+      ['student@first@iitb.ac.in', false],
+      ['student@@iitb.ac.in', false],
+    ] as const;
+
+    for (const [email, expected] of cases) {
+      expect(service.isAllowedDomain(email, iitBombay)).toBe(expected);
+    }
+  });
+
+  it('rejects bare public suffixes and malformed domain labels', () => {
+    const institution = { id: 'suffix', name: 'Suffix University', domains: ['com', 'example..edu'] };
+
+    expect(service.isAllowedDomain('student@com', institution)).toBe(false);
+    expect(service.isAllowedDomain('student@university.com', institution)).toBe(false);
+    expect(service.isAllowedDomain('student@example.edu', institution)).toBe(false);
+    expect(service.isAllowedDomain('student@.example.edu', { ...institution, domains: ['example.edu'] })).toBe(false);
+    expect(service.isAllowedDomain('student@dept..example.edu', { ...institution, domains: ['example.edu'] })).toBe(false);
+    expect(service.isAllowedDomain('student@ac.in', { ...institution, domains: ['ac.in'] })).toBe(false);
+    expect(service.isAllowedDomain('student@evil.ac.in', { ...institution, domains: ['ac.in'] })).toBe(false);
+  });
+
+  it('loads and merges the generated directory once, with fixture precedence and sorted names', async () => {
+    const firstLoad = service.loadInstitutionDirectory();
+    const secondLoad = service.loadInstitutionDirectory();
+
+    expect(firstLoad).toBe(secondLoad);
+    expect(service.institutionDirectoryStatus()).toBe('loading');
+    await firstLoad;
+
+    expect(service.institutionDirectoryStatus()).toBe('loaded');
+    const jadavpur = service.resolveInstitution('Jadavpur University');
+    expect(jadavpur?.name).toBe('Jadavpur University');
+    expect(jadavpur?.rorId).toBe('ror-jadavpur');
+    expect(jadavpur?.domains).toEqual(expect.arrayContaining(['jadavpur.edu', 'jadavpuruniversity.in']));
+    expect(service.resolveInstitution('Generated Only University')?.domains).toEqual(['generated.example']);
+    expect(service.resolveInstitution('Generated Public Suffix')?.domains).toEqual([]);
+    expect(service.resolveInstitution('ROR Only University')?.domains).toEqual([]);
+    expect(service.institutions().map(({ name }) => name)).toEqual(
+      [...service.institutions()].map(({ name }) => name).sort((left, right) => left.localeCompare(right)),
+    );
+  });
+
+  it('rejects email eligibility for a searchable institution without domains', async () => {
+    await service.loadInstitutionDirectory();
+    const institution = service.resolveInstitution('ROR Only University');
+
+    expect(institution).not.toBeNull();
+    expect(service.isAllowedDomain('student@ror-only.example', institution)).toBe(false);
+  });
+
+  it('falls back to fixtures and logs one import failure', async () => {
+    directoryMock.shouldFail = true;
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await service.loadInstitutionDirectory();
+    await service.loadInstitutionDirectory();
+
+    expect(service.institutionDirectoryStatus()).toBe('failed');
+    expect(service.institutions()).toBe(STUDENT_VERIFICATION_INSTITUTIONS);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    errorSpy.mockRestore();
   });
 
   it('sends email proof, checks a six-digit code, and resolves the fixture', () => {

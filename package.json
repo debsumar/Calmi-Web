@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "set-license": "node scripts/set-license.mjs",
+    "institutions:refresh": "node scripts/build-institutions.mjs",
     "prestart": "npm run set-license",
     "start": "ng serve",
     "prestart:prod": "npm run set-license",
@@ -16,6 +17,7 @@
     "watch": "ng build --watch --configuration development",
     "pretest": "npm run set-license",
     "test": "ng test",
+    "test:safe": "node scripts/run-tests.mjs",
     "test:watch": "ng test --watch",
     "test:chat": "ng test --include=src/app/features/chat/**/*.spec.ts",
     "test:coverage": "ng test --coverage",

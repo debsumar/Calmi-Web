@@ -13,6 +13,7 @@ export interface Institution {
   id: string;
   name: string;
   domains: readonly string[];
+  rorId?: string;
 }
 
 export interface StudentVerificationRequest {

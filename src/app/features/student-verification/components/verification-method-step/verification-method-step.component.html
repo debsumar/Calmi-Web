@@ -21,7 +21,7 @@
         [attr.aria-expanded]="isInstitutionOpen()"
         [attr.aria-activedescendant]="activeInstitutionId()"
         [attr.aria-invalid]="showError(form.controls.institutionName) ? 'true' : null"
-        [disabled]="pending()"
+        [attr.disabled]="pending() ? '' : null"
         (focus)="onInstitutionFocus()"
         (input)="onInstitutionInput($event)"
         (keydown)="onInstitutionKeydown($event)"
@@ -48,7 +48,7 @@
                 (pointerdown)="$event.preventDefault()"
                 (click)="selectInstitution(institution)">
                 <span class="institution-name">{{ institution.name }}</span>
-                <span class="institution-domain">{{ institution.domains.join(', ') }}</span>
+                <span class="institution-domain">{{ institutionSecondaryText(institution) }}</span>
               </div>
             } @empty {
               <p class="institution-empty" role="status">No institutions match “{{ institutionQuery() }}”.</p>
@@ -65,12 +65,16 @@
 
   <fieldset>
     <legend>How would you like to prove enrolment?</legend>
-    <label class="choice">
-      <input type="radio" formControlName="method" value="email" [disabled]="pending()" (change)="onMethodChange()" />
-      <span><span class="choice-title">Institutional email</span><span class="choice-copy">We email a 6-digit code to your college address. Fastest option.</span></span>
+    <label class="choice" [class.is-disabled]="emailVerificationUnavailable()">
+      <input type="radio" formControlName="method" value="email" [attr.disabled]="pending() || emailVerificationUnavailable() ? '' : null" [attr.aria-describedby]="emailMethodDescriptionId()" (change)="onMethodChange()" />
+      <span><span class="choice-title">Institutional email</span><span class="choice-copy">We email a 6-digit code to your college address. Fastest option.</span>
+        @if (emailMethodHint(); as hint) {
+          <span id="verification-email-method-hint" class="choice-copy" role="status" aria-live="polite">{{ hint }}</span>
+        }
+      </span>
     </label>
     <label class="choice">
-      <input type="radio" formControlName="method" value="document" [disabled]="pending()" (change)="onMethodChange()" />
+      <input type="radio" formControlName="method" value="document" [attr.disabled]="pending() ? '' : null" (change)="onMethodChange()" />
       <span><span class="choice-title">Upload student ID</span><span class="choice-copy">JPG, PNG or PDF up to 3 MB. Deleted once a decision is made.</span></span>
     </label>
   </fieldset>
@@ -85,7 +89,7 @@
       placeholder="you@institution.example"
       aria-describedby="verification-email-hint verification-email-error"
       [attr.aria-invalid]="showError(form.controls.institutionalEmail) ? 'true' : null"
-      [disabled]="pending()"
+      [attr.disabled]="pending() ? '' : null"
       (blur)="onBlur('institutionalEmail')" />
     <p class="hint" id="verification-email-hint">Must match your institution's domain.</p>
     @if (showError(form.controls.institutionalEmail)) {
@@ -131,7 +135,7 @@
   </div>
 
   <label class="consent">
-    <input type="checkbox" formControlName="consentAccepted" [disabled]="pending()" aria-describedby="verification-consent-error" [attr.aria-invalid]="showError(form.controls.consentAccepted) ? 'true' : null" />
+    <input type="checkbox" formControlName="consentAccepted" [attr.disabled]="pending() ? '' : null" aria-describedby="verification-consent-error" [attr.aria-invalid]="showError(form.controls.consentAccepted) ? 'true' : null" />
     <span>I confirm I am currently enrolled and agree to Calmi verifying this with my institution, as described in the Privacy Policy.</span>
   </label>
   @if (showError(form.controls.consentAccepted)) {

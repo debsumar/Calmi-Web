@@ -1,0 +1,53 @@
+name: Refresh institution dataset
+
+on:
+  schedule:
+    - cron: '0 3 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out default branch
+        # Pinned to immutable SHAs: this job holds contents:write, so a moved tag
+        # would run untrusted code with repository write access.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: Regenerate institution dataset
+        run: node scripts/build-institutions.mjs
+
+      - name: Open refresh pull request when data changed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          generated_file="src/app/features/student-verification/services/institutions.data.ts"
+          if git diff --quiet -- "$generated_file"; then
+            echo "No generated institution changes."
+            exit 0
+          fi
+
+          branch="automation/refresh-institutions-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --create "$branch"
+          git add "$generated_file"
+          git commit -m "chore: refresh institution dataset"
+          git push --set-upstream origin "$branch"
+          gh pr create \
+            --base "$BASE_BRANCH" \
+            --head "$branch" \
+            --title "chore: refresh institution dataset" \
+            --body "Automated monthly refresh from pinned hipolabs and paginated ROR India education data."
