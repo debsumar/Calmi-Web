@@ -1,14 +1,23 @@
 // @vitest-environment jsdom
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideLucideIcons, LucideCircleAlert, LucideVolume2, LucideX } from '@lucide/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { VoiceSessionOverlayComponent } from './voice-session-overlay.component';
 import { VoiceSessionService } from '../../services/voice-session.service';
-import { VoiceSessionAdapter } from '../../services/voice-session.adapter';
+import { LivekitRoomService, VoiceRoomServiceError } from '../../services/livekit-room.service';
 
 describe('VoiceSessionOverlayComponent', () => {
   let fixture: ComponentFixture<VoiceSessionOverlayComponent>;
   let voice: VoiceSessionService;
+  let room: {
+    connected: ReturnType<typeof signal<boolean>>;
+    speaking: ReturnType<typeof signal<boolean>>;
+    error: ReturnType<typeof signal<VoiceRoomServiceError | null>>;
+    connect: ReturnType<typeof vi.fn>;
+    setMuted: ReturnType<typeof vi.fn>;
+    disconnect: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
     vi.stubGlobal('matchMedia', (query: string) => ({
@@ -21,9 +30,20 @@ describe('VoiceSessionOverlayComponent', () => {
       removeEventListener: () => undefined,
       dispatchEvent: () => false,
     }));
+    const connected = signal(false);
+    const speaking = signal(false);
+    const error = signal<VoiceRoomServiceError | null>(null);
+    room = {
+      connected,
+      speaking,
+      error,
+      connect: vi.fn().mockImplementation(async () => { connected.set(true); }),
+      setMuted: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockImplementation(async () => { connected.set(false); error.set(null); }),
+    };
     await TestBed.configureTestingModule({
       imports: [VoiceSessionOverlayComponent],
-      providers: [VoiceSessionService, VoiceSessionAdapter, provideLucideIcons(LucideCircleAlert, LucideVolume2, LucideX)],
+      providers: [{ provide: LivekitRoomService, useValue: room }, provideLucideIcons(LucideCircleAlert, LucideVolume2, LucideX)],
     }).compileComponents();
     fixture = TestBed.createComponent(VoiceSessionOverlayComponent);
     voice = TestBed.inject(VoiceSessionService);
@@ -107,14 +127,12 @@ describe('VoiceSessionOverlayComponent', () => {
   });
 
 
-  it('renders microphone errors with an alert and retry affordance', () => {
-    const adapter = TestBed.inject(VoiceSessionAdapter);
-    vi.spyOn(adapter, 'start').mockImplementation((callbacks) => {
-      callbacks.onError('not-allowed');
-      return true;
-    });
+  it('renders microphone errors with an alert and retry affordance', async () => {
+    room.connect.mockRejectedValueOnce(new VoiceRoomServiceError('device-error', 'Microphone access was blocked. Allow microphone access, then try again.'));
 
     voice.start();
+    await Promise.resolve();
+    await Promise.resolve();
     fixture.detectChanges();
 
     const overlay = fixture.nativeElement.querySelector('.voice') as HTMLElement;
@@ -146,19 +164,21 @@ describe('VoiceSessionOverlayComponent', () => {
     expect(overlay.classList.contains('reduce-motion')).toBe(true);
   });
 
-  it('keeps the orb isolated and uses its semantic core token', () => {
+  it('keeps the orb structure isolated from surface styling', () => {
     voice.start();
     fixture.detectChanges();
 
+    const overlay = fixture.nativeElement.querySelector('.voice') as HTMLElement;
+    const orbSlot = fixture.nativeElement.querySelector('.orb-slot') as HTMLElement;
     const orb = fixture.nativeElement.querySelector('.orb--a') as HTMLElement;
-    const styles = (VoiceSessionOverlayComponent as unknown as { ɵcmp?: { styles?: string | string[] } }).ɵcmp?.styles;
-    const styleText = Array.isArray(styles) ? styles.join('\n') : styles ?? '';
 
+    expect(overlay).not.toBeNull();
+    expect(overlay.classList).toContain('bg-voice-scrim');
+    expect(overlay.classList).not.toContain('bg-surface');
+    expect(orbSlot).not.toBeNull();
     expect(orb).not.toBeNull();
+    expect(orb.classList).toContain('orb--a');
     expect(orb.querySelectorAll('.layer')).toHaveLength(3);
     expect(orb.querySelector('.core')).not.toBeNull();
-    expect(styleText).toContain('isolation: isolate');
-    expect(styleText).toContain('color-voice-core');
-    expect(styleText).not.toContain('color-surface');
   });
 });

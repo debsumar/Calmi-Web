@@ -105,6 +105,7 @@ export class ChatConversationComponent implements OnInit, OnDestroy {
     if (this.conversationSurface() === 'rumi-embedded') {
       this.store.setEmbeddedConversationVisible(false);
     }
+    this.store.stopGeneration();
     this.voice.endForSurface(this.conversationSurface());
   }
 

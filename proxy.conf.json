@@ -1,0 +1,11 @@
+{
+  "/calmi-api": {
+    "target": "https://calmi-voice-demo-production.up.railway.app",
+    "changeOrigin": true,
+    "secure": true,
+    "ws": false,
+    "pathRewrite": {
+      "^/calmi-api": ""
+    }
+  }
+}

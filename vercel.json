@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/calmi-api/(.*)",
+      "destination": "https://calmi-voice-demo-production.up.railway.app/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

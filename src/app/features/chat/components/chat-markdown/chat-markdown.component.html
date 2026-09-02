@@ -1,0 +1,45 @@
+@for (block of blocks(); track $index) {
+  @switch (block.kind) {
+    @case ('paragraph') {
+      <p>
+        @for (segment of block.segments; track $index) {
+          @switch (segment.kind) {
+            @case ('text') { {{ segment.text }} }
+            @case ('strong') { <strong>{{ segment.text }}</strong> }
+            @case ('break') { <br /> }
+          }
+        }
+      </p>
+    }
+    @case ('unordered-list') {
+      <ul>
+        @for (item of block.items; track $index) {
+          <li>
+            @for (segment of item; track $index) {
+              @switch (segment.kind) {
+                @case ('text') { {{ segment.text }} }
+                @case ('strong') { <strong>{{ segment.text }}</strong> }
+                @case ('break') { <br /> }
+              }
+            }
+          </li>
+        }
+      </ul>
+    }
+    @case ('ordered-list') {
+      <ol>
+        @for (item of block.items; track $index) {
+          <li>
+            @for (segment of item; track $index) {
+              @switch (segment.kind) {
+                @case ('text') { {{ segment.text }} }
+                @case ('strong') { <strong>{{ segment.text }}</strong> }
+                @case ('break') { <br /> }
+              }
+            }
+          </li>
+        }
+      </ol>
+    }
+  }
+}
