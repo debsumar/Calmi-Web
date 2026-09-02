@@ -22,16 +22,98 @@ describe('VerificationMethodStepComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders institution combobox data, radio fieldset, consent, and native file input', () => {
+  it('renders an accessible institution combobox, radio fieldset, consent, and native file input', () => {
     const root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelector('input[list="verification-institutions"]')).not.toBeNull();
+    const combobox = root.querySelector('#verification-institution') as HTMLInputElement;
+    expect(combobox.getAttribute('role')).toBe('combobox');
+    expect(combobox.getAttribute('aria-expanded')).toBe('false');
+    expect(combobox.getAttribute('aria-controls')).toBe('verification-institution-options');
     expect(root.querySelectorAll('input[type="radio"]')).toHaveLength(2);
     expect(root.querySelector('fieldset legend')?.textContent).toContain('prove enrolment');
     expect(root.querySelector('input[type="file"]')).not.toBeNull();
     expect(root.querySelector('button[type="submit"]')?.hasAttribute('disabled')).toBe(true);
   });
 
-  it('rehydrates preserved request fields when returning to collection', () => {
+  it('filters institutions and exposes their allowed domain as secondary text', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const combobox = root.querySelector('#verification-institution') as HTMLInputElement;
+    combobox.value = 'IIT Khar';
+    combobox.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(root.querySelector('[role="listbox"]')).not.toBeNull();
+    const options = root.querySelectorAll('[role="option"]');
+    expect(options).toHaveLength(1);
+    expect(options[0].textContent).toContain('IIT Kharagpur');
+    expect(options[0].querySelector('.institution-domain')?.textContent).toContain('iitkgp.ac.in');
+  });
+
+  it('selects an institution with Home and Enter keyboard navigation', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const combobox = root.querySelector('#verification-institution') as HTMLInputElement;
+    combobox.focus();
+    combobox.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    combobox.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.form.controls.institutionName.value).toBe('IIT Bombay');
+    expect(combobox.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('wires active descendant and selected option state for keyboard users', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const combobox = root.querySelector('#verification-institution') as HTMLInputElement;
+    combobox.focus();
+    combobox.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    fixture.detectChanges();
+
+    const activeId = combobox.getAttribute('aria-activedescendant');
+    expect(combobox.getAttribute('aria-expanded')).toBe('true');
+    expect(activeId).toBeTruthy();
+    expect(root.querySelector(`#${activeId}`)?.getAttribute('role')).toBe('option');
+    expect(root.querySelector(`#${activeId}`)?.getAttribute('aria-selected')).toBe('false');
+    expect(root.querySelector('[role="option"][aria-selected="true"]')).toBeNull();
+  });
+
+  it('moves the active descendant to the end of a long filtered list', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const combobox = root.querySelector('#verification-institution') as HTMLInputElement;
+    combobox.focus();
+    combobox.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+    fixture.detectChanges();
+
+    const lastInstitution = STUDENT_VERIFICATION_INSTITUTIONS[STUDENT_VERIFICATION_INSTITUTIONS.length - 1];
+    expect(combobox.getAttribute('aria-activedescendant')).toBe(`verification-institution-option-${lastInstitution.id}`);
+  });
+
+  it('closes on Escape and reports an empty filter state', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const combobox = root.querySelector('#verification-institution') as HTMLInputElement;
+    combobox.value = 'No such institution';
+    combobox.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+    expect(root.querySelector('.institution-empty')?.textContent).toContain('No institutions match');
+
+    combobox.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(combobox.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(combobox);
+  });
+
+  it('closes on an outside click and returns focus to the combobox', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const combobox = root.querySelector('#verification-institution') as HTMLInputElement;
+    combobox.focus();
+    fixture.detectChanges();
+
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(combobox.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(combobox);
+  });
+
+  it('hydrates the method form from a saved request', () => {
     fixture.componentRef.setInput('request', {
       institutionId: 'iit-kharagpur',
       institutionName: 'IIT Kharagpur',

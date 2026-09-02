@@ -64,4 +64,17 @@ describe('VerificationEmailCodeStepComponent', () => {
     expect(resendCount).toBe(1);
     expect(changeCount).toBe(1);
   });
+
+  it('rehydrates entered code digits and invalid state from a history draft', () => {
+    fixture.componentRef.setInput('otpDraft', {
+      digits: ['1', '2', '3', '4', '5', '6'],
+      invalid: true,
+    });
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.code()).toBe('123456');
+    expect(fixture.componentInstance.invalid()).toBe(true);
+    expect(Array.from(fixture.nativeElement.querySelectorAll<HTMLInputElement>('.otp-input')).map((input) => input.value))
+      .toEqual(['1', '2', '3', '4', '5', '6']);
+  });
 });

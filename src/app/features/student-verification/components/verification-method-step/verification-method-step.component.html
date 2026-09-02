@@ -5,25 +5,58 @@
 
   <div class="field">
     <label class="field-label" for="verification-institution">College or university</label>
-    <input
-      id="verification-institution"
-      type="text"
-      formControlName="institutionName"
-      list="verification-institutions"
-      role="combobox"
-      aria-autocomplete="list"
-      aria-controls="verification-institutions"
-      autocomplete="organization"
-      placeholder="Start typing your institution"
-      aria-describedby="verification-institution-hint verification-institution-error"
-      [attr.aria-invalid]="showError(form.controls.institutionName) ? 'true' : null"
-      [disabled]="pending()"
-      (blur)="form.controls.institutionName.markAsTouched()" />
-    <datalist id="verification-institutions">
-      @for (institution of institutions(); track institution.id) {
-        <option [value]="institution.name"></option>
+    <div class="institution-combobox" (focusout)="onInstitutionFocusOut()">
+      <input
+        #institutionInput
+        id="verification-institution"
+        type="text"
+        formControlName="institutionName"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-haspopup="listbox"
+        aria-controls="verification-institution-options"
+        autocomplete="organization"
+        placeholder="Start typing your institution"
+        aria-describedby="verification-institution-hint verification-institution-error"
+        [attr.aria-expanded]="isInstitutionOpen()"
+        [attr.aria-activedescendant]="activeInstitutionId()"
+        [attr.aria-invalid]="showError(form.controls.institutionName) ? 'true' : null"
+        [disabled]="pending()"
+        (focus)="onInstitutionFocus()"
+        (input)="onInstitutionInput($event)"
+        (keydown)="onInstitutionKeydown($event)"
+        (blur)="onBlur('institutionName')" />
+      @if (isInstitutionOpen()) {
+        <div
+          class="institution-popup"
+          role="presentation"
+          [class.institution-popup--above]="institutionPlacement().opensUpward">
+          <div
+            id="verification-institution-options"
+            class="institution-listbox"
+            role="listbox"
+            aria-label="Matching colleges and universities"
+            [style.max-height]="institutionPlacement().maxHeight">
+            @for (institution of filteredInstitutions(); track institution.id) {
+              <div
+                class="institution-option"
+                role="option"
+                tabindex="-1"
+                [id]="'verification-institution-option-' + institution.id"
+                [attr.aria-selected]="isSelectedInstitution(institution)"
+                [class.is-active]="isActiveInstitution(institution)"
+                (pointerdown)="$event.preventDefault()"
+                (click)="selectInstitution(institution)">
+                <span class="institution-name">{{ institution.name }}</span>
+                <span class="institution-domain">{{ institution.domains.join(', ') }}</span>
+              </div>
+            } @empty {
+              <p class="institution-empty" role="status">No institutions match “{{ institutionQuery() }}”.</p>
+            }
+          </div>
+        </div>
       }
-    </datalist>
+    </div>
     <p class="hint" id="verification-institution-hint">Pick from the list so we can match your email domain.</p>
     @if (showError(form.controls.institutionName)) {
       <p class="error" id="verification-institution-error" role="alert"><span class="error-icon" aria-hidden="true">!</span>{{ institutionError() }}</p>
@@ -53,7 +86,7 @@
       aria-describedby="verification-email-hint verification-email-error"
       [attr.aria-invalid]="showError(form.controls.institutionalEmail) ? 'true' : null"
       [disabled]="pending()"
-      (blur)="form.controls.institutionalEmail.markAsTouched()" />
+      (blur)="onBlur('institutionalEmail')" />
     <p class="hint" id="verification-email-hint">Must match your institution's domain.</p>
     @if (showError(form.controls.institutionalEmail)) {
       <p class="error" id="verification-email-error" role="alert"><span class="error-icon" aria-hidden="true">!</span>{{ emailError() }}</p>

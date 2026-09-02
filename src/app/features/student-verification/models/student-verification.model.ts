@@ -24,6 +24,22 @@ export interface StudentVerificationRequest {
   consentAccepted: boolean;
 }
 
+export interface VerificationMethodDraft {
+  institutionName: string;
+  method: VerificationMethod;
+  institutionalEmail: string;
+  document: File | null;
+  consentAccepted: boolean;
+  submittedAttempt: boolean;
+  touched: Record<'institutionName' | 'method' | 'institutionalEmail' | 'document' | 'consentAccepted', boolean>;
+  dirty: Record<'institutionName' | 'method' | 'institutionalEmail' | 'document' | 'consentAccepted', boolean>;
+}
+
+export interface VerificationOtpDraft {
+  digits: string[];
+  invalid: boolean;
+}
+
 export interface VerificationApproved {
   requestId: string;
   status: 'approved';

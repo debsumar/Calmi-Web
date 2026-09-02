@@ -113,6 +113,7 @@ export class StudentVerificationDialogComponent implements OnDestroy {
   private exitTimer: ReturnType<typeof setTimeout> | null = null;
   private closeRequested = false;
   private emittedVerificationId: string | null = null;
+  private pendingNavigationDirection: Direction | null = null;
 
   constructor() {
     effect(() => {
@@ -122,7 +123,6 @@ export class StudentVerificationDialogComponent implements OnDestroy {
         this.opener = this.activeElementAsHTMLElement();
         this.isClosing.set(false);
         this.isVisible.set(true);
-        this.emittedVerificationId = null;
         if (this.service.status() === 'idle') this.service.goToCollecting();
         afterNextRender({ write: () => this.focusHeading() }, { injector: this.injector });
         return;
@@ -206,16 +206,26 @@ export class StudentVerificationDialogComponent implements OnDestroy {
     this.requestClose();
   }
 
+  onMethodDraftChanged(draft: import('../../models/student-verification.model').VerificationMethodDraft): void {
+    this.service.updateMethodDraft(draft);
+  }
+
+  onOtpDraftChanged(draft: import('../../models/student-verification.model').VerificationOtpDraft): void {
+    this.service.updateOtpDraft(draft);
+  }
+
   onGoBack(): void {
-    if (this.isChecking() || !this.service.canGoBack()) return;
+    if (!this.service.canGoBack()) return;
     this.focusHeading();
+    this.pendingNavigationDirection = 'backward';
     this.direction.set('backward');
     this.service.goBack();
   }
 
   onGoForward(): void {
-    if (this.isChecking() || !this.service.canGoForward()) return;
+    if (!this.service.canGoForward()) return;
     this.focusHeading();
+    this.pendingNavigationDirection = 'forward';
     this.direction.set('forward');
     this.service.goForward();
   }
@@ -313,7 +323,9 @@ export class StudentVerificationDialogComponent implements OnDestroy {
     if (this.focusIsInsidePane(previousPane)) this.focusHeading();
 
     this.clearPaneTimers();
-    this.direction.set(PANE_RANK[nextPane] < PANE_RANK[previousPane] ? 'backward' : 'forward');
+    const navigationDirection = this.pendingNavigationDirection;
+    this.pendingNavigationDirection = null;
+    this.direction.set(navigationDirection ?? (PANE_RANK[nextPane] < PANE_RANK[previousPane] ? 'backward' : 'forward'));
     this.exitingPane.set(previousPane);
     this.enteringPane.set(nextPane);
     this.activePane.set(nextPane);

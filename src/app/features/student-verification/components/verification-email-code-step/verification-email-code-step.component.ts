@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   input,
   output,
   signal,
 } from '@angular/core';
+import { VerificationOtpDraft } from '../../models/student-verification.model';
 
 @Component({
   selector: 'app-verification-email-code-step',
@@ -46,7 +48,9 @@ export class VerificationEmailCodeStepComponent {
   readonly email = input.required<string>();
   readonly resendIn = input(0);
   readonly canResend = input(false);
+  readonly otpDraft = input<VerificationOtpDraft | null>(null);
   readonly codeSubmitted = output<string>();
+  readonly draftChanged = output<VerificationOtpDraft>();
   readonly resend = output<void>();
   readonly changeEmail = output<void>();
 
@@ -57,6 +61,15 @@ export class VerificationEmailCodeStepComponent {
   readonly resendCopy = computed(() => this.resendIn() > 0
     ? `Resend available in ${this.resendIn()} seconds.`
     : 'You can request a new code now.');
+
+  constructor() {
+    effect(() => {
+      const draft = this.otpDraft();
+      if (!draft || this.matchesDraft(draft)) return;
+      this.digits.set([...draft.digits].slice(0, 6).concat(['', '', '', '', '', '']).slice(0, 6));
+      this.invalid.set(draft.invalid);
+    });
+  }
 
   valueAt(index: number): string {
     return this.digits()[index] ?? '';
@@ -82,6 +95,7 @@ export class VerificationEmailCodeStepComponent {
     if (!pasted) return;
     this.digits.set(Array.from({ length: 6 }, (_, index) => pasted[index] ?? ''));
     this.invalid.set(false);
+    this.emitDraft();
     const target = event.currentTarget as HTMLElement;
     const inputs = this.inputsFor(target);
     inputs[Math.min(pasted.length, 6) - 1]?.focus();
@@ -90,9 +104,11 @@ export class VerificationEmailCodeStepComponent {
   confirm(): void {
     if (!this.complete()) {
       this.invalid.set(true);
+      this.emitDraft();
       return;
     }
     this.invalid.set(false);
+    this.emitDraft();
     this.codeSubmitted.emit(this.code());
   }
 
@@ -103,6 +119,15 @@ export class VerificationEmailCodeStepComponent {
   private updateDigit(index: number, value: string): void {
     this.digits.update((digits) => digits.map((digit, current) => current === index ? value : digit));
     this.invalid.set(false);
+    this.emitDraft();
+  }
+
+  private matchesDraft(draft: VerificationOtpDraft): boolean {
+    return this.invalid() === draft.invalid && this.digits().every((digit, index) => digit === (draft.digits[index] ?? ''));
+  }
+
+  private emitDraft(): void {
+    this.draftChanged.emit({ digits: [...this.digits()], invalid: this.invalid() });
   }
 
   private focusInput(event: Event, index: number): void {

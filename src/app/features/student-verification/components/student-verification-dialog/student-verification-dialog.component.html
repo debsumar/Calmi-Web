@@ -26,7 +26,7 @@
               type="button"
               class="verification-dialog__nav-button"
               aria-label="Go back to the previous step"
-              [disabled]="isChecking() || !service.canGoBack()"
+              [disabled]="!service.canGoBack()"
               (click)="onGoBack()">
               <svg lucideArrowLeft [size]="18" aria-hidden="true"></svg>
             </button>
@@ -34,7 +34,7 @@
               type="button"
               class="verification-dialog__nav-button"
               aria-label="Go forward to the next step"
-              [disabled]="isChecking() || !service.canGoForward()"
+              [disabled]="!service.canGoForward()"
               (click)="onGoForward()">
               <svg lucideArrowRight [size]="18" aria-hidden="true"></svg>
             </button>
@@ -68,7 +68,9 @@
           <app-verification-method-step
             [institutions]="service.institutions()"
             [request]="service.request()"
+            [draft]="service.methodDraft()"
             [pending]="isChecking()"
+            (draftChanged)="onMethodDraftChanged($event)"
             (submitted)="onMethodSubmitted($event)" />
         </div>
 
@@ -89,6 +91,8 @@
             [email]="service.otpTarget()"
             [resendIn]="service.resendIn()"
             [canResend]="service.canResend()"
+            [otpDraft]="service.otpDraft()"
+            (draftChanged)="onOtpDraftChanged($event)"
             (codeSubmitted)="onCodeSubmitted($event)"
             (resend)="onResend()"
             (changeEmail)="onChangeEmail()" />

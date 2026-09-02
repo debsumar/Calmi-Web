@@ -2,11 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
+  HostListener,
+  ViewChild,
   effect,
   inject,
   input,
   output,
   signal,
+  computed,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -26,6 +30,7 @@ import {
   Institution,
   StudentVerificationRequest,
   VerificationMethod,
+  VerificationMethodDraft,
 } from '../../models/student-verification.model';
 
 interface VerificationForm {
@@ -46,13 +51,37 @@ interface VerificationForm {
 export class VerificationMethodStepComponent {
   readonly institutions = input.required<readonly Institution[]>();
   readonly request = input<StudentVerificationRequest | null>(null);
+  readonly draft = input<VerificationMethodDraft | null>(null);
   readonly pending = input(false);
   readonly submitted = output<StudentVerificationRequest>();
+  readonly draftChanged = output<VerificationMethodDraft>();
   readonly isDragover = signal(false);
   readonly submittedAttempt = signal(false);
   readonly selectedFile = signal<File | null>(null);
   readonly previewUrl = signal<string | null>(null);
+  readonly isInstitutionOpen = signal(false);
+  readonly institutionQuery = signal('');
+  readonly activeInstitutionIndex = signal(-1);
+  readonly institutionPlacement = signal({
+    opensUpward: false,
+    maxHeight: '16rem',
+  });
+  readonly filteredInstitutions = computed(() => {
+    const query = this.institutionQuery().trim().toLocaleLowerCase();
+    if (!query) return this.institutions();
+    return this.institutions().filter((institution) =>
+      `${institution.name} ${institution.domains.join(' ')}`.toLocaleLowerCase().includes(query),
+    );
+  });
+  readonly activeInstitutionId = computed(() => {
+    const index = this.activeInstitutionIndex();
+    const institution = this.filteredInstitutions()[index];
+    return institution ? `verification-institution-option-${institution.id}` : null;
+  });
   private readonly destroyRef = inject(DestroyRef);
+  private readonly hostElement = inject(ElementRef<HTMLElement>);
+  @ViewChild('institutionInput') private institutionInput?: ElementRef<HTMLInputElement>;
+  private restoringInstitutionFocus = false;
 
   readonly form = new FormGroup<VerificationForm>({
     institutionName: new FormControl('', { nonNullable: true, validators: [Validators.required, this.institutionValidator()] }),
@@ -62,24 +91,51 @@ export class VerificationMethodStepComponent {
     consentAccepted: new FormControl(false, { nonNullable: true, validators: [Validators.requiredTrue] }),
   });
 
+  private hydrating = false;
+
   constructor() {
     this.destroyRef.onDestroy(() => this.revokePreviewUrl());
 
-    effect(() => {
-      const request = this.request();
-      if (!request) return;
+    if (typeof document !== 'undefined') {
+      // Scroll events do not bubble, so capture them to notice the dialog
+      // scrolling under the open list, not just window scrolling.
+      const onScrollCapture = () => {
+        if (this.isInstitutionOpen()) this.updateInstitutionPopupPosition();
+      };
+      document.addEventListener('scroll', onScrollCapture, { capture: true, passive: true });
+      this.destroyRef.onDestroy(() => {
+        document.removeEventListener('scroll', onScrollCapture, { capture: true });
+      });
+    }
 
-      this.form.patchValue({
-        institutionName: request.institutionName,
-        method: request.method,
-        institutionalEmail: request.institutionalEmail ?? '',
-        consentAccepted: request.consentAccepted,
-      }, { emitEvent: false });
-      this.syncProofValidators();
+    effect(() => {
+      const draft = this.draft();
+      const request = this.request();
+      if (draft && !this.matchesDraft(draft)) {
+        this.applyDraft(draft);
+      } else if (!draft && request) {
+        this.form.patchValue({
+          institutionName: request.institutionName,
+          method: request.method,
+          institutionalEmail: request.institutionalEmail ?? '',
+          consentAccepted: request.consentAccepted,
+        }, { emitEvent: false });
+        this.institutionQuery.set(request.institutionName);
+        this.syncProofValidators();
+      }
     });
 
-    this.form.controls.method.valueChanges.subscribe(() => this.syncProofValidators());
-    this.form.controls.institutionName.valueChanges.subscribe(() => this.form.controls.institutionalEmail.updateValueAndValidity({ emitEvent: false }));
+    this.form.controls.method.valueChanges.subscribe(() => {
+      this.syncProofValidators();
+      this.emitDraft();
+    });
+    this.form.controls.institutionName.valueChanges.subscribe((value) => {
+      this.institutionQuery.set(value);
+      this.form.controls.institutionalEmail.updateValueAndValidity({ emitEvent: false });
+      this.emitDraft();
+    });
+    this.form.controls.institutionalEmail.valueChanges.subscribe(() => this.emitDraft());
+    this.form.controls.consentAccepted.valueChanges.subscribe(() => this.emitDraft());
   }
 
   readonly emailFieldVisible = () => this.form.controls.method.value === 'email';
@@ -116,10 +172,210 @@ export class VerificationMethodStepComponent {
     return this.institutions().find((institution) => institution.name.toLocaleLowerCase() === value) ?? null;
   }
 
+  onInstitutionFocus(): void {
+    if (this.restoringInstitutionFocus) {
+      this.restoringInstitutionFocus = false;
+      return;
+    }
+    if (this.pending()) return;
+    this.isInstitutionOpen.set(true);
+    this.setActiveInstitution(-1);
+    this.updateInstitutionPopupPosition(true);
+  }
+
+  onInstitutionInput(event: Event): void {
+    if (this.pending()) return;
+    const input = event.target as HTMLInputElement;
+    this.institutionQuery.set(input.value);
+    this.isInstitutionOpen.set(true);
+    this.setActiveInstitution(-1);
+    this.updateInstitutionPopupPosition(true);
+  }
+
+  onInstitutionKeydown(event: KeyboardEvent): void {
+    const institutions = this.filteredInstitutions();
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.isInstitutionOpen.set(true);
+        this.moveActiveInstitution(1, institutions.length);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.isInstitutionOpen.set(true);
+        this.moveActiveInstitution(-1, institutions.length);
+        break;
+      case 'Home':
+        if (!institutions.length) return;
+        event.preventDefault();
+        this.isInstitutionOpen.set(true);
+        this.setActiveInstitution(0);
+        break;
+      case 'End':
+        if (!institutions.length) return;
+        event.preventDefault();
+        this.isInstitutionOpen.set(true);
+        this.setActiveInstitution(institutions.length - 1);
+        break;
+      case 'Enter': {
+        const active = institutions[this.activeInstitutionIndex()];
+        if (!this.isInstitutionOpen() || !active) return;
+        event.preventDefault();
+        this.selectInstitution(active);
+        break;
+      }
+      case 'Escape':
+        if (!this.isInstitutionOpen()) return;
+        event.preventDefault();
+        this.closeInstitutionList(true);
+        break;
+    }
+  }
+
+  selectInstitution(institution: Institution): void {
+    if (this.pending()) return;
+    this.form.controls.institutionName.setValue(institution.name);
+    this.form.controls.institutionName.markAsDirty();
+    this.institutionQuery.set(institution.name);
+    this.closeInstitutionList(true);
+  }
+
+  isActiveInstitution(institution: Institution): boolean {
+    return this.filteredInstitutions()[this.activeInstitutionIndex()]?.id === institution.id;
+  }
+
+  isSelectedInstitution(institution: Institution): boolean {
+    return this.selectedInstitution()?.id === institution.id;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.hostElement.nativeElement.contains(event.target as Node)) return;
+    const target = event.target as Element | null;
+    // Dialog navigation buttons can change panes immediately after this click.
+    // Do not move focus back into a pane that is about to become inert.
+    const isDialogAction = target instanceof Element
+      && target.closest('.verification-dialog__nav-button, .verification-dialog__close') !== null;
+    this.closeInstitutionList(!isDialogAction);
+  }
+
+  @HostListener('window:resize')
+  onViewportChange(): void {
+    if (this.isInstitutionOpen()) this.updateInstitutionPopupPosition();
+  }
+
+  onInstitutionFocusOut(): void {
+    setTimeout(() => {
+      if (!this.hostElement.nativeElement.contains(document.activeElement)) {
+        this.closeInstitutionList(false);
+      }
+    });
+  }
+
+  private moveActiveInstitution(direction: 1 | -1, count: number): void {
+    if (!count) {
+      this.setActiveInstitution(-1);
+      return;
+    }
+    const current = this.activeInstitutionIndex();
+    const next = current < 0
+      ? (direction > 0 ? 0 : count - 1)
+      : (current + direction + count) % count;
+    this.setActiveInstitution(next);
+  }
+
+  private setActiveInstitution(index: number): void {
+    this.activeInstitutionIndex.set(index);
+    if (index < 0) return;
+
+    queueMicrotask(() => {
+      if (!this.isInstitutionOpen()) return;
+      const optionId = this.activeInstitutionId();
+      if (!optionId) return;
+      const option = (this.hostElement.nativeElement as HTMLElement).querySelector<HTMLElement>(`#${optionId}`);
+      if (option && typeof option.scrollIntoView === 'function') option.scrollIntoView({ block: 'nearest' });
+    });
+  }
+
+  private updateInstitutionPopupPosition(reveal = false): void {
+    const input = this.institutionInput?.nativeElement;
+    if (!input || typeof window === 'undefined') return;
+
+    // The popup is absolutely positioned inside the combobox, so only the flip
+    // direction and height are computed here. Space is measured against the
+    // nearest scrollable ancestor (the dialog) because that element clips the
+    // popup, and its own transform makes viewport coordinates meaningless.
+    const rect = input.getBoundingClientRect();
+    const bounds = this.clippingBounds(input);
+    const edgePadding = 8;
+    const gap = 6;
+    const preferredHeight = 256;
+    const minimumHeight = 96;
+    const below = Math.max(0, bounds.bottom - rect.bottom - gap - edgePadding);
+    const above = Math.max(0, rect.top - bounds.top - gap - edgePadding);
+    const opensUpward = below < preferredHeight && above > below;
+    const availableHeight = Math.max(
+      minimumHeight,
+      Math.min(preferredHeight, opensUpward ? above : below),
+    );
+
+    this.institutionPlacement.set({
+      opensUpward,
+      maxHeight: `${Math.round(availableHeight)}px`,
+    });
+    this.revealInstitutionPopup(reveal);
+  }
+
+  /** Visible top/bottom of the nearest scroll container, falling back to the viewport. */
+  private clippingBounds(input: HTMLElement): { top: number; bottom: number } {
+    let top = 0;
+    let bottom = window.innerHeight;
+    for (let node = input.parentElement; node; node = node.parentElement) {
+      const overflowY = window.getComputedStyle(node).overflowY;
+      if (overflowY !== 'auto' && overflowY !== 'scroll' && overflowY !== 'hidden') continue;
+      const rect = node.getBoundingClientRect();
+      top = Math.max(top, rect.top);
+      bottom = Math.min(bottom, rect.bottom);
+    }
+    return { top, bottom: Math.max(bottom, top) };
+  }
+
+  /** Scroll the dialog just enough that the open list is not cut off. */
+  private revealInstitutionPopup(reveal: boolean): void {
+    if (!reveal) return;
+    queueMicrotask(() => {
+      if (!this.isInstitutionOpen()) return;
+      const popup = (this.hostElement.nativeElement as HTMLElement)
+        .querySelector<HTMLElement>('.institution-popup');
+      if (popup && typeof popup.scrollIntoView === 'function') {
+        popup.scrollIntoView({ block: 'nearest' });
+      }
+    });
+  }
+
+  private closeInstitutionList(returnFocus: boolean): void {
+    this.isInstitutionOpen.set(false);
+    this.setActiveInstitution(-1);
+    if (returnFocus && !this.pending()) {
+      const input = this.institutionInput?.nativeElement;
+      if (input) {
+        this.restoringInstitutionFocus = true;
+        input.focus();
+        if (document.activeElement === input) this.restoringInstitutionFocus = false;
+      }
+    }
+  }
+
   onMethodChange(): void {
     this.syncProofValidators();
     this.form.controls.institutionalEmail.updateValueAndValidity({ emitEvent: false });
     this.form.controls.document.updateValueAndValidity({ emitEvent: false });
+    this.emitDraft();
+  }
+
+  onBlur(control: keyof VerificationForm): void {
+    this.form.controls[control].markAsTouched();
+    this.emitDraft();
   }
 
   onFileChange(event: Event): void {
@@ -147,6 +403,7 @@ export class VerificationMethodStepComponent {
     this.submittedAttempt.set(true);
     this.form.markAllAsTouched();
     this.syncProofValidators();
+    this.emitDraft();
     if (this.form.invalid || this.pending()) return;
 
     const value = this.form.getRawValue();
@@ -207,6 +464,73 @@ export class VerificationMethodStepComponent {
     this.form.controls.document.setValue(file);
     this.form.controls.document.markAsTouched();
     this.form.controls.document.updateValueAndValidity();
+    this.emitDraft();
+  }
+
+  private applyDraft(draft: VerificationMethodDraft): void {
+    this.hydrating = true;
+    this.revokePreviewUrl();
+    this.form.patchValue({
+      institutionName: draft.institutionName,
+      method: draft.method,
+      institutionalEmail: draft.institutionalEmail,
+      document: draft.document,
+      consentAccepted: draft.consentAccepted,
+    }, { emitEvent: false });
+    this.institutionQuery.set(draft.institutionName);
+    this.selectedFile.set(draft.document);
+    if (draft.document && isValidDocument(draft.document) && this.isImageFile(draft.document)) {
+      this.previewUrl.set(URL.createObjectURL(draft.document));
+    }
+    const controls = this.form.controls;
+    (Object.keys(draft.touched) as (keyof VerificationForm)[]).forEach((key) => {
+      draft.touched[key] ? controls[key].markAsTouched() : controls[key].markAsUntouched();
+      draft.dirty[key] ? controls[key].markAsDirty() : controls[key].markAsPristine();
+    });
+    this.submittedAttempt.set(draft.submittedAttempt);
+    this.syncProofValidators();
+    this.hydrating = false;
+  }
+
+  private matchesDraft(draft: VerificationMethodDraft): boolean {
+    const value = this.form.getRawValue();
+    const controls = this.form.controls;
+    return value.institutionName === draft.institutionName
+      && value.method === draft.method
+      && value.institutionalEmail === draft.institutionalEmail
+      && value.document === draft.document
+      && value.consentAccepted === draft.consentAccepted
+      && this.selectedFile() === draft.document
+      && this.submittedAttempt() === draft.submittedAttempt
+      && (Object.keys(draft.touched) as (keyof VerificationForm)[]).every((key) => controls[key].touched === draft.touched[key])
+      && (Object.keys(draft.dirty) as (keyof VerificationForm)[]).every((key) => controls[key].dirty === draft.dirty[key]);
+  }
+
+  private emitDraft(): void {
+    if (this.hydrating) return;
+    const controls = this.form.controls;
+    this.draftChanged.emit({
+      institutionName: controls.institutionName.value,
+      method: controls.method.value,
+      institutionalEmail: controls.institutionalEmail.value,
+      document: this.selectedFile(),
+      consentAccepted: controls.consentAccepted.value,
+      submittedAttempt: this.submittedAttempt(),
+      touched: {
+        institutionName: controls.institutionName.touched,
+        method: controls.method.touched,
+        institutionalEmail: controls.institutionalEmail.touched,
+        document: controls.document.touched,
+        consentAccepted: controls.consentAccepted.touched,
+      },
+      dirty: {
+        institutionName: controls.institutionName.dirty,
+        method: controls.method.dirty,
+        institutionalEmail: controls.institutionalEmail.dirty,
+        document: controls.document.dirty,
+        consentAccepted: controls.consentAccepted.dirty,
+      },
+    });
   }
 
   private revokePreviewUrl(): void {
