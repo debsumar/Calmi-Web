@@ -145,10 +145,25 @@ describe('StudentVerificationDialogComponent', () => {
     expect(fixture.componentInstance.service.status()).toBe('approved');
     expect(fixture.componentInstance.service.canUseStudentPlan()).toBe(true);
 
+    let verifiedCount = 0;
+    fixture.componentInstance.verified.subscribe(() => verifiedCount++);
     fixture.componentRef.setInput('open', true);
 
     fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
+    expect(verifiedCount).toBe(1);
+
+    fixture.componentInstance.service.goBack();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.componentInstance.service.goForward();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.service.status()).toBe('approved');
+    expect(fixture.componentInstance.service.canUseStudentPlan()).toBe(true);
+    expect(verifiedCount).toBe(1);
+
     fixture.componentRef.setInput('open', false);
     fixture.detectChanges();
     await fixture.whenStable();

@@ -151,11 +151,11 @@ describe('StudentVerificationService', () => {
     expect(service.canResend()).toBe(false);
   });
 
-  it('tracks back and forward history while skipping transient checking', () => {
+  it('tracks back and forward history while replacing transient checking with its outcome', () => {
     service.simulatedOutcome.set('failed');
     service.submit(documentRequest);
     expect(service.status()).toBe('checking');
-    expect(service.canGoBack()).toBe(false);
+    expect(service.canGoBack()).toBe(true);
     expect(service.canGoForward()).toBe(false);
 
     vi.advanceTimersByTime(FIXTURE_CHECK_DELAY_MS + documentRequest.documentName!.length);
@@ -175,6 +175,37 @@ describe('StudentVerificationService', () => {
     expect(service.canGoForward()).toBe(false);
   });
 
+  it('cancels an in-flight check on Back and resumes it on Forward', () => {
+    service.simulatedOutcome.set('failed');
+    service.submit(documentRequest);
+
+    expect(service.canGoBack()).toBe(true);
+    service.goBack();
+    expect(service.status()).toBe('collecting');
+    vi.advanceTimersByTime(FIXTURE_CHECK_DELAY_MS + documentRequest.documentName!.length);
+    expect(service.status()).toBe('collecting');
+
+    service.goForward();
+    expect(service.status()).toBe('checking');
+    vi.advanceTimersByTime(FIXTURE_CHECK_DELAY_MS + documentRequest.documentName!.length);
+    expect(service.status()).toBe('failed');
+  });
+
+  it('starts a fresh check after a paused check outlives its original deadline', () => {
+    service.simulatedOutcome.set('failed');
+    service.submit(documentRequest);
+    service.goBack();
+
+    // Browsing the earlier collecting step must cancel the old fixture timer.
+    vi.advanceTimersByTime(FIXTURE_CHECK_DELAY_MS + documentRequest.documentName!.length + 5000);
+    expect(service.status()).toBe('collecting');
+
+    service.goForward();
+    expect(service.status()).toBe('checking');
+    vi.advanceTimersByTime(FIXTURE_CHECK_DELAY_MS + documentRequest.documentName!.length);
+    expect(service.status()).toBe('failed');
+  });
+
   it('truncates forward history after a new action', () => {
     service.simulatedOutcome.set('failed');
     service.submit(documentRequest);
@@ -187,24 +218,62 @@ describe('StudentVerificationService', () => {
     expect(service.canGoForward()).toBe(false);
   });
 
-  it.each(['approved', 'alreadyVerified'] as const)('blocks back on committed %s outcome', (outcome) => {
+  it.each(['approved', 'alreadyVerified'] as const)('allows back and forward on committed %s outcome', (outcome) => {
     service.simulatedOutcome.set(outcome);
     service.submit(documentRequest);
     vi.advanceTimersByTime(FIXTURE_CHECK_DELAY_MS + documentRequest.documentName!.length);
 
-    expect(service.canGoBack()).toBe(false);
+    expect(service.canGoBack()).toBe(true);
     service.goBack();
+    expect(service.status()).toBe('collecting');
+    expect(service.canGoForward()).toBe(true);
+    expect(service.canUseStudentPlan()).toBe(true);
+
+    service.goForward();
     expect(service.status()).toBe(outcome);
+    expect(service.canUseStudentPlan()).toBe(true);
   });
 
-  it('blocks back on manual review and while checking', () => {
+  it('restores request, OTP draft, target, and absolute resend and expiry deadlines', () => {
+    service.submit(emailRequest);
+    service.updateOtpDraft({ digits: ['1', '2', '3', '', '', ''], invalid: false });
+    vi.advanceTimersByTime(5_000);
+    const remainingResend = service.resendIn();
+
+    service.goBack();
+    expect(service.status()).toBe('collecting');
+    expect(service.request()).toEqual(emailRequest);
+    expect(service.otpTarget()).toBe(emailRequest.institutionalEmail);
+    expect(service.otpDraft().digits).toEqual(['', '', '', '', '', '']);
+
+    service.goForward();
+    expect(service.status()).toBe('emailSent');
+    expect(service.request()).toEqual(emailRequest);
+    expect(service.otpTarget()).toBe(emailRequest.institutionalEmail);
+    expect(service.otpDraft().digits).toEqual(['1', '2', '3', '', '', '']);
+    expect(service.resendIn()).toBe(remainingResend);
+
+    vi.advanceTimersByTime((OTP_TTL_SECONDS * 1000) - 5_000 - 1_000);
+    expect(service.status()).toBe('emailSent');
+    service.goBack();
+    service.goForward();
+    vi.advanceTimersByTime(1_000);
+    expect(service.status()).toBe('otpExpired');
+  });
+
+  it('allows back from manual review and while checking', () => {
     service.submit(documentRequest);
     expect(service.status()).toBe('checking');
-    expect(service.canGoBack()).toBe(false);
+    expect(service.canGoBack()).toBe(true);
+
+    service.goBack();
+    expect(service.status()).toBe('collecting');
+    service.goForward();
+    expect(service.status()).toBe('checking');
 
     service.requestManualReview();
     expect(service.status()).toBe('manualPending');
-    expect(service.canGoBack()).toBe(false);
+    expect(service.canGoBack()).toBe(true);
   });
 
   it('clears OTP and resend timers on every history navigation path', () => {
