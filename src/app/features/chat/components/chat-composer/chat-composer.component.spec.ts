@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import { provideLucideIcons, LucideAudioLines, LucideSend, LucideVolume2, LucideX } from '@lucide/angular';
 import { ChatComposerComponent } from './chat-composer.component';
 import { ChatStoreService } from '../../services/chat-store.service';
 import { VoiceSessionService } from '../../services/voice-session.service';
+import { LivekitRoomService } from '../../services/livekit-room.service';
+import { VoiceRoomError } from '../../services/voice-session.model';
 
 describe('ChatComposerComponent', () => {
   let fixture: ComponentFixture<ChatComposerComponent>;
@@ -12,9 +15,23 @@ describe('ChatComposerComponent', () => {
   let voice: VoiceSessionService;
 
   beforeEach(async () => {
+    const connected = signal(false);
+    const speaking = signal(false);
+    const error = signal<VoiceRoomError | null>(null);
+    const room = {
+      connected,
+      speaking,
+      error,
+      connect: vi.fn().mockImplementation(async () => { connected.set(true); }),
+      setMuted: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockImplementation(async () => { connected.set(false); error.set(null); }),
+    };
     await TestBed.configureTestingModule({
       imports: [ChatComposerComponent],
-      providers: [provideLucideIcons(LucideAudioLines, LucideSend, LucideVolume2, LucideX)],
+      providers: [
+        { provide: LivekitRoomService, useValue: room },
+        provideLucideIcons(LucideAudioLines, LucideSend, LucideVolume2, LucideX),
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(ChatComposerComponent);
     store = TestBed.inject(ChatStoreService);
@@ -86,9 +103,11 @@ describe('ChatComposerComponent', () => {
     expect(sendButton.classList).toContain('focus-visible:ring-2');
   });
 
-  it('starts a voice session from the composer trigger', () => {
+  it('starts a voice session from the composer trigger', async () => {
     const button = fixture.nativeElement.querySelector('button[aria-label="Start voice conversation"]') as HTMLButtonElement;
     button.click();
+    await Promise.resolve();
+    await Promise.resolve();
     fixture.detectChanges();
 
     expect(voice.phase()).toBe('listening');

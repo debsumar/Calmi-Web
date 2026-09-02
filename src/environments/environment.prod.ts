@@ -1,6 +1,38 @@
 export const environment = {
   production: true,
   apiUrl: '/api',
+  apiBaseUrl: '/calmi-api',
+  chat: {
+    modelKey: 'openai-lite',
+    mode: 'stream',
+    knowledge: 'rag',
+    topK: 4,
+    rerank: false,
+    embeddingProfile: 'openai',
+    responseLength: 'medium',
+    verbatimTurns: 6,
+    temperature: 0.4,
+    systemPrompt: '',
+    toolsEnabled: true,
+    enabledTools: [
+      'find_therapists',
+      'compare_plan_pricing',
+      'filter_therapists',
+      'list_therapists_by_price',
+      'recommend_sound',
+      'book_session',
+    ],
+  },
+  livekit: {
+    url: 'https://demo-bhhhhpba.livekit.cloud',
+  },
+  voice: {
+    mode: 'stream',
+    bargeIn: 'balanced',
+    rag: true,
+    topK: 3,
+    endpointing: 0.4,
+  },
   supabaseUrl: 'https://yguztxepfnjccbvwzttj.supabase.co',
   supabaseKey: 'sb_publishable_rr8pqFS6ye-t99OijvA-xw_QygY5C19',
 };

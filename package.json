@@ -40,6 +40,7 @@
     "@supabase/supabase-js": "^2.106.0",
     "@tailwindcss/postcss": "^4.3.0",
     "jwt-decode": "^4.0.0",
+    "livekit-client": "2.22.2",
     "primeicons": "^7.0.0",
     "primeng": "^22.0.0",
     "rxjs": "^7.8.2",

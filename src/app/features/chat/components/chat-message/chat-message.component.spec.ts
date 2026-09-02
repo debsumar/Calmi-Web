@@ -89,6 +89,15 @@ describe('ChatMessageComponent', () => {
     expect(root.querySelector('time')?.classList).toContain('text-ink-muted');
   });
 
+  it('renders markdown inside the AI bubble without changing the bubble layout', () => {
+    const root = render(message({ role: 'ai', text: '**calm**\nTake one breath.' }));
+    const bubble = root.querySelector('.bg-brand');
+
+    expect(bubble?.querySelector('strong')?.textContent).toBe('calm');
+    expect(bubble?.querySelector('br')).not.toBeNull();
+    expect(bubble?.querySelector('img')).toBeNull();
+  });
+
   it('shows the signed-in https photo on own messages and falls back to the user icon', () => {
     currentUser.set({ user_metadata: { avatar_url: 'https://lh3.googleusercontent.com/a/photo.jpg' } });
     let root = render(message({ role: 'user', status: 'sent', text: 'hi' }));
