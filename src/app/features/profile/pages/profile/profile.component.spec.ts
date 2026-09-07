@@ -239,8 +239,6 @@ describe('ProfileComponent', () => {
     expect(logo?.getAttribute('alt')).toBe('');
     expect(logo?.getAttribute('aria-hidden')).toBe('true');
 
-    const change = Array.from(tile!.querySelectorAll('a')).find((link) => link.textContent?.trim() === 'Change');
-    expect(change?.getAttribute('href')).toBe('/auth/forgot');
   });
 
   it('keeps the page header outside the bento grid', () => {
@@ -503,7 +501,8 @@ describe('ProfileComponent', () => {
     const personal = root.querySelector<HTMLElement>('[aria-labelledby="personal-title"]');
     expect(personal!.querySelectorAll('div[appanimateonscroll]').length).toBeGreaterThanOrEqual(3);
     const security = root.querySelector<HTMLElement>('[aria-labelledby="security-title"]');
-    expect(security!.querySelectorAll('li[appanimateonscroll]').length).toBeGreaterThanOrEqual(2);
+    // Google-only auth leaves the sign-in-method row as the sole security entry.
+    expect(security!.querySelectorAll('li[appanimateonscroll]').length).toBeGreaterThan(0);
   });
 
   it('uses semantic token utilities and avoids forbidden view literals', () => {

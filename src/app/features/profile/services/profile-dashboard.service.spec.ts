@@ -15,7 +15,9 @@ describe('ProfileDashboardService', () => {
     ];
 
     expect(sourceLabels.every((label) => label === 'Preview data — backend connection pending')).toBe(true);
-    expect(dashboard.security.some((item) => item.action?.route === '/auth/forgot')).toBe(true);
+    expect(
+      dashboard.security.some((item) => item.action?.route === '/auth/forgot' || item.action?.route === '/auth/reset'),
+    ).toBe(false);
   });
 
   it('summarises sleep-sound listening without claiming sleep measurement', () => {

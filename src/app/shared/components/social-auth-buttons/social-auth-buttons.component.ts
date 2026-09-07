@@ -3,8 +3,6 @@ import { AuthService } from '@/core/services/auth.service';
 
 const SOCIAL_SIGN_IN_ERROR = 'Social sign-in is unavailable right now. Please try again later.';
 
-type SocialProvider = 'google' | 'apple';
-
 @Component({
   selector: 'app-social-auth-buttons',
   standalone: true,
@@ -13,14 +11,10 @@ type SocialProvider = 'google' | 'apple';
     @if (showDivider()) {
       <div class="my-7 flex items-center gap-4 text-xs font-semibold tracking-wide text-ink-muted" aria-hidden="true"><span class="flex-1 border-t border-hairline"></span><span>OR</span><span class="flex-1 border-t border-hairline"></span></div>
     }
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <button type="button" [disabled]="disabled() || pending()" (click)="login('google')" class="flex items-center justify-center gap-3 rounded-xl border border-hairline bg-surface px-4 py-3 text-base font-semibold text-ink shadow-card transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
+    <div class="grid grid-cols-1 gap-4">
+      <button type="button" [disabled]="disabled() || pending()" (click)="login()" class="flex items-center justify-center gap-3 rounded-xl border border-hairline bg-surface px-4 py-3 text-base font-semibold text-ink shadow-card transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
         <img src="/assets/logos/google.svg" alt="" aria-hidden="true" class="h-5 w-5 shrink-0" />
-        Login with Google
-      </button>
-      <button type="button" [disabled]="disabled() || pending()" (click)="login('apple')" class="flex items-center justify-center gap-3 rounded-xl border border-hairline bg-surface px-4 py-3 text-base font-semibold text-ink shadow-card transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
-        <img src="/assets/logos/apple.svg" alt="" aria-hidden="true" class="h-5 w-5 shrink-0" />
-        Login with Apple
+        Continue with Google
       </button>
     </div>
   `,
@@ -33,13 +27,12 @@ export class SocialAuthButtonsComponent {
   readonly failed = output<string>();
   readonly pending = signal(false);
 
-  async login(provider: SocialProvider): Promise<void> {
+  async login(): Promise<void> {
     if (this.disabled() || this.pending()) return;
 
     this.pending.set(true);
     try {
-      if (provider === 'google') await this.authService.loginWithGoogle();
-      else await this.authService.loginWithApple();
+      await this.authService.loginWithGoogle();
     } catch {
       this.failed.emit(SOCIAL_SIGN_IN_ERROR);
     } finally {

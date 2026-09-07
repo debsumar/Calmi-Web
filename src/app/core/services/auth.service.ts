@@ -5,11 +5,6 @@ import { safeReturnUrl } from '../routing/safe-return-url';
 
 export type AuthRole = 'specialist' | 'user';
 
-export interface SignupOptions {
-  fullName?: string;
-  role?: AuthRole;
-}
-
 type SafeStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 const ROLE_STORAGE_KEY = 'calmi-auth-role';
@@ -80,47 +75,7 @@ export class AuthService {
     return this.restorePromise;
   }
 
-  async login(email: string, password: string): Promise<User> {
-    const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
-    if (error || !data.user) throw error ?? new Error('Unable to sign in.');
-    this.applySession(data.session);
-    return data.user;
-  }
-
-  async signup(fullName: string, email: string, password: string, role?: AuthRole): Promise<User>;
-  async signup(email: string, password: string, options?: SignupOptions): Promise<User>;
-  async signup(
-    first: string,
-    second: string,
-    third: string | SignupOptions = {},
-    fourth?: AuthRole,
-  ): Promise<User> {
-    const fullName = typeof third === 'string' ? first : third.fullName ?? '';
-    const email = typeof third === 'string' ? second : first;
-    const password = typeof third === 'string' ? third : second;
-    const role = fourth ?? (typeof third === 'string' ? undefined : third.role);
-    const { data, error } = await this.supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName, ...(role ? { role } : {}) } },
-    });
-    if (error || !data.user) throw error ?? new Error('Unable to create account.');
-    this.applySession(data.session);
-    if (role) this.selectedRole.set(role);
-    return data.user;
-  }
-
-  /** Always resolves with a generic outcome to prevent account enumeration. */
-  async requestPasswordReset(email: string): Promise<void> {
-    const redirectTo = this.browserOrigin() + '/auth/reset';
-    try {
-      await this.supabase.auth.resetPasswordForEmail(email, { redirectTo });
-    } catch {
-      // Deliberately indistinguishable from an unknown account/provider response.
-    }
-  }
-
-  private async signInWithProvider(provider: 'google' | 'apple'): Promise<void> {
+  private async signInWithProvider(): Promise<void> {
     if (typeof window === 'undefined') throw new Error('Social sign-in is unavailable right now.');
 
     let redirectTo = window.location.origin;
@@ -133,7 +88,7 @@ export class AuthService {
 
     try {
       const { error } = await this.supabase.auth.signInWithOAuth({
-        provider,
+        provider: 'google',
         options: { redirectTo },
       });
       if (error) throw new Error('Social sign-in is unavailable right now.');
@@ -143,16 +98,7 @@ export class AuthService {
   }
 
   async loginWithGoogle(): Promise<void> {
-    return this.signInWithProvider('google');
-  }
-
-  async loginWithApple(): Promise<void> {
-    return this.signInWithProvider('apple');
-  }
-
-  async updatePassword(password: string): Promise<void> {
-    const { error } = await this.supabase.auth.updateUser({ password });
-    if (error) throw error;
+    return this.signInWithProvider();
   }
 
   async logout(): Promise<void> {
@@ -164,7 +110,6 @@ export class AuthService {
     }
   }
 
-
   private applySession(session: Session | null): void {
     this.currentUser.set(session?.user ?? null);
     this.accessToken.set(session?.access_token ?? null);
@@ -174,9 +119,5 @@ export class AuthService {
   private readRole(): AuthRole | null {
     const role = this.storage.getItem(ROLE_STORAGE_KEY);
     return role === 'specialist' || role === 'user' ? role : null;
-  }
-
-  private browserOrigin(): string {
-    return typeof window === 'undefined' ? '' : window.location.origin;
   }
 }
