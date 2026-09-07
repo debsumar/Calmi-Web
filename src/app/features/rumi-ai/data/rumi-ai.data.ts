@@ -82,7 +82,7 @@ export const RUMI_SUPPORT_TOPICS: RumiSupportTopic[] = [
   {
     id: 'anxiety-relief',
     icon: 'brain',
-    tileClass: 'bg-brand text-white',
+    tileClass: 'bg-brand text-on-brand',
     title: 'Anxiety relief',
     description: 'Calm anxious thoughts and reduce worry.',
     prompt: 'I would like help calming anxious thoughts.',
@@ -90,7 +90,7 @@ export const RUMI_SUPPORT_TOPICS: RumiSupportTopic[] = [
   {
     id: 'stress-management',
     icon: 'sprout',
-    tileClass: 'bg-accent-green text-white',
+    tileClass: 'bg-accent-green text-on-accent-green',
     title: 'Stress management',
     description: 'Manage stress and find your balance.',
     prompt: 'I am feeling stressed and want to find some balance.',

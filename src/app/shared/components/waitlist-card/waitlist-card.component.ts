@@ -14,15 +14,15 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   template: `
     <section class="bg-surface border border-hairline rounded-2xl shadow-card p-6 text-center"
              aria-labelledby="waitlist-title">
-      <h2 id="waitlist-title" class="text-lg font-bold text-brand-deep dark:text-brand-light mb-1">
+      <h2 id="waitlist-title" class="text-lg font-bold text-brand-deep mb-1">
         Join the Waitlist
       </h2>
-      <p class="text-base text-gray-600 dark:text-gray-300 mb-5 leading-relaxed sm:whitespace-nowrap">
+      <p class="text-base text-ink-soft mb-5 leading-relaxed sm:whitespace-nowrap">
         Be the first to experience personalized anxiety and sleep relief.
       </p>
 
       @if (status() === 'success') {
-        <p class="inline-flex items-center justify-center gap-2 text-base font-semibold text-brand-deep dark:text-brand-light"
+        <p class="inline-flex items-center justify-center gap-2 text-base font-semibold text-success"
            role="status">
           <svg [lucideIcon]="'mail-check'" [size]="20" aria-hidden="true"></svg>
           <span>You're on the list. We'll email you when Calmi opens up.</span>
@@ -54,10 +54,10 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
                  (input)="onEmailInput($event)"
                  [attr.aria-invalid]="fieldError() ? 'true' : null"
                  [attr.aria-describedby]="errorMessage() ? 'waitlist-error' : null"
-                 class="flex-1 min-w-0 rounded-full bg-sunken border border-hairline px-5 py-3 text-base text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface">
+                 class="flex-1 min-w-0 rounded-full bg-sunken border border-hairline px-5 py-3 text-base text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface">
           <button type="submit"
                   [disabled]="status() === 'submitting'"
-                  class="shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-brand-deep px-6 py-3 text-base font-semibold text-white transition-colors duration-200 motion-reduce:transition-none hover:bg-brand-dark disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface">
+                  class="shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-brand-deep px-6 py-3 text-base font-semibold text-on-brand-deep transition-colors duration-200 motion-reduce:transition-none hover:bg-brand-dark disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface">
             @if (status() === 'submitting') {
               <svg [lucideIcon]="'loader-circle'" [size]="18" class="animate-spin motion-reduce:animate-none" aria-hidden="true"></svg>
             }
@@ -68,7 +68,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
         @if (errorMessage()) {
           <p id="waitlist-error"
              role="alert"
-             class="mt-3 inline-flex items-center justify-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-200">
+             class="mt-3 inline-flex items-center justify-center gap-2 text-xs font-semibold text-danger">
             <svg [lucideIcon]="'circle-alert'" [size]="16" aria-hidden="true"></svg>
             <span>{{ errorMessage() }}</span>
           </p>

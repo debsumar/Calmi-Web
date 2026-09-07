@@ -11,14 +11,14 @@ type SocialProvider = 'google' | 'apple';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (showDivider()) {
-      <div class="my-7 flex items-center gap-4 text-sm font-medium tracking-wide text-ink-muted" aria-hidden="true"><span class="h-px flex-1 bg-hairline"></span><span>OR</span><span class="h-px flex-1 bg-hairline"></span></div>
+      <div class="my-7 flex items-center gap-4 text-xs font-semibold tracking-wide text-ink-muted" aria-hidden="true"><span class="flex-1 border-t border-hairline"></span><span>OR</span><span class="flex-1 border-t border-hairline"></span></div>
     }
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <button type="button" [disabled]="disabled() || pending()" (click)="login('google')" class="flex items-center justify-center gap-3 rounded-xl border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-sm transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
+      <button type="button" [disabled]="disabled() || pending()" (click)="login('google')" class="flex items-center justify-center gap-3 rounded-xl border border-hairline bg-surface px-4 py-3 text-base font-semibold text-ink shadow-card transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
         <img src="/assets/logos/google.svg" alt="" aria-hidden="true" class="h-5 w-5 shrink-0" />
         Login with Google
       </button>
-      <button type="button" [disabled]="disabled() || pending()" (click)="login('apple')" class="flex items-center justify-center gap-3 rounded-xl border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-sm transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
+      <button type="button" [disabled]="disabled() || pending()" (click)="login('apple')" class="flex items-center justify-center gap-3 rounded-xl border border-hairline bg-surface px-4 py-3 text-base font-semibold text-ink shadow-card transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60">
         <img src="/assets/logos/apple.svg" alt="" aria-hidden="true" class="h-5 w-5 shrink-0" />
         Login with Apple
       </button>

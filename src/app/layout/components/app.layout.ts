@@ -16,7 +16,7 @@ import { ScrollPositionService } from '@/core/services/scroll-position.service';
       @if (showsDownloadBanner()) {
         <a routerLink="/download"
            aria-label="Download App"
-           class="flex w-full items-center justify-center gap-2 border-b border-hairline bg-sunken px-4 py-2 text-sm font-semibold text-brand-deep transition-colors hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset">
+           class="flex w-full items-center justify-center gap-2 border-b border-hairline bg-sunken px-4 py-2 text-sm font-semibold text-brand-deep transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset">
           <svg [lucideIcon]="'smartphone'" [size]="16" aria-hidden="true"></svg>
           <span>Download App</span>
         </a>

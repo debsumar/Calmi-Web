@@ -65,11 +65,11 @@ describe('ChatMessageComponent', () => {
     expect(article.classList).toContain('stagger-enter');
     expect(article.style.getPropertyValue('--index')).toBe('4');
   });
-  it('renders AI messages with decorative Rumi logo avatar and brand bubble', () => {
+  it('renders AI messages with decorative Rumi logo avatar and elevated assistant bubble', () => {
     const root = render(message({ role: 'ai', status: 'streaming' }));
     const article = root.querySelector('article');
     const avatar = root.querySelector('[data-icon="rumi-logo"]');
-    const bubble = root.querySelector('.bg-brand');
+    const bubble = root.querySelector('.bg-elevated');
 
     expect(article?.classList).toContain('self-start');
     expect(article?.classList).toContain('gap-3');
@@ -80,18 +80,19 @@ describe('ChatMessageComponent', () => {
     expect(avatar?.parentElement?.classList).toContain('w-8');
     expect(avatar?.parentElement?.classList).toContain('border-hairline');
     expect(avatar?.parentElement?.classList).toContain('bg-brand-light');
-    expect(avatar?.parentElement?.classList).toContain('dark:bg-sunken-alt');
+
     expect(avatar?.parentElement?.classList).toContain('p-0.5');
     expect(avatar?.parentElement?.getAttribute('aria-hidden')).toBe('true');
     expect(avatar?.parentElement?.hasAttribute('tabindex')).toBe(false);
-    expect(bubble?.classList).toContain('text-on-brand');
+    expect(bubble?.classList).toContain('text-ink');
+    expect(bubble?.classList).toContain('border-hairline');
     expect(bubble?.classList).toContain('rounded-bl-md');
     expect(root.querySelector('time')?.classList).toContain('text-ink-muted');
   });
 
   it('renders markdown inside the AI bubble without changing the bubble layout', () => {
     const root = render(message({ role: 'ai', text: '**calm**\nTake one breath.' }));
-    const bubble = root.querySelector('.bg-brand');
+    const bubble = root.querySelector('.bg-elevated');
 
     expect(bubble?.querySelector('strong')?.textContent).toBe('calm');
     expect(bubble?.querySelector('br')).not.toBeNull();
@@ -129,7 +130,7 @@ describe('ChatMessageComponent', () => {
     expect(time.textContent?.replace(/\s+/g, ' ')).toContain('3:28 PM');
   });
 
-  it('renders sent user messages with an adaptive muted surface and check-check cue', () => {
+  it('renders sent user messages with a branded bubble and check-check cue', () => {
     const root = render(message({ role: 'user', status: 'sent', text: 'I feel calmer' }));
     const article = root.querySelector('article');
     const avatar = root.querySelector('[data-icon="user"]');
@@ -141,13 +142,12 @@ describe('ChatMessageComponent', () => {
     expect(avatar?.parentElement?.classList).toContain('h-8');
     expect(avatar?.parentElement?.classList).toContain('w-8');
     expect(avatar?.parentElement?.classList).toContain('bg-sunken-alt');
-    expect(avatar?.parentElement?.classList).toContain('dark:text-brand-light');
+
     expect(avatar?.parentElement?.getAttribute('aria-hidden')).toBe('true');
     expect(avatar?.parentElement?.hasAttribute('tabindex')).toBe(false);
     expect(bubble?.classList).toContain('border-hairline');
-    expect(bubble?.classList).toContain('bg-brand-light');
-    expect(bubble?.classList).toContain('dark:bg-sunken-alt');
-    expect(bubble?.classList).toContain('text-ink');
+    expect(bubble?.classList).toContain('bg-brand');
+    expect(bubble?.classList).toContain('text-on-brand');
     expect(bubble?.classList).toContain('rounded-br-md');
     expect(root.querySelector('[data-icon="check-check"]')).not.toBeNull();
     expect(root.querySelector('time')?.classList).toContain('text-ink-muted');

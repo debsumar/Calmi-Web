@@ -12,7 +12,7 @@ import { VoiceSessionService } from '../../services/voice-session.service';
     <button
       id="rumi-chat-bubble"
       type="button"
-      class="fixed right-6 z-[60] inline-flex h-[52px] min-h-11 min-w-11 w-[52px] items-center justify-center rounded-full border border-hairline bg-brand-dark text-on-brand shadow-card transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 dark:bg-elevated dark:text-brand-light md:h-14 md:w-14"
+      class="fixed right-6 z-[60] inline-flex h-[52px] min-h-11 min-w-11 w-[52px] items-center justify-center rounded-full border border-hairline bg-brand-dark text-on-brand-deep shadow-card transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 md:h-14 md:w-14"
       [class.bottom-6]="!liftedForPlayer()"
       [class.bottom-24]="liftedForPlayer()"
       [class.chat-bubble--hidden-mobile]="chatStore.isOpen()"

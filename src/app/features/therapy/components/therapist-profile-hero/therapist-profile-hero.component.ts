@@ -19,7 +19,7 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
         <ol class="flex flex-wrap items-center gap-2 text-xs">
           <li>
             <a [routerLink]="['/therapy']" fragment="top-psychologists"
-               class="inline-flex items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-brand-deep focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep">
+               class="inline-flex items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep">
               <svg lucideArrowLeft [size]="16" aria-hidden="true"></svg>
               <span>Top Psychologists</span>
             </a>
@@ -80,7 +80,7 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
 
         <div class="grid grid-cols-1 bg-brand-deep text-on-brand-deep sm:grid-cols-2 md:grid-cols-4">
           @for (stat of stats(); track stat.label) {
-            <div class="border-b border-brand-light/40 p-5 text-center last:border-b-0 sm:border-r sm:border-b-0 md:last:border-r-0">
+            <div class="border-b border-brand-light p-5 text-center last:border-b-0 sm:border-r sm:border-b-0 md:last:border-r-0">
               <p class="break-words text-base font-bold">{{ stat.value }}</p>
               <p class="mt-1 text-xs font-semibold">{{ stat.label }}</p>
             </div>

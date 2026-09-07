@@ -37,9 +37,9 @@ describe('ChatBubbleComponent', () => {
     const logo = button.querySelector('.logo-pulse') as HTMLElement;
 
     expect(button.classList).toContain('bg-brand-dark');
-    expect(button.classList).toContain('text-on-brand');
-    expect(button.classList).toContain('dark:bg-elevated');
-    expect(button.classList).toContain('dark:text-brand-light');
+    expect(button.classList).toContain('text-on-brand-deep');
+    expect(button.classList).not.toContain('dark:bg-elevated');
+    expect(button.classList).not.toContain('dark:text-brand-light');
     expect(button.classList).toContain('border-hairline');
     expect(logo.classList).toContain('p-0.5');
     expect(button.querySelector('img[alt=""]')).not.toBeNull();

@@ -4,6 +4,6 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
   selector: 'app-card',
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.Eager,
-  template: `<div class="h-full bg-surface rounded-2xl p-8 shadow-card"><ng-content /></div>`,
+  template: `<div class="h-full rounded-2xl border border-hairline bg-surface p-8 shadow-card"><ng-content /></div>`, 
 })
 export class CardComponent {}

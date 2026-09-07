@@ -10,17 +10,17 @@ import { LucideDynamicIcon } from '@lucide/angular';
     <div class="flex-1 min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center bg-canvas px-6 py-12 text-center relative overflow-hidden transition-colors duration-300">
       
       <!-- Back Button -->
-      <a routerLink="/home" class="absolute top-6 right-8 text-gray-400 hover:text-brand dark:hover:text-white transition-colors duration-300 z-10">
-        <svg [lucideIcon]="'x'" [size]="28"></svg>
+      <a routerLink="/home" aria-label="Back to home" class="absolute top-6 right-8 text-ink-muted hover:text-brand transition-colors duration-300 z-10">
+        <svg [lucideIcon]="'x'" [size]="28" aria-hidden="true"></svg>
       </a>
 
       <!-- Animated Illustration Container -->
       <div class="relative w-72 h-72 mb-8 flex items-center justify-center">
         <!-- Floating Sparkles/Stars -->
-        <svg class="absolute top-4 left-10 w-6 h-6 text-brand/60 dark:text-brand/60 animate-sparkle" viewBox="0 0 24 24" fill="currentColor">
+        <svg class="absolute top-4 left-10 w-6 h-6 text-brand animate-sparkle" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
         </svg>
-        <svg class="absolute bottom-16 left-6 w-4 h-4 text-brand-dark/50 dark:text-gray-100/40 animate-sparkle-delayed" viewBox="0 0 24 24" fill="currentColor">
+        <svg class="absolute bottom-16 left-6 w-4 h-4 text-brand-dark animate-sparkle-delayed" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
         </svg>
         <svg class="absolute top-12 right-12 w-8 h-8 text-accent-gold animate-sparkle" viewBox="0 0 24 24" fill="currentColor">
@@ -28,12 +28,12 @@ import { LucideDynamicIcon } from '@lucide/angular';
         </svg>
 
         <!-- Ambient Glow behind the heart -->
-        <div class="absolute w-48 h-48 rounded-full bg-brand/10 dark:bg-brand/20 blur-3xl animate-pulse-glow"></div>
+        <div class="absolute w-48 h-48 rounded-full bg-brand-soft blur-3xl animate-pulse-glow"></div>
 
         <!-- Main Animated Heart Group -->
         <div class="relative w-48 h-48 animate-float">
           <!-- Back shadow/glow layer -->
-          <svg class="absolute inset-0 w-full h-full drop-shadow-accent-coral dark:drop-shadow-accent-gold" viewBox="0 0 64 64">
+          <svg class="absolute inset-0 w-full h-full drop-shadow-accent-coral" viewBox="0 0 64 64">
             <path d="M32 56S4 36 4 20C4 10 12 4 22 4c6 0 10 4 10 4s4-4 10-4c10 0 18 6 18 16C60 36 32 56 32 56z" fill="url(#heartGradient)"/>
           </svg>
 
@@ -61,16 +61,16 @@ import { LucideDynamicIcon } from '@lucide/angular';
 
       <!-- Text Content -->
       <div class="max-w-md animate-fade-in-up">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 leading-tight mb-4 tracking-tight">
+        <h1 class="text-3xl md:text-5xl font-bold text-ink leading-tight mb-4 tracking-tight">
           Under Construction
         </h1>
-        <p class="text-gray-500 dark:text-gray-400 text-lg mb-8 leading-relaxed font-semibold">
+        <p class="text-ink-soft text-lg mb-8 leading-relaxed">
           We're carefully designing this space to bring you a calming, premium experience. Thank you for your patience!
         </p>
 
         <!-- Back to Home Action Button -->
         <div class="flex justify-center">
-          <a routerLink="/home" class="inline-flex items-center gap-2 px-8 py-3.5 bg-brand hover:bg-brand-dark text-white font-semibold rounded-full shadow-lg shadow-brand/20 dark:shadow-none hover:shadow-xl transition-all duration-300 group">
+          <a routerLink="/home" class="inline-flex items-center gap-2 px-8 py-3.5 bg-brand-deep hover:bg-brand-dark text-on-brand-deep text-base font-semibold rounded-full shadow-card transition-all duration-300 group">
             <span>Back to Home</span>
             <svg [lucideIcon]="'arrow-right'" [size]="18" class="group-hover:translate-x-1 transition-transform"></svg>
           </a>

@@ -41,7 +41,7 @@
           appAnimateOnScroll
           [style.--index]="3"
           routerLink="/pricing"
-          class="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand-deep px-5 py-2 text-base font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
+          class="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand-deep px-5 py-2 text-base font-semibold text-on-brand-deep shadow-card transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
           Upgrade plan
           <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
         </a>
@@ -198,7 +198,7 @@
                   <span class="h-3 w-3 shrink-0 rounded-sm" [ngClass]="segment.swatch" aria-hidden="true"></span>
                   <span class="min-w-0 flex-1 break-words text-base font-bold text-ink">{{ segment.title }}</span>
                   <span class="shrink-0 text-xs font-semibold text-ink-soft">
-                    {{ segment.minutes }} min · {{ segment.share }}%
+                    {{ segment.minutes }} min Â· {{ segment.share }}%
                   </span>
                 </li>
               }
@@ -215,7 +215,7 @@
         class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
         <h2 id="sessions-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Sessions</h2>
         <p appAnimateOnScroll [style.--index]="1" class="mt-1 text-base text-ink-soft">
-          Next available with {{ therapistName }} · {{ therapistSession }}
+          Next available with {{ therapistName }} Â· {{ therapistSession }}
         </p>
 
         @if (nextSessionDays.length > 0) {
@@ -273,7 +273,7 @@
         appAnimateOnScroll
         [style.--index]="3"
         aria-labelledby="signals-title"
-        class="flex flex-col overflow-hidden rounded-3xl border border-hairline shadow-card md:col-span-2 lg:col-span-3">
+        class="flex flex-col overflow-hidden rounded-3xl border border-hairline bg-surface shadow-card md:col-span-2 lg:col-span-3">
         <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-surface px-5 pb-3 pt-5">
           <h2 id="signals-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">This month</h2>
           <p appAnimateOnScroll [style.--index]="1" class="text-xs text-ink-soft">
@@ -444,7 +444,7 @@
         appAnimateOnScroll
         [style.--index]="5"
         aria-labelledby="closure-title"
-        class="rounded-3xl border border-hairline bg-sunken p-6 md:col-span-2 lg:col-span-6">
+        class="rounded-3xl border border-hairline bg-surface p-6 md:col-span-2 lg:col-span-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div class="min-w-0">
             <h2 id="closure-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">
@@ -490,7 +490,7 @@
             <div class="mt-4 flex flex-wrap gap-3">
               <button
                 type="button"
-                class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-deep px-5 py-2 text-base font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-deep px-5 py-2 text-base font-semibold text-on-brand-deep shadow-card transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 (click)="confirmClosure()">
                 Continue
               </button>

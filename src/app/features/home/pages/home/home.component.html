@@ -4,15 +4,15 @@
   <img src="assets/Illustration_1.avif" alt="" class="absolute right-0 top-0 h-full w-auto object-cover object-right pointer-events-none z-0 hidden sm:block opacity-80">
 
   <div class="relative z-10 text-center px-6 md:px-4 max-w-2xl py-12 md:py-16">
-    <h1 appAnimateOnScroll class="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-4 md:mb-6" style="--index:0">
+    <h1 appAnimateOnScroll class="text-3xl md:text-5xl font-bold text-on-hero leading-tight mb-4 md:mb-6" style="--index:0">
       Calm your mind in<br>minutes.
     </h1>
-    <p appAnimateOnScroll class="text-white text-base md:text-lg mb-2" style="--index:1">Feeling anxious, stuck, or can't sleep?</p>
-    <p appAnimateOnScroll class="text-white text-base md:text-lg mb-6" style="--index:2">Start a guided calm session instantly.</p>
-    <div appAnimateOnScroll class="flex flex-wrap items-center justify-center gap-3 md:gap-6 text-white text-xs mb-8" style="--index:3">
-      <span>• Mood-based guidance</span>
-      <span>• Licensed therapists</span>
-      <span>• Sleep better</span>
+    <p appAnimateOnScroll class="text-on-hero text-base md:text-lg mb-2" style="--index:1">Feeling anxious, stuck, or can't sleep?</p>
+    <p appAnimateOnScroll class="text-on-hero text-base md:text-lg mb-6" style="--index:2">Start a guided calm session instantly.</p>
+    <div appAnimateOnScroll class="flex flex-wrap items-center justify-center gap-3 md:gap-6 text-on-hero text-xs mb-8" style="--index:3">
+      <span>ΓÇó Mood-based guidance</span>
+      <span>ΓÇó Licensed therapists</span>
+      <span>ΓÇó Sleep better</span>
     </div>
     @if (!authService.currentUser()) {
       <app-waitlist-card appAnimateOnScroll class="block max-w-2xl mx-auto mt-8 md:mt-10" style="--index:4" />
@@ -22,7 +22,7 @@
 
 <!-- What are you feeling section -->
 <section class="py-16 px-4">
-  <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-gray-100 mb-12" style="--index:0">
+  <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-center text-ink mb-12" style="--index:0">
     @if (authService.currentUser()) {
       How are you feeling today,<br>{{ getUserFirstName() }}?
     } @else {
@@ -34,11 +34,11 @@
     @for (card of moodCards(); track card.title; let i = $index) {
       <app-card appAnimateOnScroll class="cursor-pointer hover:-translate-y-2 transition-transform duration-300 group" [style.--index]="i">
         <div class="flex flex-col h-full items-start">
-          <div class="w-14 h-14 rounded-2xl bg-brand/10 dark:bg-white/10 text-brand dark:text-brand-light flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <div class="w-14 h-14 rounded-2xl bg-player-surface text-brand flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
             <svg [lucideIcon]="card.icon" [size]="28"></svg>
           </div>
-          <h3 class="text-2xl font-bold mb-3 text-gray-900 dark:text-gray-100">{{ card.title }}</h3>
-          <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-6 flex-1">
+          <h3 class="text-lg font-bold mb-3 text-ink">{{ card.title }}</h3>
+          <p class="text-ink-soft leading-relaxed mb-6 flex-1">
             {{ card.description }}
           </p>
           <div class="mt-auto flex items-center gap-2 text-brand font-semibold group-hover:translate-x-2 transition-transform duration-300">
@@ -55,47 +55,47 @@
 <section class="py-12 md:py-20 px-4 md:px-8 max-w-6xl mx-auto">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
     <div>
-      <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-4" style="--index:0">
+      <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-ink leading-tight mb-4" style="--index:0">
         Don't fix everything.<br>Take a moment.
       </h2>
-      <p class="text-gray-600 dark:text-gray-300 text-lg mb-6">Listen. Breathe. Reset.</p>
+      <p class="text-ink-soft text-lg mb-6">Listen. Breathe. Reset.</p>
 
       <div class="grid grid-cols-2 gap-x-6 gap-y-5">
         <div>
           <svg [lucideIcon]="'headphones'" [size]="20" class="text-brand mb-1.5"></svg>
-          <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-0.5 text-sm">Guided Audios</h4>
-          <p class="text-gray-500 dark:text-gray-400 text-xs">Short sessions that help instantly.</p>
+          <h4 class="font-bold text-ink mb-0.5 text-lg">Guided Audios</h4>
+          <p class="text-ink-muted text-xs">Short sessions that help instantly.</p>
         </div>
         <div>
           <svg [lucideIcon]="'cloud'" [size]="20" class="text-brand mb-1.5"></svg>
-          <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-0.5 text-sm">Soothing Sounds</h4>
-          <p class="text-gray-500 dark:text-gray-400 text-xs">Ambient sounds to relax and sleep.</p>
+          <h4 class="font-bold text-ink mb-0.5 text-lg">Soothing Sounds</h4>
+          <p class="text-ink-muted text-xs">Ambient sounds to relax and sleep.</p>
         </div>
         <div>
           <svg [lucideIcon]="'heart'" [size]="20" class="text-brand mb-1.5"></svg>
-          <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-0.5 text-sm">Feel Better</h4>
-          <p class="text-gray-500 dark:text-gray-400 text-xs">Designed to help you feel lighter.</p>
+          <h4 class="font-bold text-ink mb-0.5 text-lg">Feel Better</h4>
+          <p class="text-ink-muted text-xs">Designed to help you feel lighter.</p>
         </div>
         <div>
           <svg [lucideIcon]="'zap'" [size]="20" class="text-brand mb-1.5"></svg>
-          <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-0.5 text-sm">Instant Relief</h4>
-          <p class="text-gray-500 dark:text-gray-400 text-xs">Calm your mind in minutes.</p>
+          <h4 class="font-bold text-ink mb-0.5 text-lg">Instant Relief</h4>
+          <p class="text-ink-muted text-xs">Calm your mind in minutes.</p>
         </div>
       </div>
     </div>
 
-    <div class="bg-gradient-to-b from-hero to-brand-deep dark:from-brand dark:to-brand-night rounded-2xl p-8 text-white flex flex-col items-center">
-      <h3 class="text-2xl font-bold mb-1">One-Minute Reset</h3>
-      <p class="text-white/70 mb-12">Chibs Okereke</p>
-      <button class="w-24 h-24 rounded-full border-2 border-white/30 flex items-center justify-center mb-12 hover:bg-white/10 transition-colors">
-        <svg [lucideIcon]="'play'" [size]="36" class="text-white ml-1"></svg>
+    <div class="bg-gradient-to-b from-hero to-brand-deep dark:from-player-from dark:to-player-to rounded-2xl p-8 flex flex-col items-center">
+      <h3 class="text-2xl font-bold text-on-hero mb-1">One-Minute Reset</h3>
+      <p class="text-on-hero mb-12">Chibs Okereke</p>
+      <button class="w-24 h-24 rounded-full border-2 border-hairline bg-player-surface flex items-center justify-center mb-12 hover:bg-sunken transition-colors">
+        <svg [lucideIcon]="'play'" [size]="36" class="text-ink ml-1"></svg>
       </button>
       <div class="w-full">
-        <div class="w-full h-1 bg-white/20 rounded-full relative">
-          <div class="absolute left-0 top-0 h-1 w-0 bg-white/60 rounded-full"></div>
-          <div class="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full"></div>
+        <div class="w-full h-1 bg-hairline rounded-full relative">
+          <div class="absolute left-0 top-0 h-1 w-0 bg-brand rounded-full"></div>
+          <div class="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-brand rounded-full"></div>
         </div>
-        <div class="flex justify-between mt-2 text-xs text-white/60">
+        <div class="flex justify-between mt-2 text-xs text-on-hero">
           <span>00:00</span>
           <span>01:00</span>
         </div>
@@ -106,7 +106,7 @@
 
 <!-- Soothing sounds section -->
 <section class="py-12 md:py-20 px-4 md:px-8 max-w-6xl mx-auto">
-  <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-gray-100 mb-4" style="--index:0">
+  <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-center text-ink mb-4" style="--index:0">
     Soothing sounds for every moment.
   </h2>
   <div class="flex justify-end mb-6">
@@ -122,43 +122,43 @@
 
 <!-- Unlock more / Pricing CTA -->
 <section class="py-12 md:py-16 px-4 md:px-8 max-w-5xl mx-auto">
-  <p appAnimateOnScroll class="text-center text-xs text-gray-500 dark:text-gray-400 mb-6" style="--index:0">
+  <p appAnimateOnScroll class="text-center text-xs text-ink-muted mb-6" style="--index:0">
     Join the first wave of people building healthier emotional habits with Calmi.
   </p>
   <app-card>
     <div class="flex flex-col md:flex-row items-stretch gap-8">
       <div class="flex-1 min-w-0 flex flex-col justify-center border-r-0 md:border-r border-hairline pr-0 md:pr-8">
-        <h3 class="text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-3">
+        <h3 class="text-2xl font-bold text-ink leading-tight mb-3">
           Go Premium.<br>Go Deeper.
         </h3>
-        <p class="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
+        <p class="text-ink-soft text-base leading-relaxed">
           Get unlimited access to guided sleep journeys, personalized audio, AI reflections, and exclusive content designed to support your mental well-being.
         </p>
       </div>
       <div class="flex-1 min-w-0 flex flex-col justify-center border-r-0 md:border-r border-hairline pr-0 md:pr-8">
         <ul class="space-y-6">
-        <li class="flex items-start gap-3 text-gray-700 dark:text-gray-300 text-base leading-snug">
+        <li class="flex items-start gap-3 text-ink-soft text-base leading-snug">
           <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand shrink-0 mt-0.5"></svg>
           <span>Unlimited Sleep Sessions</span>
         </li>
-        <li class="flex items-start gap-3 text-gray-700 dark:text-gray-300 text-base leading-snug">
+        <li class="flex items-start gap-3 text-ink-soft text-base leading-snug">
           <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand shrink-0 mt-0.5"></svg>
           <span>Personalized Rumi AI</span>
         </li>
-        <li class="flex items-start gap-3 text-gray-700 dark:text-gray-300 text-base leading-snug">
+        <li class="flex items-start gap-3 text-ink-soft text-base leading-snug">
           <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand shrink-0 mt-0.5"></svg>
           <span>Exclusive Guided Journals</span>
         </li>
-        <li class="flex items-start gap-3 text-gray-700 dark:text-gray-300 text-base leading-snug">
+        <li class="flex items-start gap-3 text-ink-soft text-base leading-snug">
           <svg [lucideIcon]="'circle-check'" [size]="18" class="text-brand shrink-0 mt-0.5"></svg>
           <span>Cancel anytime</span>
         </li>
       </ul>
     </div>
     <div class="w-full md:w-56 shrink-0 flex flex-col justify-center text-center md:text-left md:pl-2">
-      <p class="text-base text-gray-500 dark:text-gray-400">*from</p>
-      <p class="text-4xl font-bold text-gray-900 dark:text-gray-100 leading-tight">₹99 <span class="text-base font-normal text-gray-500 dark:text-gray-400">/ month</span></p>
-      <p class="mt-3 text-xs text-gray-400 flex items-center justify-center md:justify-start gap-1">
+      <p class="text-xs text-ink-muted">*from</p>
+      <p class="text-2xl font-bold text-ink leading-tight">Γé╣99 <span class="text-xs font-normal text-ink-muted">/ month</span></p>
+      <p class="mt-3 text-xs text-ink-muted flex items-center justify-center md:justify-start gap-1">
         <svg [lucideIcon]="'lock'" [size]="12" class="shrink-0"></svg>
         <span>Secure payment. Cancel anytime.</span>
       </p>
@@ -173,11 +173,11 @@
     <div class="flex flex-col md:flex-row items-start gap-8">
       <!-- Left -->
       <div class="flex-1">
-        <p class="text-brand text-sm font-semibold uppercase tracking-wide mb-4">Community</p>
-        <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-4" style="--index:1">
+        <p class="text-brand text-xs font-semibold uppercase tracking-wide mb-4">Community</p>
+        <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-ink leading-tight mb-4" style="--index:1">
           You're Not Alone<br>on This Journey
         </h2>
-        <p class="text-gray-600 dark:text-gray-300 mb-8">
+        <p class="text-ink-soft text-base mb-8">
           Connect with others, share experiences, and find encouragement in a safe, supportive space.
         </p>
         <app-primary-button label="Coming Soon" [disabled]="true" />
@@ -191,16 +191,16 @@
     <!-- Wellness Coaching -->
     <div class="mt-10 flex flex-col md:flex-row items-center gap-8">
       <div class="flex-1">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Wellness Coaching</h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-4">
+        <h3 class="text-lg font-bold text-ink mb-4">Wellness Coaching</h3>
+        <p class="text-ink-soft text-base mb-4">
           Personalized guidance to help you build healthier habits, manage stress, and achieve balance in all areas of your life.
         </p>
-        <p class="text-gray-600 dark:text-gray-300">
+        <p class="text-ink-soft text-base">
           Our wellness coaches will support you in creating sustainable routines for mental, emotional, and physical well-being.
         </p>
       </div>
       <div class="flex-1 flex items-center justify-center">
-        <p class="text-brand text-xl md:text-2xl font-bold uppercase tracking-wide">Coming Soon. Stay Tuned.</p>
+        <p class="text-brand text-lg font-bold uppercase tracking-wide">Coming Soon. Stay Tuned.</p>
       </div>
     </div>
   </app-card>
@@ -211,38 +211,38 @@
   <div class="flex flex-col md:flex-row gap-8">
     <!-- Left - Links card -->
     <app-card class="flex-1">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8">Calmi</h2>
+      <h2 class="text-lg font-bold text-ink mb-8">Calmi</h2>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 mb-12">
         <div class="flex flex-col gap-y-4">
-          <a href="/features" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Features</a>
-          <a href="/therapy" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Therapy</a>
-          <a href="/sleep" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Sleep</a>
-          <a href="/pricing" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Pricing</a>
-          <a href="/contact" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Follow Us</a>
+          <a href="/features" class="text-ink-soft hover:text-brand text-base">Features</a>
+          <a href="/therapy" class="text-ink-soft hover:text-brand text-base">Therapy</a>
+          <a href="/sleep" class="text-ink-soft hover:text-brand text-base">Sleep</a>
+          <a href="/pricing" class="text-ink-soft hover:text-brand text-base">Pricing</a>
+          <a href="/contact" class="text-ink-soft hover:text-brand text-base">Follow Us</a>
         </div>
         <div class="flex flex-col gap-y-4">
-          <a href="/about" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">About Us</a>
-          <a href="/blog" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Blog</a>
+          <a href="/about" class="text-ink-soft hover:text-brand text-base">About Us</a>
+          <a href="/blog" class="text-ink-soft hover:text-brand text-base">Blog</a>
         </div>
         <div class="flex flex-col gap-y-4">
-          <a href="/privacy" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Privacy Policy</a>
-          <a href="/terms" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">Terms Of Use</a>
-          <a href="/faq" class="text-gray-700 dark:text-gray-300 hover:text-brand text-sm">FAQ</a>
+          <a href="/privacy" class="text-ink-soft hover:text-brand text-base">Privacy Policy</a>
+          <a href="/terms" class="text-ink-soft hover:text-brand text-base">Terms Of Use</a>
+          <a href="/faq" class="text-ink-soft hover:text-brand text-base">FAQ</a>
         </div>
       </div>
-      <p class="text-gray-400 text-xs mt-auto">© 2026 Calmi. All Rights Reserved. Built With Care.</p>
+      <p class="text-ink-muted text-xs mt-auto">┬⌐ 2026 Calmi. All Rights Reserved. Built With Care.</p>
     </app-card>
 
     <!-- Right - CTA card -->
-    <div class="flex-1 bg-hero dark:bg-surface dark:shadow-card rounded-2xl p-10 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex-1 bg-hero rounded-2xl p-10 flex flex-col justify-between relative overflow-hidden">
       <div class="relative z-10">
-        <h3 class="text-3xl font-bold text-white leading-tight mb-8">
+        <h3 class="text-2xl font-bold text-on-hero leading-tight mb-8">
           Feeling overwhelmed today?<br><span class="font-normal">Take a minute for yourself.</span>
         </h3>
       </div>
-      <a routerLink="/therapy" class="relative z-10 bg-white text-gray-900 dark:bg-brand-deep dark:text-white font-semibold px-8 py-4 rounded-full hover:shadow-lg transition-shadow w-full flex items-center justify-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+      <a routerLink="/therapy" class="relative z-10 bg-surface text-ink border border-hairline font-semibold px-8 py-4 rounded-full hover:shadow-card transition-shadow w-full flex items-center justify-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
         <span>Start Your Journey</span>
-        <span aria-hidden="true" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs">→</span>
+        <span aria-hidden="true" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand text-on-brand text-xs">ΓåÆ</span>
       </a>
     </div>
   </div>

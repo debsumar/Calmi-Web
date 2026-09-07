@@ -50,9 +50,9 @@ const SLIDE_INTERVAL_MS = 6000;
               (mouseleave)="resume()"
               (focusin)="pause()"
               (focusout)="resume()">
-              <blockquote class="text-sm leading-relaxed text-white md:text-base">
+              <blockquote class="text-base leading-relaxed text-on-brand-deep">
                 &ldquo;{{ activeTestimonial().quote }}&rdquo;
-                <footer class="mt-2 text-xs font-semibold text-white/80">
+                <footer class="mt-2 text-xs font-semibold text-on-brand-deep">
                   {{ activeTestimonial().author }} &middot; {{ activeTestimonial().role }}
                 </footer>
               </blockquote>
@@ -64,12 +64,12 @@ const SLIDE_INTERVAL_MS = 6000;
                     (click)="showSlide(index)"
                     [attr.aria-current]="activeIndex() === index ? 'true' : null"
                     [attr.aria-label]="'Show testimonial ' + (index + 1) + ' of ' + testimonials.length"
-                    class="h-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark"
-                    [class]="activeIndex() === index ? 'w-5 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/70'"></button>
+                    class="h-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark"
+                    [class]="activeIndex() === index ? 'w-5 bg-brand-light' : 'w-1.5 bg-brand-light hover:bg-brand-deep'"></button>
                 }
               </div>
 
-              <ul class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-white/80">
+              <ul class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-on-brand-deep">
                 <li>Licensed therapists</li>
                 <li aria-hidden="true">&middot;</li>
                 <li>10k+ sessions</li>
@@ -92,7 +92,7 @@ const SLIDE_INTERVAL_MS = 6000;
               @if (showClose()) {
                 <a
                   routerLink="/"
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft/25 text-brand-deep transition-colors hover:bg-brand-deep hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 dark:bg-brand-soft/20 dark:text-brand-soft dark:hover:bg-brand-soft dark:hover:text-brand-night"
+                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sunken text-brand transition-colors hover:bg-brand-deep hover:text-on-brand-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                   aria-label="Close and return to home">
                   <svg [lucideIcon]="'x'" [size]="18" class="fill-none stroke-current" aria-hidden="true"></svg>
                 </a>

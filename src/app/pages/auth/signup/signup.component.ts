@@ -19,7 +19,7 @@ import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-butt
       <div class="mx-auto flex w-full max-w-md flex-col">
 
         @if (successMessage()) {
-          <div appAnimateOnScroll style="--index:0" class="mt-6 rounded-xl border border-brand bg-brand-soft/10 px-4 py-3 text-sm text-brand-deep" role="status" aria-live="polite">{{ successMessage() }}</div>
+          <div appAnimateOnScroll style="--index:0" class="mt-6 rounded-xl border border-brand bg-sunken px-4 py-3 text-base text-ink" role="status" aria-live="polite">{{ successMessage() }}</div>
         }
 
         <h1 appAnimateOnScroll style="--index:1" class="text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">Join Calmi Today!</h1>
@@ -32,13 +32,13 @@ import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-butt
         <form appAnimateOnScroll style="--index:4" class="mt-8 space-y-5" [formGroup]="signupForm" (ngSubmit)="submit()" novalidate>
           <div>
             <label for="signup-name" class="mb-2 block text-sm font-semibold text-ink">Full Name</label>
-            <input id="signup-name" type="text" autocomplete="name" formControlName="fullName" aria-describedby="signup-name-error" [attr.aria-invalid]="signupForm.controls.fullName.touched && signupForm.controls.fullName.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus:ring-2 focus:ring-brand/20" />
+            <input id="signup-name" type="text" autocomplete="name" formControlName="fullName" aria-describedby="signup-name-error" [attr.aria-invalid]="signupForm.controls.fullName.touched && signupForm.controls.fullName.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus-visible:ring-2 focus-visible:ring-brand" />
             <div id="signup-name-error" class="mt-1 text-sm text-danger" aria-live="polite">@if (signupForm.controls.fullName.touched && signupForm.controls.fullName.hasError('required')) { Full Name is required. }</div>
           </div>
 
           <div>
             <label for="signup-email" class="mb-2 block text-sm font-semibold text-ink">Email</label>
-            <input id="signup-email" type="email" autocomplete="email" formControlName="email" aria-describedby="signup-email-error" [attr.aria-invalid]="signupForm.controls.email.touched && signupForm.controls.email.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus:ring-2 focus:ring-brand/20" />
+            <input id="signup-email" type="email" autocomplete="email" formControlName="email" aria-describedby="signup-email-error" [attr.aria-invalid]="signupForm.controls.email.touched && signupForm.controls.email.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus-visible:ring-2 focus-visible:ring-brand" />
             <div id="signup-email-error" class="mt-1 text-sm text-danger" aria-live="polite">
               @if (signupForm.controls.email.touched && signupForm.controls.email.hasError('required')) { Email is required. }
               @else if (signupForm.controls.email.touched && signupForm.controls.email.hasError('email')) { Enter a valid email address. }
@@ -48,7 +48,7 @@ import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-butt
           <div>
             <label for="signup-password" class="mb-2 block text-sm font-semibold text-ink">Password</label>
             <div class="relative">
-              <input id="signup-password" [type]="showPassword() ? 'text' : 'password'" autocomplete="new-password" formControlName="password" aria-describedby="signup-password-error" [attr.aria-invalid]="signupForm.controls.password.touched && signupForm.controls.password.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 pr-12 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus:ring-2 focus:ring-brand/20" />
+              <input id="signup-password" [type]="showPassword() ? 'text' : 'password'" autocomplete="new-password" formControlName="password" aria-describedby="signup-password-error" [attr.aria-invalid]="signupForm.controls.password.touched && signupForm.controls.password.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 pr-12 text-base text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus-visible:ring-2 focus-visible:ring-brand" />
               <button type="button" class="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'" [attr.aria-pressed]="showPassword()" (click)="showPassword.update((visible) => !visible)">
                 @if (showPassword()) { <svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8" aria-hidden="true"><path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 5.2A10.7 10.7 0 0 1 12 5c5.2 0 8.7 4.4 9.8 7-.4 1-1.3 2.4-2.6 3.6M6.6 6.6C4.7 7.8 3.4 9.7 2.2 12c1.1 2.6 4.6 7 9.8 7 1.1 0 2.1-.2 3-.5"/></svg> } @else { <svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8" aria-hidden="true"><path d="M2.2 12c1.1-2.6 4.6-7 9.8-7s8.7 4.4 9.8 7c-1.1 2.6-4.6 7-9.8 7S3.3 14.6 2.2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg> }
               </button>
@@ -61,18 +61,18 @@ import { SocialAuthButtonsComponent } from '@/shared/components/social-auth-butt
 
           <div class="flex items-start gap-3 pt-1">
             <input id="signup-terms" type="checkbox" formControlName="terms" aria-describedby="signup-terms-error" [attr.aria-invalid]="signupForm.controls.terms.touched && signupForm.controls.terms.invalid" class="mt-0.5 h-5 w-5 shrink-0 rounded-md border-2 border-ink accent-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2" />
-            <label for="signup-terms" class="text-sm leading-relaxed text-ink-soft">I agree to Calmi’s <a routerLink="/terms" class="text-brand underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Terms of Service</a> and <a routerLink="/privacy" class="text-brand underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Privacy Policy.</a></label>
+            <label for="signup-terms" class="text-sm leading-relaxed text-ink-soft">I agree to Calmi’s <a routerLink="/terms" class="text-ink underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Terms of Service</a> and <a routerLink="/privacy" class="text-ink underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Privacy Policy.</a></label>
             <div id="signup-terms-error" class="sr-only" aria-live="polite">@if (signupForm.controls.terms.touched && signupForm.controls.terms.invalid) { Please accept the Terms of Service and Privacy Policy. }</div>
           </div>
 
-          <button type="submit" [disabled]="signupForm.invalid || pending()" [attr.aria-busy]="pending()" class="mt-2 flex w-full items-center justify-center gap-3 rounded-2xl bg-brand-deep px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-muted">
+          <button type="submit" [disabled]="signupForm.invalid || pending()" [attr.aria-busy]="pending()" class="mt-2 flex w-full items-center justify-center gap-3 rounded-2xl bg-brand-deep px-8 py-4 text-base font-semibold text-on-brand-deep transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-muted">
             @if (pending()) { <span class="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true"></span><span>Signing up...</span> } @else { <span>Sign Up</span> }
           </button>
         </form>
 
         <app-social-auth-buttons appAnimateOnScroll style="--index:5" [disabled]="pending()" (failed)="errorMessage.set($event)"></app-social-auth-buttons>
 
-        <p appAnimateOnScroll style="--index:6" class="mt-8 text-center text-sm text-ink-soft">Already have an account? <a routerLink="/auth/login" class="font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Login here</a></p>
+        <p appAnimateOnScroll style="--index:6" class="mt-8 text-center text-sm text-ink-soft">Already have an account? <a routerLink="/auth/login" class="font-semibold text-ink underline underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Login here</a></p>
       </div>
     </app-auth-split-card>
   `,

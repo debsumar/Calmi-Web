@@ -16,23 +16,29 @@ describe('VerificationStepperComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders ordered Details, Check, Result steps with current and completed state', () => {
+  it('renders numbered upcoming, active, and completed step cues', () => {
     const root = fixture.nativeElement as HTMLElement;
     const steps = root.querySelectorAll('ol > li');
 
     expect(root.querySelector('ol')?.getAttribute('aria-label')).toBe('Verification progress');
-    expect(Array.from(steps).map((step) => step.textContent?.trim())).toEqual(['Details', 'Check', 'Result']);
-    expect(steps[0].getAttribute('data-done')).toBe('true');
+    expect(Array.from(root.querySelectorAll('.verification-step__label')).map((step) => step.textContent?.trim())).toEqual(['Details', 'Check', 'Result']);
+    expect(steps[0].getAttribute('data-state')).toBe('complete');
+    expect(steps[0].querySelector('.verification-step__marker')?.textContent?.trim()).toBe('✓');
+    expect(steps[1].getAttribute('data-state')).toBe('active');
     expect(steps[1].getAttribute('aria-current')).toBe('step');
-    expect(steps[2].getAttribute('aria-current')).toBeNull();
+    expect(steps[2].getAttribute('data-state')).toBe('upcoming');
+    expect(steps[2].querySelector('.verification-step__marker')?.textContent?.trim()).toBe('3');
   });
 
-  it('moves current step and connector completion when input changes', () => {
+  it('renders failure with an explicit text and icon cue', () => {
     fixture.componentRef.setInput('currentStep', 'result');
+    fixture.componentRef.setInput('status', 'failed');
     fixture.detectChanges();
 
-    const steps = fixture.nativeElement.querySelectorAll('ol > li');
-    expect(steps[1].getAttribute('data-done')).toBe('true');
-    expect(steps[2].getAttribute('aria-current')).toBe('step');
+    const resultStep = fixture.nativeElement.querySelectorAll('ol > li')[2] as HTMLElement;
+    expect(resultStep.getAttribute('data-state')).toBe('error');
+    expect(resultStep.getAttribute('aria-label')).toBe('Result: Needs attention');
+    expect(resultStep.querySelector('.verification-step__marker')?.textContent?.trim()).toBe('!');
+    expect(resultStep.querySelector('.verification-step__status')?.textContent?.trim()).toBe('Needs attention');
   });
 });

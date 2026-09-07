@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   template: `
     <div class="flex self-start items-start gap-3">
       <div class="h-8 w-8 shrink-0" aria-hidden="true"></div>
-      <div class="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-hairline bg-sunken px-4 py-3"
+      <div class="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-hairline bg-elevated px-4 py-3"
            [attr.aria-label]="announce() ? 'Rumi AI is typing' : null"
            [attr.aria-hidden]="announce() ? null : 'true'">
         <span class="sr-only">Rumi is typing</span>

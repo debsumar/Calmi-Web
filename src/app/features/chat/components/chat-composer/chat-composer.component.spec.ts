@@ -76,7 +76,8 @@ describe('ChatComposerComponent', () => {
     expect(voiceButton).not.toBeNull();
     expect(voiceButton.querySelector('svg')).not.toBeNull();
     expect(voiceButton.classList).toContain('border-hairline');
-    expect(voiceButton.classList).toContain('dark:text-brand-light');
+    expect(voiceButton.classList).toContain('text-ink');
+    expect(voiceButton.classList).not.toContain('dark:text-brand-light');
     expect(voiceButton.classList).toContain('h-11');
     expect(voiceButton.classList).toContain('w-11');
     expect(voiceButton.classList).toContain('min-w-11');

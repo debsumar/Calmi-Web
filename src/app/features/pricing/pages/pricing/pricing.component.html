@@ -1,4 +1,4 @@
-<div class="min-h-[calc(100vh-4rem)] flex flex-col bg-canvas text-gray-900 dark:text-gray-100 transition-colors duration-300">
+<div class="min-h-[calc(100vh-4rem)] flex flex-col bg-canvas text-ink transition-colors duration-300">
   
   <!-- Header Section -->
   <section class="pt-24 pb-16 px-6 text-center">
@@ -7,11 +7,11 @@
       <span>Invest in yourself</span>
     </div>
     
-    <h1 appAnimateOnScroll style="--index:1" class="text-3xl md:text-5xl font-bold leading-tight tracking-tight mb-6 text-gray-900 dark:text-gray-100">
-      Simple pricing for a <span class="text-brand dark:text-brand-light">calmer</span> mind.
+    <h1 appAnimateOnScroll style="--index:1" class="text-3xl md:text-5xl font-bold leading-tight tracking-tight mb-6 text-ink">
+      Simple pricing for a <span class="text-brand">calmer</span> mind.
     </h1>
     
-    <p appAnimateOnScroll style="--index:2" class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-10">
+    <p appAnimateOnScroll style="--index:2" class="text-lg leading-relaxed text-ink-soft max-w-2xl mx-auto mb-10">
       Choose the plan that fits your journey. No hidden fees, cancel anytime.
     </p>
 
@@ -19,7 +19,7 @@
          appAnimateOnScroll
          style="--index:3"
          aria-label="Billing period"
-         class="relative mx-auto inline-grid grid-cols-2 rounded-full border border-hairline bg-sunken p-1 text-sm font-semibold">
+         class="relative mx-auto inline-grid grid-cols-2 rounded-full border border-hairline bg-sunken p-1 text-xs font-semibold">
       <!-- Sliding thumb: purely decorative, position mirrors the pressed button -->
       <span aria-hidden="true"
             class="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-elevated border border-hairline shadow-card transition-transform duration-300 ease-out motion-reduce:transition-none"
@@ -28,24 +28,30 @@
       <button type="button"
               (click)="setBillingPeriod('monthly')"
               [attr.aria-pressed]="billingPeriod() === 'monthly'"
-              [class.text-gray-900]="billingPeriod() === 'monthly'"
-              [class.dark:text-gray-100]="billingPeriod() === 'monthly'"
-              [class.text-gray-600]="billingPeriod() !== 'monthly'"
-              [class.dark:text-gray-400]="billingPeriod() !== 'monthly'"
+              [class.bg-selected]="billingPeriod() === 'monthly'"
+              [class.text-ink]="billingPeriod() === 'monthly'"
+              [class.text-ink-muted]="billingPeriod() !== 'monthly'"
               class="relative z-10 inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 whitespace-nowrap transition-colors duration-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
         <svg [lucideIcon]="'calendar-days'" [size]="16" aria-hidden="true"></svg>
         Monthly
+        @if (billingPeriod() === 'monthly') {
+          <span aria-hidden="true">✓</span>
+          <span class="sr-only">Selected</span>
+        }
       </button>
       <button type="button"
               (click)="setBillingPeriod('annual')"
               [attr.aria-pressed]="billingPeriod() === 'annual'"
-              [class.text-gray-900]="billingPeriod() === 'annual'"
-              [class.dark:text-gray-100]="billingPeriod() === 'annual'"
-              [class.text-gray-600]="billingPeriod() !== 'annual'"
-              [class.dark:text-gray-400]="billingPeriod() !== 'annual'"
+              [class.bg-selected]="billingPeriod() === 'annual'"
+              [class.text-ink]="billingPeriod() === 'annual'"
+              [class.text-ink-muted]="billingPeriod() !== 'annual'"
               class="relative z-10 inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 whitespace-nowrap transition-colors duration-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
         <svg [lucideIcon]="'badge-percent'" [size]="16" aria-hidden="true"></svg>
         <span>Annually <span class="whitespace-nowrap">(Save 20%)</span></span>
+        @if (billingPeriod() === 'annual') {
+          <span aria-hidden="true">✓</span>
+          <span class="sr-only">Selected</span>
+        }
       </button>
     </div>
   </section>
@@ -56,28 +62,26 @@
       @for (plan of displayedPlans(); track plan.name; let i = $index) {
         <div class="flex flex-col h-full" appAnimateOnScroll [style.--index]="i + 4">
           
-          <div class="flex flex-col h-full bg-surface rounded-3xl p-8 relative transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+          <div class="flex flex-col h-full bg-surface border border-hairline rounded-3xl p-8 relative shadow-card transition-all duration-300 hover:-translate-y-2 hover:shadow-card"
                [class.border-2]="plan.emphasis !== 'none'"
-               [class.border-brand]="plan.emphasis === 'popular'"
-               [class.border-brand/60]="plan.emphasis === 'recommended'"
-               [class.shadow-xl]="plan.emphasis !== 'none'"
-               [class.shadow-md]="plan.emphasis === 'none'">
+               [class.border-brand]="plan.emphasis !== 'none'"
+               [class.bg-selected]="plan.emphasis !== 'none'">
             
             @if (plan.ribbonLabel; as label) {
-              <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-deep text-white text-xs font-bold uppercase tracking-wider py-1 px-4 rounded-full shadow-md">
+              <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-deep text-on-brand-deep text-xs font-bold uppercase tracking-wider py-1 px-4 rounded-full shadow-card">
                 {{ label }}
               </div>
             }
 
             @if (plan.badgeIcon && plan.badgeLabel) {
-              <div class="absolute top-4 right-4 rounded-full px-3 py-1 text-xs font-semibold bg-brand/10 text-brand inline-flex items-center gap-1.5">
+              <div class="absolute top-4 right-4 rounded-full px-3 py-1 text-xs font-semibold bg-selected border border-brand text-brand inline-flex items-center gap-1.5">
                 <svg [lucideIcon]="plan.badgeIcon" [size]="14" aria-hidden="true"></svg>
                 <span>{{ plan.badgeLabel }}</span>
               </div>
             }
 
             <div class="flex items-center gap-4 mb-6">
-              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white bg-brand-deep">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-brand-deep text-on-brand-deep">
                 <svg [lucideIcon]="plan.icon" [size]="24" aria-hidden="true"></svg>
               </div>
               <h3 class="text-2xl font-bold">{{ plan.name }}</h3>
@@ -86,10 +90,10 @@
             <div class="mb-4">
               <span class="sr-only">{{ plan.ariaLabel }}</span>
               <span class="text-5xl font-bold" aria-hidden="true">{{ plan.value }}</span>
-              <span class="text-gray-500 dark:text-gray-400 ml-2" aria-hidden="true">/ {{ plan.period }}</span>
+              <span class="text-xs text-ink-muted ml-2" aria-hidden="true">/ {{ plan.period }}</span>
             </div>
             
-            <p class="text-gray-600 dark:text-gray-300 mb-8 pb-8 border-b border-hairline">
+            <p class="text-base text-ink-soft mb-8 pb-8 border-b border-hairline">
               {{ plan.description }}
             </p>
 
@@ -97,7 +101,7 @@
               @for (feature of plan.features; track feature) {
                 <li class="flex items-start gap-3">
                   <svg [lucideIcon]="'circle-check'" [size]="20" class="text-brand shrink-0 mt-0.5" aria-hidden="true"></svg>
-                  <span class="text-gray-700 dark:text-gray-200 leading-snug">{{ feature }}</span>
+                  <span class="text-base text-ink-soft leading-snug">{{ feature }}</span>
                 </li>
               }
             </ul>
@@ -115,11 +119,11 @@
                 [variant]="plan.buttonVariant">
               </app-primary-button>
               @if (plan.action === 'verifyStudent') {
-                <p class="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+                <p class="mt-2 text-center text-xs text-ink-muted">
                   {{ studentPlanVerified() ? 'Verified — Student Premium is unlocked.' : 'Verify your student status to unlock this plan.' }}
                 </p>
               } @else {
-                <p class="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">Coming soon</p>
+                <p class="mt-2 text-center text-xs text-ink-muted">Coming soon</p>
               }
             </div>
           </div>

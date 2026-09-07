@@ -35,14 +35,14 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
                 [disabled]="voice.isActive() && voice.surface() !== surface()"
                 [attr.aria-label]="voice.isActive() && voice.surface() === surface() ? 'Voice conversation active' : 'Start voice conversation'"
                 title="Start voice conversation"
-                class="inline-flex h-11 w-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface text-brand dark:text-brand-light transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                class="inline-flex h-11 w-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
           <svg [lucideIcon]="'audio-lines'" [size]="18" aria-hidden="true"></svg>
         </button>
         <button type="submit"
                 [disabled]="!store.canSend()"
                 [attr.aria-disabled]="store.canSend() ? 'false' : 'true'"
                 aria-label="Send message"
-                class="inline-flex h-11 w-11 min-w-11 shrink-0 items-center justify-center rounded-full bg-brand text-on-brand transition-colors hover:bg-brand-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border disabled:border-hairline disabled:bg-sunken disabled:text-ink-muted">
+                class="inline-flex h-11 w-11 min-w-11 shrink-0 items-center justify-center rounded-full bg-brand text-on-brand transition-colors hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border disabled:border-hairline disabled:bg-sunken disabled:text-ink-muted">
           <svg [lucideIcon]="'send'" [size]="18" aria-hidden="true"></svg>
         </button>
       </div>

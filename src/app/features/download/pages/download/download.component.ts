@@ -13,7 +13,7 @@ import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.
           <ol class="flex flex-wrap items-center gap-2 text-xs text-ink-soft">
             <li>
               <a routerLink="/home"
-                 class="inline-flex min-h-11 items-center gap-2 rounded-full px-3 font-semibold text-brand-dark dark:text-brand-light transition-colors hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
+                 class="inline-flex min-h-11 items-center gap-2 rounded-full px-3 font-semibold text-brand-dark dark:text-brand-light transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
                 <span aria-hidden="true" class="text-base">←</span>
                 <span>Back to home</span>
               </a>
@@ -26,7 +26,7 @@ import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.
         <div class="grid items-center gap-12 md:grid-cols-[minmax(0,0.9fr)_minmax(20rem,1.1fr)] md:gap-8 lg:gap-16">
           <div appAnimateOnScroll style="--index:1" class="min-w-0 max-w-xl md:order-2">
             <p class="mb-4 text-sm font-semibold uppercase tracking-wide text-brand-dark dark:text-brand-light">Calmi in your pocket</p>
-            <h1 id="download-title" class="font-sans text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl md:text-5xl">
+            <h1 id="download-title" class="font-sans text-3xl font-bold leading-tight tracking-tight text-ink md:text-5xl">
               Make Space for your Mind.
             </h1>
             <p class="mt-6 text-lg leading-relaxed text-ink-soft">

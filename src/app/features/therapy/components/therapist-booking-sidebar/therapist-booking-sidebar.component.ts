@@ -148,8 +148,8 @@ const MESSAGE_MAX = 200;
       <div #reviewBackdrop class="fixed inset-0 z-50 grid place-items-center bg-scrim p-4" (click)="cancelReview()">
         <div #review role="dialog" aria-modal="true" aria-labelledby="booking-review-title"
              tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="cancelReview()"
-             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-brand-light/40 bg-brand-deep p-8 shadow-card">
-          <h3 id="booking-review-title" class="dialog-stagger-item text-center font-sans text-2xl font-bold text-on-brand-deep" style="--index: 0">
+             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-brand-light bg-brand-deep p-8 shadow-card">
+          <h3 id="booking-review-title" class="dialog-stagger-item text-center font-sans text-lg font-bold text-on-brand-deep" style="--index: 0">
             Confirm your booking?
           </h3>
           <p class="dialog-stagger-item mt-2 text-center text-base text-on-brand-deep" style="--index: 1">
@@ -171,7 +171,7 @@ const MESSAGE_MAX = 200;
               Go back
             </button>
             <button #confirmBookingButton type="button" (click)="confirmBooking()"
-                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand-deep transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-brand-deep">
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand-deep transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
               Yes, book it
             </button>
           </div>
@@ -186,15 +186,15 @@ const MESSAGE_MAX = 200;
       <div #backdrop class="fixed inset-0 z-50 grid place-items-center bg-scrim p-4" (click)="dismissConfirmation()">
         <div #confirmation role="dialog" aria-modal="true" aria-labelledby="booking-confirmed-title"
              tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="dismissConfirmation()"
-             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-brand-light/40 bg-brand-deep p-8 text-center shadow-card">
-          <span class="dialog-stagger-item mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-surface text-brand-dark dark:text-brand-light" style="--index: 0" aria-hidden="true">
+             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-brand-light bg-brand-deep p-8 text-center shadow-card">
+          <span class="dialog-stagger-item mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-surface text-success" style="--index: 0" aria-hidden="true">
             <svg viewBox="0 0 52 52" class="h-10 w-10" fill="none" stroke="currentColor" stroke-width="4"
                  stroke-linecap="round" stroke-linejoin="round">
               <circle class="confirmation-ring" cx="26" cy="26" r="22" />
               <path class="confirmation-tick" d="M15 27.5 L23 35 L38 19" />
             </svg>
           </span>
-          <h3 id="booking-confirmed-title" class="dialog-stagger-item mt-5 font-sans text-2xl font-bold text-on-brand-deep" style="--index: 1">Booking confirmed</h3>
+          <h3 id="booking-confirmed-title" class="dialog-stagger-item mt-5 font-sans text-lg font-bold text-on-brand-deep" style="--index: 1">Booking confirmed</h3>
           <p class="dialog-stagger-item mt-2 text-base text-on-brand-deep" style="--index: 2">Your session is reserved for {{ confirmationSummary() }}.</p>
         </div>
       </div>
@@ -304,22 +304,22 @@ export class TherapistBookingSidebarComponent {
    */
   readonly calendarTokens = {
     panel: {
-      background: 'transparent',
-      borderColor: 'transparent',
+      background: '{content.background}',
+      borderColor: '{content.border.color}',
       borderRadius: '0',
       shadow: 'none',
       padding: '0',
     },
     header: {
-      background: 'transparent',
-      borderColor: 'transparent',
+      background: '{content.background}',
+      borderColor: '{content.border.color}',
       color: '{content.color}',
       padding: '0 0 0.5rem 0',
     },
     title: { gap: '0.25rem', fontWeight: '700' },
     selectMonth: { borderRadius: '0.375rem', padding: '0.25rem 0.5rem' },
     selectYear: { borderRadius: '0.375rem', padding: '0.25rem 0.5rem' },
-    group: { borderColor: 'transparent', gap: '0' },
+    group: { borderColor: '{content.border.color}', gap: '0' },
     dayView: { margin: '0.5rem 0 0 0' },
     weekDay: { padding: '0.375rem 0', fontWeight: '600', color: '{text.muted.color}' },
     date: {

@@ -30,7 +30,7 @@ const INITIAL_STAGGER_LIMIT = 6;
          [attr.aria-label]="conversationLabel()"
          (scroll)="onScroll()">
       @if (!store.hasMessages()) {
-        <div class="flex flex-1 flex-col items-center justify-center gap-3 text-center text-base text-brand-dark dark:text-brand-light">
+        <div class="flex flex-1 flex-col items-center justify-center gap-3 text-center text-base text-ink-soft">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-sunken-alt" aria-hidden="true"></span>
           <p>Take a gentle moment. I am here to listen.</p>
         </div>
@@ -48,7 +48,7 @@ const INITIAL_STAGGER_LIMIT = 6;
 
       @if (showScrollToBottom()) {
         <button type="button" (click)="scrollToBottom()"
-                class="sticky bottom-2 left-1/2 z-10 inline-flex min-h-11 -translate-x-1/2 items-center gap-2 self-center rounded-full border border-hairline bg-elevated px-3 py-2 text-xs font-semibold text-brand-deep dark:text-brand-light shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                class="sticky bottom-2 left-1/2 z-10 inline-flex min-h-11 -translate-x-1/2 items-center gap-2 self-center rounded-full border border-hairline bg-elevated px-3 py-2 text-xs font-semibold text-ink shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                 aria-label="Scroll to bottom">
           <svg [lucideIcon]="'arrow-down'" [size]="16" aria-hidden="true"></svg>
           <span>Scroll to bottom</span>

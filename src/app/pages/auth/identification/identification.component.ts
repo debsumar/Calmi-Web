@@ -38,18 +38,18 @@ interface RoleOption {
               (click)="selectRole(option.value, index)"
               (keydown)="onRoleKeydown($event, index)"
               class="flex w-full items-center gap-4 rounded-2xl border bg-surface p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-              [class]="selectedRole() === option.value ? 'border-brand bg-sunken' : 'border-hairline hover:bg-sunken'">
+              [class]="selectedRole() === option.value ? 'border-brand bg-selected' : 'border-hairline hover:bg-sunken'">
               <span
                 class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors"
                 [class]="selectedRole() === option.value
-                  ? 'bg-brand-deep text-white dark:bg-brand-soft dark:text-brand-night'
-                  : 'bg-brand-soft/25 text-brand-deep dark:bg-brand-soft/20 dark:text-brand-soft'"
+                  ? 'bg-brand-deep text-on-brand-deep'
+                  : 'bg-sunken text-brand'"
                 aria-hidden="true">
                 <svg [lucideIcon]="option.icon" [size]="20" class="fill-none stroke-current"></svg>
               </span>
               <span class="min-w-0">
                 <span class="block text-base font-bold text-ink">{{ option.title }}</span>
-                <span class="mt-1 block text-sm text-ink-muted">{{ option.description }}</span>
+                <span class="mt-1 block text-base text-ink-soft">{{ option.description }}</span>
               </span>
             </button>
           }
@@ -62,7 +62,7 @@ interface RoleOption {
           [disabled]="!selectedRole()"
           [attr.aria-disabled]="!selectedRole() ? 'true' : null"
           (click)="proceed()"
-          class="mt-8 flex w-full items-center justify-center gap-3 rounded-full bg-brand-deep px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-muted">
+          class="mt-8 flex w-full items-center justify-center gap-3 rounded-full bg-brand-deep px-8 py-3 text-base font-semibold text-on-brand-deep transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-muted">
           Proceed
           <span class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-current" aria-hidden="true">
             <svg viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current" stroke-width="2"><path d="M5 12h13M13 6l6 6-6 6"/></svg>

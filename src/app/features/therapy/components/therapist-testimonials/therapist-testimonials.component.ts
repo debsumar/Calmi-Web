@@ -46,7 +46,7 @@ import { TherapistTestimonial } from '@/features/therapy/data/therapist.data';
             <div class="flex items-center gap-1" [attr.aria-label]="'Rating ' + item.rating + ' out of 5'">
               @for (star of stars; track star) {
                 <svg lucideStar [size]="16" aria-hidden="true"
-                     [class]="star <= item.rating ? 'fill-accent-gold text-accent-gold' : 'text-ink-muted'"></svg>
+                     [class]="star <= item.rating ? 'fill-current text-accent-gold' : 'text-ink-muted'"></svg>
               }
               <span class="ml-2 text-xs font-semibold text-ink-soft">{{ item.rating }}/5</span>
             </div>
@@ -57,13 +57,13 @@ import { TherapistTestimonial } from '@/features/therapy/data/therapist.data';
             @if (showToggle()) {
               <button type="button" (click)="toggleExpanded()"
                       [attr.aria-expanded]="expanded()" aria-controls="testimonial-quote"
-                      class="mt-2 self-start rounded-full text-xs font-semibold text-brand-dark dark:text-brand-light underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                      class="mt-2 self-start rounded-full text-xs font-semibold text-ink underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                 {{ expanded() ? 'Show less' : 'Show more' }}
               </button>
             }
             <div class="mt-auto flex items-center justify-between gap-3 pt-5">
               <div class="flex min-w-0 items-center gap-3">
-                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sunken text-xs font-bold text-brand-dark dark:text-brand-light"
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sunken text-xs font-bold text-ink"
                       role="img" [attr.aria-label]="'Placeholder avatar for ' + item.author">{{ initials(item.author) }}</span>
                 <p class="min-w-0 truncate text-xs font-semibold text-ink">– {{ item.author }}</p>
               </div>

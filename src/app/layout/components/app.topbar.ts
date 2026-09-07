@@ -36,22 +36,22 @@ const RIPPLE_DURATION_MS = 420;
       <!-- Desktop nav -->
       <nav #desktopNav class="relative hidden md:flex items-center gap-8">
         @for (link of navLinks(); track link.path) {
-          <a [routerLink]="link.path" routerLinkActive="text-brand dark:text-brand-light"
+          <a [routerLink]="link.path" routerLinkActive="text-ink font-bold"
              ariaCurrentWhenActive="page"
              [attr.data-nav-path]="link.path"
-             class="text-sm font-semibold text-ink-soft hover:text-brand pb-1 transition-colors duration-200">
+             class="text-sm font-semibold text-ink-soft hover:text-ink pb-1 transition-colors duration-200">
             {{ link.label }}
           </a>
         }
         <!-- Elastic ink indicator: stretches to bridge both tabs, then contracts. -->
         <span #inkRipple aria-hidden="true"
-              class="pointer-events-none absolute bottom-0 h-3 w-3 -ml-1.5 rounded-full bg-brand/30 opacity-0"></span>
+              class="pointer-events-none absolute bottom-0 h-3 w-3 -ml-1.5 rounded-full bg-brand opacity-0"></span>
         <span #inkIndicator aria-hidden="true"
               class="pointer-events-none absolute bottom-0 left-0 h-0.5 w-0 rounded-full bg-brand"></span>
       </nav>
 
       <div class="flex items-center gap-3">
-        <div class="hidden md:block w-px h-5 bg-hairline"></div>
+        <div class="hidden h-5 border-l border-hairline md:block"></div>
         <button (click)="themeService.toggle()"
                 class="w-9 h-9 flex items-center justify-center rounded-full text-ink hover:bg-sunken"
                 [title]="'Theme: ' + themeService.mode()">
@@ -66,11 +66,11 @@ const RIPPLE_DURATION_MS = 420;
           <div class="relative">
             <!-- Profile Trigger -->
             <button #profileTrigger (click)="dropdownOpen.set(!dropdownOpen())"
-                    class="w-9 h-9 flex items-center justify-center rounded-full overflow-hidden border border-hairline hover:ring-2 hover:ring-brand/50 transition-all">
+                    class="w-9 h-9 flex items-center justify-center rounded-full overflow-hidden border border-hairline hover:ring-2 hover:ring-brand transition-all">
               @if (user.user_metadata['avatar_url']) {
                 <img [src]="user.user_metadata['avatar_url']" alt="Avatar" class="w-full h-full object-cover">
               } @else {
-                <div class="w-full h-full bg-sunken-alt text-brand-dark dark:text-brand-light flex items-center justify-center font-bold text-sm">
+                <div class="w-full h-full bg-sunken-alt text-ink flex items-center justify-center font-bold text-sm">
                   {{ (user.user_metadata['full_name']?.[0] || user.email?.[0] || 'U').toUpperCase() }}
                 </div>
               }
@@ -81,7 +81,7 @@ const RIPPLE_DURATION_MS = 420;
               <!-- Click outside overlay to close -->
               <div class="fixed inset-0 z-10" (click)="dropdownOpen.set(false)"></div>
               
-              <div class="absolute right-0 mt-2 w-56 rounded-xl bg-elevated border border-hairline p-2 shadow-xl z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div class="absolute right-0 mt-2 w-56 rounded-xl bg-elevated border border-hairline p-2 shadow-card z-20 animate-in fade-in slide-in-from-top-2 duration-200">
                 <div class="px-3 py-2 border-b border-hairline mb-1">
                   <p class="text-sm font-semibold text-ink truncate">
                     {{ user.user_metadata['full_name'] || 'User' }}
@@ -105,7 +105,7 @@ const RIPPLE_DURATION_MS = 420;
           </div>
         } @else {
           <a routerLink="/auth/identify"
-             class="inline-flex min-h-11 items-center gap-2 rounded-full border border-transparent bg-brand-dark px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-brand-deep dark:border-hairline dark:bg-elevated dark:text-brand-light dark:hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+             class="inline-flex min-h-11 items-center gap-2 rounded-full border border-transparent bg-brand-deep px-4 py-2 text-sm font-semibold text-on-brand-deep transition-all hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
             <svg [lucideIcon]="'user'" [size]="16" aria-hidden="true"></svg>
             Sign In
           </a>
@@ -142,7 +142,7 @@ const RIPPLE_DURATION_MS = 420;
           </button>
         } @else {
           <a routerLink="/auth/identify" (click)="mobileMenuOpen.set(false)"
-             class="stagger-enter mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-transparent bg-brand-dark px-4 py-3 text-base font-semibold text-white hover:bg-brand-deep dark:border-hairline dark:bg-elevated dark:text-brand-light dark:hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+             class="stagger-enter mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-transparent bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand-deep hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
              [style.--index]="navLinks().length + 1">
             <svg [lucideIcon]="'user'" [size]="18" aria-hidden="true"></svg>
             Sign In
@@ -155,30 +155,25 @@ const RIPPLE_DURATION_MS = 420;
       <div class="fixed inset-0 z-50 grid place-items-center bg-scrim p-4" (click)="cancelLogout()">
         <div role="dialog" aria-modal="true" aria-labelledby="logout-confirm-title"
              tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="cancelLogout()"
-             class="confirmation-panel w-full max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-elevated/10 p-8 shadow-2xl backdrop-blur-sm dark:border-white/10">
-          <h3 id="logout-confirm-title" class="dialog-stagger-item text-center font-sans text-2xl font-bold text-white" style="--index: 0">
+             class="w-full max-w-sm overflow-hidden rounded-2xl border border-hairline bg-elevated p-8 shadow-card">
+          <h3 id="logout-confirm-title" class="dialog-stagger-item text-center font-sans text-lg font-bold text-ink" style="--index: 0">
             Log out?
           </h3>
-          <p class="dialog-stagger-item mt-2 text-center text-sm tracking-wide text-white/80" style="--index: 1">
+          <p class="dialog-stagger-item mt-2 text-center text-base text-ink-soft" style="--index: 1">
             You will need to sign in again to continue where you left off.
           </p>
           <div class="dialog-stagger-item mt-6 flex gap-3" style="--index: 2">
             <button #logoutConfirmCancelButton type="button" (click)="cancelLogout()"
-                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-white/30 bg-white/10 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-hairline bg-sunken px-4 py-3 text-base font-semibold text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
               Cancel
             </button>
             <button type="button" (click)="confirmLogout()"
-                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand-deep transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
               Yes, log out
             </button>
           </div>
         </div>
       </div>
-    }
-  `,
-  styles: `
-    @media (prefers-reduced-transparency: reduce) {
-      .confirmation-panel { background-color: var(--color-brand-deep); backdrop-filter: none; }
     }
   `,
 })

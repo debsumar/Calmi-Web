@@ -1,6 +1,6 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
-import { OnboardingService } from '../../services/onboarding.service';
+import { OnboardingService, type OnboardingSelections } from '../../services/onboarding.service';
 
 @Component({
   selector: 'app-onboarding-wizard',
@@ -58,16 +58,36 @@ export class OnboardingWizardComponent {
 
   selectGoal(id: string) {
     this.onboardingService.setSelection('goal', id);
-    this.onboardingService.nextStep();
   }
 
   selectSound(id: string) {
     this.onboardingService.setSelection('soundPreference', id);
-    this.onboardingService.nextStep();
   }
 
   selectDuration(id: string) {
     this.onboardingService.setSelection('duration', id);
-    this.onboardingService.finish();
+  }
+
+  onRadioKeydown(
+    event: KeyboardEvent,
+    key: keyof OnboardingSelections,
+    options: readonly { id: string }[],
+  ): void {
+    const { key: pressedKey } = event;
+    if (!['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'Home', 'End'].includes(pressedKey)) return;
+
+    event.preventDefault();
+    const selectedId = this.onboardingService.selections()[key];
+    const currentIndex = Math.max(0, options.findIndex((option) => option.id === selectedId));
+    const nextIndex = pressedKey === 'Home'
+      ? 0
+      : pressedKey === 'End'
+        ? options.length - 1
+        : (currentIndex + (pressedKey === 'ArrowDown' || pressedKey === 'ArrowRight' ? 1 : -1) + options.length) % options.length;
+
+    this.onboardingService.setSelection(key, options[nextIndex].id);
+    const radioGroup = (event.currentTarget as HTMLElement).closest('[role="radiogroup"]');
+    const radios = Array.from(radioGroup?.querySelectorAll<HTMLElement>('[role="radio"]') ?? []);
+    queueMicrotask(() => radios[nextIndex]?.focus());
   }
 }

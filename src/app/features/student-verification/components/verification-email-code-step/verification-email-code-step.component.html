@@ -20,7 +20,7 @@
       }
     </div>
     @if (invalid()) {
-      <p class="error" id="verification-otp-error" role="alert">Enter all 6 digits before confirming the code.</p>
+      <p class="error" id="verification-otp-error" role="alert"><span class="error-icon" aria-hidden="true">!</span>Enter all 6 digits before confirming the code.</p>
     }
     <p class="hint" id="verification-otp-hint">Code expires in 10 minutes. {{ resendCopy() }}</p>
   </div>

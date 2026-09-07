@@ -37,13 +37,13 @@ const matchingPasswords: ValidatorFn = (control: AbstractControl): ValidationErr
           <div appAnimateOnScroll style="--index:3" class="mt-6 rounded-xl border border-danger bg-surface px-4 py-3 text-sm text-danger" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
         }
         @if (successMessage()) {
-          <div appAnimateOnScroll style="--index:4" class="mt-6 rounded-xl border border-brand bg-brand-soft/10 px-4 py-3 text-sm text-brand-deep" role="status" aria-live="polite">{{ successMessage() }}</div>
+          <div appAnimateOnScroll style="--index:4" class="mt-6 rounded-xl border border-brand bg-sunken px-4 py-3 text-base text-ink" role="status" aria-live="polite">{{ successMessage() }}</div>
         }
 
         <form appAnimateOnScroll style="--index:5" class="mt-8 space-y-5" [formGroup]="resetForm" (ngSubmit)="submit()" novalidate>
           <div>
             <label for="reset-password" class="mb-2 block text-sm font-semibold text-ink">New Password</label>
-            <input id="reset-password" type="password" autocomplete="new-password" formControlName="password" aria-describedby="reset-password-error" [attr.aria-invalid]="resetForm.controls.password.touched && resetForm.controls.password.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20" />
+            <input id="reset-password" type="password" autocomplete="new-password" formControlName="password" aria-describedby="reset-password-error" [attr.aria-invalid]="resetForm.controls.password.touched && resetForm.controls.password.invalid" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors focus:border-brand focus-visible:ring-2 focus-visible:ring-brand" />
             <div id="reset-password-error" class="mt-1 text-sm text-danger" aria-live="polite">
               @if (resetForm.controls.password.touched && resetForm.controls.password.hasError('required')) { Password is required. }
               @else if (resetForm.controls.password.touched && resetForm.controls.password.hasError('minlength')) { Password must be at least 8 characters. }
@@ -51,18 +51,18 @@ const matchingPasswords: ValidatorFn = (control: AbstractControl): ValidationErr
           </div>
           <div>
             <label for="reset-confirm-password" class="mb-2 block text-sm font-semibold text-ink">Confirm Password</label>
-            <input id="reset-confirm-password" type="password" autocomplete="new-password" formControlName="confirmPassword" aria-describedby="reset-confirm-password-error" [attr.aria-invalid]="resetForm.controls.confirmPassword.touched && (resetForm.controls.confirmPassword.invalid || resetForm.hasError('passwordMismatch'))" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20" />
+            <input id="reset-confirm-password" type="password" autocomplete="new-password" formControlName="confirmPassword" aria-describedby="reset-confirm-password-error" [attr.aria-invalid]="resetForm.controls.confirmPassword.touched && (resetForm.controls.confirmPassword.invalid || resetForm.hasError('passwordMismatch'))" class="w-full rounded-xl border border-hairline bg-elevated px-4 py-3 text-base text-ink outline-none transition-colors focus:border-brand focus-visible:ring-2 focus-visible:ring-brand" />
             <div id="reset-confirm-password-error" class="mt-1 text-sm text-danger" aria-live="polite">
               @if (resetForm.controls.confirmPassword.touched && resetForm.controls.confirmPassword.hasError('required')) { Please confirm your password. }
               @else if (resetForm.controls.confirmPassword.touched && resetForm.hasError('passwordMismatch')) { Passwords must match. }
             </div>
           </div>
-          <button type="submit" [disabled]="resetForm.invalid || pending() || !authService.isAuthenticated()" [attr.aria-busy]="pending()" class="flex w-full items-center justify-center gap-3 rounded-full bg-brand-deep px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-muted">
+          <button type="submit" [disabled]="resetForm.invalid || pending() || !authService.isAuthenticated()" [attr.aria-busy]="pending()" class="flex w-full items-center justify-center gap-3 rounded-full bg-brand-deep px-8 py-3 text-base font-semibold text-on-brand-deep transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-muted">
             @if (pending()) { <span class="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true"></span><span>Saving...</span> } @else { <span>Save Password</span> }
           </button>
         </form>
 
-        <p appAnimateOnScroll style="--index:6" class="mt-8 text-center text-sm text-ink-soft"><a routerLink="/auth/login" class="font-semibold text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Back to Login</a></p>
+        <p appAnimateOnScroll style="--index:6" class="mt-8 text-center text-sm text-ink-soft"><a routerLink="/auth/login" class="font-semibold text-ink underline underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Back to Login</a></p>
       </div>
     </app-auth-split-card>
   `,
