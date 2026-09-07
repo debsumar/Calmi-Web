@@ -22,22 +22,22 @@ import {
     .result-icon.approved { background: var(--color-sunken-alt); color: var(--color-success); }
     .result-icon.approved svg path { stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw var(--dur-slow) var(--ease-out) both; }
     .result-icon.failed { background: var(--color-sunken-alt); color: var(--color-danger); animation: shake var(--dur-base) var(--ease-out) both; }
-    .result-icon.pending { background: var(--color-sunken-alt); color: var(--color-accent-gold); animation: breathe var(--dur-loop) var(--ease-out) infinite; }
-    h3 { margin: 0; color: var(--color-ink); font-size: 1rem; font-weight: 700; line-height: 1.25; }
-    p { margin: 0; line-height: 1.55; }
-    .receipt { display: grid; width: 100%; gap: .35rem; border: 1px solid var(--color-hairline); border-radius: .75rem; background: var(--color-sunken); padding: .9rem; font-size: .875rem; }
+    .result-icon.pending { background: var(--color-sunken-alt); color: var(--color-warning); animation: breathe var(--dur-loop) var(--ease-out) infinite; }
+    h3 { margin: 0; color: var(--color-ink); font-size: 1.125rem; font-weight: 700; line-height: 1.25; }
+    p { margin: 0; font-size: 1rem; line-height: 1.55; }
+    .receipt { display: grid; width: 100%; gap: .35rem; border: 1px solid var(--color-hairline); border-radius: .75rem; background: var(--color-sunken); padding: .9rem; font-size: 1rem; }
     .receipt-row { display: flex; justify-content: space-between; gap: 1rem; animation: row-in var(--dur-base) var(--ease-out) both; }
     .receipt-row:nth-child(2) { animation-delay: calc(var(--stagger-step) * 1); }
     .receipt-row:nth-child(3) { animation-delay: calc(var(--stagger-step) * 2); }
     .receipt-row:nth-child(4) { animation-delay: calc(var(--stagger-step) * 3); }
     .receipt-row strong { color: var(--color-ink); text-align: right; overflow-wrap: anywhere; }
-    .strike { position: relative; color: var(--color-ink-muted); text-decoration: none; }
+    .strike { position: relative; color: var(--color-ink-soft); text-decoration: none; }
     .strike::after { position: absolute; top: 50%; right: 0; left: 0; height: .1rem; background: currentColor; content: ''; transform: scaleX(0); transform-origin: left center; animation: strike-draw var(--dur-base) var(--ease-out) both; }
     .actions { display: flex; flex-wrap: wrap; gap: .6rem; }
     .button { display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: 9999px; padding: .7rem 1.4rem; font: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out); }
     .button:hover { transform: translateY(-.08rem); }
     .button:active { transform: scale(.96); }
-    .button:focus-visible { outline: 2px solid var(--color-brand-light); outline-offset: 2px; }
+    .button:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
     .button-primary { background: var(--color-brand); color: var(--color-on-brand); }
     .button-outline { border-color: var(--color-brand); background: transparent; color: var(--color-ink); }
     .button-quiet { border-color: var(--color-hairline); background: transparent; color: var(--color-ink-muted); }

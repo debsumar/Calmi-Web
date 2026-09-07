@@ -3,10 +3,16 @@
     <li
       class="verification-step"
       [attr.aria-current]="isCurrent(step.id) ? 'step' : null"
-      [attr.data-done]="isDone(step.id)"
-      [class.verification-step--current]="isCurrent(step.id)">
+      [attr.data-state]="stepState(step.id)"
+      [attr.aria-label]="step.label + ': ' + (isError(step.id) ? 'Needs attention' : stepState(step.id))">
       <span class="verification-step__connector" aria-hidden="true"></span>
-      <span>{{ step.label }}</span>
+      <span class="verification-step__marker" aria-hidden="true">
+        @if (isDone(step.id)) { ✓ } @else if (isError(step.id)) { ! } @else { {{ step.number }} }
+      </span>
+      <span class="verification-step__label">{{ step.label }}</span>
+      @if (isError(step.id)) {
+        <span class="verification-step__status">Needs attention</span>
+      }
     </li>
   }
 </ol>

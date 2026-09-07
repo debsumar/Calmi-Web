@@ -79,7 +79,8 @@ describe('ChatPanelComponent', () => {
     expect(logo.classList).toContain('p-0.5');
     expect(controls).toHaveLength(2);
     for (const control of controls) {
-      expect(control.classList).toContain('dark:text-brand-light');
+      expect(control.classList).toContain('text-ink');
+      expect(control.classList).not.toContain('dark:text-brand-light');
       expect(control.classList).toContain('hover:bg-sunken');
     }
   });

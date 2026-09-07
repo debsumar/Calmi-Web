@@ -34,8 +34,8 @@ describe('ChatSuggestionsComponent', () => {
       expect(button.classList).toContain('bg-surface');
       expect(button.classList).toContain('border-hairline');
       expect(button.classList).toContain('shadow-card');
-      expect(button.classList).toContain('text-brand');
-      expect(button.classList).toContain('dark:text-brand-light');
+      expect(button.classList).toContain('text-ink');
+      expect(button.classList).not.toContain('dark:text-brand-light');
       expect(button.classList).toContain('font-semibold');
       expect(button.classList).toContain('min-h-11');
     }

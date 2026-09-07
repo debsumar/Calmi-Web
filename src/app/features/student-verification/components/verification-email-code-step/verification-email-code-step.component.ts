@@ -21,12 +21,13 @@ import { VerificationOtpDraft } from '../../models/student-verification.model';
     .field { display: grid; gap: .45rem; }
     .otp { display: flex; gap: .5rem; }
     .otp-input { width: 2.75rem; border: 1px solid var(--color-hairline); border-radius: .75rem; background: var(--color-sunken); color: var(--color-ink); padding: .5rem 0; text-align: center; font: inherit; font-size: 1.25rem; font-weight: 700; outline: none; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-spring); }
-    .otp-input:focus-visible { outline: 2px solid var(--color-brand-light); outline-offset: 2px; box-shadow: 0 0 0 .2rem var(--color-hairline); transform: translateY(-.12rem) scale(1.03); }
+    .otp-input:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; box-shadow: 0 0 0 .2rem var(--color-hairline); transform: translateY(-.12rem) scale(1.03); }
     .otp-input[aria-invalid="true"] { border-color: var(--color-danger); }
     .otp-input.is-filled { animation: otp-pop var(--dur-fast) var(--ease-spring) both; background: var(--color-sunken-alt); }
     .otp.is-invalid { animation: shake var(--dur-base) var(--ease-out) both; }
-    .hint { margin: 0; color: var(--color-ink-muted); font-size: .75rem; }
-    .error { margin: 0; color: var(--color-danger); font-size: .75rem; animation: error-in var(--dur-base) var(--ease-out) both; }
+    .hint { margin: 0; color: var(--color-ink-soft); font-size: .75rem; font-weight: 600; }
+    .error { display: flex; align-items: flex-start; gap: .35rem; margin: 0; color: var(--color-danger); font-size: .75rem; font-weight: 600; animation: error-in var(--dur-base) var(--ease-out) both; }
+    .error-icon { flex: none; font-weight: 700; }
     .actions { display: flex; flex-wrap: wrap; gap: .6rem; }
     .button { display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: 9999px; padding: .7rem 1.4rem; font: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out); }
     .button:hover:not(:disabled) { transform: translateY(-.08rem); }

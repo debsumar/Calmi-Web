@@ -1,4 +1,5 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostListener, signal, ViewChild } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { DragScrollDirective } from '@/shared/directives/drag-scroll.directive';
@@ -13,7 +14,7 @@ const CARD_STRIDE = 284; // md card width (260) + gap (24)
 
 @Component({
   selector: 'app-therapy',
-  imports: [LucideDynamicIcon, AnimateOnScrollDirective, DragScrollDirective, PsychologistCardComponent, FaqAccordionComponent],
+  imports: [RouterLink, LucideDynamicIcon, AnimateOnScrollDirective, DragScrollDirective, PsychologistCardComponent, FaqAccordionComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './therapy.component.html',
 })

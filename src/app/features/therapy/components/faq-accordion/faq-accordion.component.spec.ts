@@ -42,6 +42,7 @@ describe('FaqAccordionComponent', () => {
     fixture.detectChanges();
 
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    expect(trigger.tabIndex).toBe(0);
     expect(root.querySelector(`#${panelId}`)?.getAttribute('role')).toBe('region');
     expect(root.querySelector(`#${panelId}`)?.getAttribute('aria-labelledby')).toBe(trigger.id);
   });

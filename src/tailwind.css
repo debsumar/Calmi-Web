@@ -31,6 +31,10 @@
     --calmi-voice-end: color-mix(in srgb, var(--color-accent-coral) 68%, black);
     --calmi-on-voice-end: white;
     --calmi-aurora-composite: multiply;
+    /* Scrim and media roles are deliberately scheme-invariant. A scrim exists to
+       darken whatever is behind it - page content or user photography - and that
+       backdrop does not flip with the theme, so neither may the scrim. This is
+       why there is no dark override for either below. */
     --calmi-scrim: color-mix(in srgb, black 45%, transparent);
     /* Media roles. Photos are user content: their luminance is unknown and does
        not follow the scheme, so these two are deliberately scheme-invariant and
@@ -57,9 +61,29 @@
     --calmi-ink: color-mix(in srgb, var(--color-brand) 10%, black);
     --calmi-ink-soft: color-mix(in srgb, var(--calmi-ink) 72%, white);
     --calmi-ink-muted: color-mix(in srgb, var(--calmi-ink) 56%, white);
-    --calmi-on-hero: var(--p-primary-950, #261f2e);
+    /* `hero` is mixed toward black in BOTH schemes, so its foreground does not
+       flip either. Dark ink (primary-950) only reaches 3.44:1 on it, under the
+       4.5:1 body bar, while white reaches 4.68:1. Hero copy is white, and it is
+       differentiated by size and weight - never by opacity, which would drop
+       back below the bar. */
+    --calmi-on-hero: white;
+    /* Selected/active surface. Brand mixed into the live surface role, so it
+       flips with the scheme for free and tracks the seed. Pair with `text-ink`
+       plus a non-color cue (check, label, outline); never color alone. */
+    --calmi-selected: color-mix(in srgb, var(--color-brand) 16%, var(--calmi-surface));
+    /* Warning status text, same light/dark stop strategy as success/danger:
+       a dark stop on light surfaces, a light stop on dark ones. The decorative
+       `accent-gold` fill is NOT a substitute - it fails as body text on canvas. */
+    --calmi-warning: var(--p-gold-700);
+    /* Player chrome. Deliberately opaque: the players sit over hero art and
+       canvas, and a translucent panel there would need its own reduced
+       transparency fallback to stay readable. */
+    --calmi-player-surface: color-mix(in srgb, var(--color-brand) 12%, white);
 
     --calmi-shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.25);
+    /* Hover elevation for liftable cards. A distinct role, because `shadow-card`
+       on hover is a no-op and the lift affordance would silently disappear. */
+    --calmi-shadow-card-hover: 0 10px 22px 0 rgb(0 0 0 / 0.28);
     --calmi-shadow-player: 0 -4px 20px rgb(0 0 0 / 0.1);
     --calmi-shadow-accent-coral: 0 10px 20px color-mix(in srgb, var(--color-accent-coral) 30%, transparent);
     --calmi-shadow-accent-gold: 0 10px 30px color-mix(in srgb, var(--color-accent-gold) 20%, transparent);
@@ -96,8 +120,12 @@
     --calmi-ink-soft: color-mix(in srgb, var(--color-brand) 18%, white);
     --calmi-ink-muted: color-mix(in srgb, var(--color-brand) 34%, white);
     --calmi-on-hero: white;
+    --calmi-selected: color-mix(in srgb, var(--color-brand) 16%, var(--calmi-surface));
+    --calmi-warning: var(--p-gold-300);
+    --calmi-player-surface: color-mix(in srgb, var(--color-brand) 24%, black);
 
     --calmi-shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.5);
+    --calmi-shadow-card-hover: 0 10px 22px 0 rgb(0 0 0 / 0.55);
     --calmi-shadow-player: 0 -4px 20px rgb(0 0 0 / 0.4);
   }
 
@@ -148,6 +176,9 @@
   --color-on-coral: var(--calmi-on-coral);
   --color-success: var(--calmi-success);
   --color-danger: var(--calmi-danger);
+  --color-warning: var(--calmi-warning);
+  --color-selected: var(--calmi-selected);
+  --color-player-surface: var(--calmi-player-surface);
   --color-on-brand: var(--calmi-on-brand);
   --color-on-brand-deep: var(--calmi-on-brand-deep);
   --color-ink: var(--calmi-ink);
@@ -160,8 +191,10 @@
   --color-accent-gold: var(--p-gold-500, #f5b731);
   --color-accent-pink: var(--p-pink-500, #f2a0b0);
   /* Decorative green. Distinct from `--color-success`, which flips light/dark
-     for status text; this one must stay dark enough for white icons in both. */
+     for status text; this one must stay dark enough for white icons in both.
+     That invariance is exactly why it owns a scheme-invariant foreground. */
   --color-accent-green: var(--p-success-600, #2a7030);
+  --color-on-accent-green: var(--calmi-on-media);
 
   /* Decorative stops, all derived from the brand palette. */
   /* Hero fill is mixed toward black, not white: at 86% brand it clears WCAG AA
@@ -174,6 +207,7 @@
   --color-player-to: color-mix(in srgb, var(--color-brand) 16%, black);
 
   --shadow-card: var(--calmi-shadow-card);
+  --shadow-card-hover: var(--calmi-shadow-card-hover);
   --shadow-aurora: var(--calmi-shadow-aurora);
   --shadow-player: var(--calmi-shadow-player);
   --drop-shadow-accent-coral: var(--calmi-shadow-accent-coral);

@@ -12,7 +12,7 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
   template: `
     @if (voice.isActive() && voice.surface() === surface()) {
       <div #overlay
-           class="voice absolute inset-0 z-[5] flex flex-col items-center bg-voice-scrim text-brand-deep opacity-100 backdrop-blur-xl dark:text-brand-light"
+           class="voice absolute inset-0 z-[5] flex flex-col items-center bg-voice-scrim text-ink opacity-100 backdrop-blur-xl"
            [class.is-listening]="voice.phase() === 'listening'"
            [class.is-thinking]="voice.phase() === 'thinking'"
            [class.is-speaking]="voice.phase() === 'speaking'"
@@ -24,7 +24,7 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
            tabindex="-1"
            (keydown)="onKeydown($event)">
         <!-- Live status goes silent while an error alert is present so the failure is announced once. -->
-        <p [id]="surfaceId() + '-status'" class="voice__status text-sm font-bold tracking-wide"
+        <p [id]="surfaceId() + '-status'" class="voice__status text-base font-bold tracking-wide"
            [attr.aria-live]="voice.error() ? 'off' : 'polite'">
           {{ voice.statusLabel() }}
         </p>
@@ -38,17 +38,17 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
           </div>
         </div>
 
-        <p [id]="surfaceId() + '-caption'" class="voice__caption min-h-11 max-w-[280px] text-center text-sm leading-relaxed text-ink-muted">
+        <p [id]="surfaceId() + '-caption'" class="voice__caption min-h-11 max-w-[280px] text-center text-base leading-relaxed text-ink-muted">
           {{ voice.transcript() }}
         </p>
 
         @if (voice.error(); as error) {
-          <div role="alert" class="flex max-w-[320px] flex-col items-center gap-3 rounded-2xl border border-hairline bg-surface px-4 py-3 text-center text-sm text-ink">
+          <div role="alert" class="flex max-w-[320px] flex-col items-center gap-3 rounded-2xl border border-hairline bg-surface px-4 py-3 text-center text-base text-ink">
             <svg [lucideIcon]="'circle-alert'" [size]="20" aria-hidden="true"></svg>
             <p>{{ error.message }}</p>
             <button type="button"
                     (click)="retrySession()"
-                    class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand bg-surface px-4 text-xs font-bold text-brand-dark transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 dark:text-brand-light"
+                    class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand bg-surface px-4 text-xs font-bold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                     aria-label="Retry microphone access">
               Retry microphone
             </button>
@@ -61,7 +61,7 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
                     (click)="voice.toggleMuted()"
                     [attr.aria-pressed]="voice.isMuted()"
                     [attr.aria-label]="voice.isMuted() ? 'Unmute microphone' : 'Mute microphone'"
-                    class="inline-flex h-11 min-w-11 items-center gap-2 rounded-full border border-hairline bg-surface px-4 text-xs font-bold text-brand-dark transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 dark:text-brand-light">
+                    class="inline-flex h-11 min-w-11 items-center gap-2 rounded-full border border-hairline bg-surface px-4 text-xs font-bold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
               <svg [lucideIcon]="'volume-2'" [size]="17" aria-hidden="true"></svg>
               {{ voice.isMuted() ? 'Unmute' : 'Mute' }}
             </button>

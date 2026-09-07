@@ -9,7 +9,7 @@
   aria-labelledby="rumi-chat-title"
   aria-describedby="rumi-chat-subtitle"
   tabindex="-1"
-  class="chat-panel fixed inset-x-0 top-0 z-[60] box-border flex h-[100dvh] max-h-none flex-col overflow-hidden rounded-none border border-hairline bg-glass pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-brand-deep dark:text-brand-light shadow-card backdrop-blur-xl md:top-auto md:right-6 md:inset-x-auto md:bottom-24 md:h-[600px] md:max-h-[calc(100dvh-9rem)] md:w-[380px] md:rounded-3xl md:pt-0 md:pb-0"
+  class="chat-panel fixed inset-x-0 top-0 z-[60] box-border flex h-[100dvh] max-h-none flex-col overflow-hidden rounded-none border border-hairline bg-glass pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-ink shadow-card backdrop-blur-xl md:top-auto md:right-6 md:inset-x-auto md:bottom-24 md:h-[600px] md:max-h-[calc(100dvh-9rem)] md:w-[380px] md:rounded-3xl md:pt-0 md:pb-0"
   [class.chat-panel--lifted]="liftedForPlayer()"
   [class.chat-panel--exit]="chatStore.isClosing()"
   [class.chat-panel--minimized]="chatStore.isMinimized()">
@@ -21,18 +21,18 @@
     </div>
     <div class="min-w-0 flex-1">
       <h2 id="rumi-chat-title" class="text-lg font-bold leading-tight">Rumi AI</h2>
-      <p id="rumi-chat-subtitle" class="text-xs text-brand-dark dark:text-brand-light">Your smart AI companion</p>
+      <p id="rumi-chat-subtitle" class="text-xs text-ink-soft">Your smart AI companion</p>
     </div>
     <button
       type="button"
-      class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-brand-deep dark:text-brand-light hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+      class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
       aria-label="Minimize Rumi AI chat"
       (click)="minimizePanel()">
       <svg [lucideIcon]="'minus'" [size]="18" aria-hidden="true"></svg>
     </button>
     <button
       type="button"
-      class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-brand-deep dark:text-brand-light hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+      class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
       aria-label="Close Rumi AI chat"
       (click)="closePanel()">
       <svg [lucideIcon]="'x'" [size]="18" aria-hidden="true"></svg>

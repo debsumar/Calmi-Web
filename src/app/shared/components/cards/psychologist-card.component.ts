@@ -30,11 +30,11 @@ const DRAG_TOLERANCE_PX = 10;
 
         @if (available()) {
           <span class="absolute bottom-14 left-3 inline-flex items-center gap-1.5 bg-surface border border-hairline rounded-full px-2.5 py-1 text-xs font-semibold text-ink">
-            <span aria-hidden="true" class="w-2 h-2 rounded-full bg-brand"></span>
+            <span aria-hidden="true" class="w-2 h-2 rounded-full bg-success"></span>
             Available
           </span>
         }
-        <p class="absolute bottom-3 left-3 right-3 text-on-media text-xl font-bold truncate">{{ name() }}</p>
+        <p class="absolute bottom-3 left-3 right-3 truncate text-lg font-bold text-on-media">{{ name() }}</p>
       </div>
 
       <!-- Price + rating -->
@@ -43,7 +43,7 @@ const DRAG_TOLERANCE_PX = 10;
           <span class="font-bold text-ink">₹{{ price() }}</span> for {{ duration() }}
         </p>
         <p class="flex items-center gap-1 text-sm text-ink-muted shrink-0">
-          <svg [lucideIcon]="'star'" [size]="14" class="text-accent-gold fill-accent-gold"></svg>
+          <svg [lucideIcon]="'star'" [size]="14" class="text-accent-gold fill-current"></svg>
           <span class="font-semibold text-ink">{{ rating() }}</span>
           <span class="text-xs">({{ reviews() }})</span>
         </p>
@@ -70,7 +70,7 @@ const DRAG_TOLERANCE_PX = 10;
          [attr.aria-label]="'Book a session with ' + name()"
          (pointerdown)="onPointerDown($event)"
          (click)="onNavigate($event)"
-         class="relative z-20 mt-5 block w-full bg-brand text-on-brand font-semibold text-sm text-center rounded-full py-3 hover:bg-brand-deep transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+         class="relative z-20 mt-5 block w-full rounded-full bg-brand-deep py-3 text-center text-base font-semibold text-on-brand-deep transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
         Book Session
       </a>
 

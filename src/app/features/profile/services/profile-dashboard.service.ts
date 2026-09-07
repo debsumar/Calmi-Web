@@ -195,16 +195,7 @@ export class ProfileDashboardService {
       { id: 'language', label: 'Language', value: 'English', source: PREVIEW_SOURCE },
     ],
     preferencesSource: PREVIEW_SOURCE,
-    security: [
-      {
-        id: 'password',
-        label: 'Password',
-        value: 'Last changed 12 Jun',
-        status: 'Protected',
-        action: { label: 'Change', route: '/auth/forgot' },
-        source: PREVIEW_SOURCE,
-      },
-    ],
+    security: [],
     securitySource: PREVIEW_SOURCE,
     accountClosure: {
       id: 'close-account',

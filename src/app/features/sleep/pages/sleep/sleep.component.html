@@ -1,11 +1,11 @@
 <!-- Hero Section -->
-<section class="relative w-full overflow-hidden bg-hero dark:bg-brand-dark min-h-[280px] md:min-h-[360px] flex rounded-b-3xl md:rounded-none">
+<section class="relative w-full overflow-hidden bg-hero dark:bg-gradient-to-b dark:from-hero-grad-from dark:to-hero-grad-to min-h-[280px] md:min-h-[360px] flex rounded-b-3xl md:rounded-none">
   <div class="flex-1 relative z-10 px-4 md:px-16 py-10 md:py-16 flex flex-col justify-center">
     <div class="max-w-xl">
-      <h1 appAnimateOnScroll class="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">
+      <h1 appAnimateOnScroll class="text-3xl md:text-5xl font-bold text-on-hero leading-tight mb-4">
         Sounds for when you<br>need to slow down
       </h1>
-      <p appAnimateOnScroll class="text-white text-lg">
+      <p appAnimateOnScroll class="text-on-hero text-lg leading-relaxed">
         Immerse yourself in soothing sounds that help you relax, focus or sleep better.
       </p>
     </div>
@@ -20,13 +20,13 @@
 <!-- Featured Sounds -->
 <section id="featured" class="pt-2 pb-8 md:pt-4 md:pb-12 px-4 md:px-8 max-w-6xl mx-auto overflow-hidden">
   <div class="flex items-center justify-between mb-8">
-    <h2 appAnimateOnScroll style="--index:0" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Featured Sounds</h2>
+    <h2 appAnimateOnScroll style="--index:0" class="text-3xl md:text-4xl font-bold text-ink">Featured Sounds</h2>
     <div class="flex items-center gap-4">
       <div class="hidden md:flex gap-2">
-        <button (click)="carousel.scrollBy({left: -320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <button (click)="carousel.scrollBy({left: -320, behavior: 'smooth'})" aria-label="Previous featured sounds" class="w-10 h-10 rounded-full border border-hairline flex items-center justify-center text-ink-soft hover:bg-sunken transition-colors">
           <svg [lucideIcon]="'chevron-left'" [size]="20"></svg>
         </button>
-        <button (click)="carousel.scrollBy({left: 320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <button (click)="carousel.scrollBy({left: 320, behavior: 'smooth'})" aria-label="Next featured sounds" class="w-10 h-10 rounded-full border border-hairline flex items-center justify-center text-ink-soft hover:bg-sunken transition-colors">
           <svg [lucideIcon]="'chevron-right'" [size]="20"></svg>
         </button>
       </div>
@@ -38,7 +38,7 @@
       @for (sound of featuredSounds(); track sound.title) {
         <app-sound-card
           appAnimateOnScroll
-          class="shrink-0 w-[70vw] md:w-[260px] snap-start hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+          class="shrink-0 w-[70vw] md:w-[260px] snap-start hover:-translate-y-1 hover:shadow-card transition-all duration-300"
           [title]="sound.title"
           [image]="sound.image"
           [duration]="sound.duration"
@@ -61,8 +61,11 @@
   <!-- Progress dots -->
   <div class="flex justify-center gap-1.5 mt-4">
     @for (sound of featuredSounds(); track sound.title; let i = $index) {
-      <div class="w-2 h-2 rounded-full transition-all duration-300"
-           [class]="i === activeSlide() ? 'bg-brand w-5' : 'bg-gray-300 dark:bg-gray-600'"></div>
+      <span role="img"
+            [attr.aria-current]="i === activeSlide() ? 'true' : null"
+            [attr.aria-label]="i === activeSlide() ? 'Current featured sound: ' + sound.title : 'Featured sound: ' + sound.title"
+            class="w-2 h-2 rounded-full transition-all duration-300"
+            [class]="i === activeSlide() ? 'bg-brand w-5 ring-2 ring-brand' : 'bg-sunken-alt'"></span>
     }
   </div>
 </section>
@@ -70,19 +73,22 @@
 <!-- Browse by Vibe -->
 <section class="pt-2 pb-6 md:pt-4 md:pb-8 px-4 md:px-8 max-w-6xl mx-auto">
   <div class="flex items-center justify-between mb-8">
-    <h2 appAnimateOnScroll style="--index:0" class="text-3xl font-bold text-gray-900 dark:text-gray-100">Browse by Vibe</h2>
+    <h2 appAnimateOnScroll style="--index:0" class="text-3xl md:text-4xl font-bold text-ink">Browse by Vibe</h2>
     <div class="relative w-64">
-      <svg [lucideIcon]="'search'" [size]="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-400"></svg>
+      <svg [lucideIcon]="'search'" [size]="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted"></svg>
       <input type="text" placeholder="Search sounds..."
-             class="w-full bg-surface border border-gray-200 dark:border-white/10 rounded-full py-2 pl-12 pr-4 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all shadow-sm">
+             class="w-full bg-surface border border-hairline rounded-full py-2 pl-12 pr-4 text-base text-ink placeholder:text-ink-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand transition-all shadow-card">
     </div>
   </div>
   <div class="flex gap-3 overflow-x-auto p-2 -m-2 scrollbar-hide">
     @for (vibe of vibes(); track vibe.label; let i = $index) {
-      <button appAnimateOnScroll [style.--index]="i + 1" class="flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md whitespace-nowrap"
-              [class]="vibe.active ? 'bg-hero dark:bg-brand-dark text-white' : 'bg-surface text-gray-800 dark:text-gray-100'">
-        <svg [lucideIcon]="vibe.icon" [size]="18" [class]="vibe.active ? 'text-white' : 'text-gray-600 dark:text-gray-300'"></svg>
-        <span class="text-sm font-semibold">{{ vibe.label }}</span>
+      <button appAnimateOnScroll [style.--index]="i + 1" [attr.aria-pressed]="vibe.active" class="flex items-center gap-2 px-5 py-2.5 rounded-full border border-hairline transition-all duration-300 hover:scale-105 shadow-card hover:shadow-card whitespace-nowrap"
+              [class]="vibe.active ? 'bg-selected text-ink ring-2 ring-brand' : 'bg-surface text-ink-soft'">
+        <svg [lucideIcon]="vibe.icon" [size]="18" [class]="vibe.active ? 'text-ink' : 'text-ink-soft'"></svg>
+        <span class="text-base font-semibold">{{ vibe.label }}</span>
+        @if (vibe.active) {
+          <span class="sr-only">Selected</span>
+        }
       </button>
     }
   </div>
@@ -91,15 +97,15 @@
 <!-- All Sounds Section -->
 <section class="max-w-6xl mx-auto px-4 md:px-8 mb-32">
   <div class="flex items-center justify-between mb-8">
-    <h2 appAnimateOnScroll style="--index:0" class="text-2xl font-sans font-bold text-gray-900 dark:text-gray-100">All Sounds</h2>
+    <h2 appAnimateOnScroll style="--index:0" class="text-3xl md:text-4xl font-bold text-ink">All Sounds</h2>
     <div class="flex items-center gap-3">
       <!-- Duration Dropdown -->
-      <button class="px-4 py-2 bg-gray-100 dark:bg-sunken rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-surface transition-colors border border-transparent dark:border-white/5">
+      <button class="px-4 py-2 bg-sunken rounded-full text-xs font-semibold text-ink flex items-center gap-2 hover:bg-sunken-alt transition-colors border border-hairline">
         Duration
         <svg [lucideIcon]="'chevron-down'" [size]="14"></svg>
       </button>
       <!-- Most Popular Dropdown -->
-      <button class="px-4 py-2 bg-gray-100 dark:bg-sunken rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-surface transition-colors border border-transparent dark:border-white/5">
+      <button class="px-4 py-2 bg-sunken rounded-full text-xs font-semibold text-ink flex items-center gap-2 hover:bg-sunken-alt transition-colors border border-hairline">
         Most Popular
         <svg [lucideIcon]="'chevron-down'" [size]="14"></svg>
       </button>
@@ -109,14 +115,14 @@
   <div class="space-y-4">
     @for (sound of allSounds(); track sound.title) {
       <div appAnimateOnScroll (click)="onRowActivate(sound, allSounds())"
-           class="flex items-center p-3 rounded-2xl bg-surface border transition-colors group cursor-pointer shadow-sm hover:shadow"
-           [class]="isCurrentTrack(sound) ? 'border-brand dark:border-brand' : 'border-gray-100 dark:border-white/5 hover:border-brand/30 dark:hover:border-brand/30'">
+           class="flex items-center p-3 rounded-2xl bg-surface border transition-colors group cursor-pointer shadow-card hover:shadow-card"
+           [class]="isCurrentTrack(sound) ? 'border-brand' : 'border-hairline hover:border-brand'">
         <!-- Thumbnail -->
         <div class="relative w-32 md:w-44 aspect-video rounded-xl overflow-hidden shrink-0">
           <img [src]="sound.image" [alt]="sound.title" class="w-full h-full object-cover">
-          <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-            <div class="w-10 h-10 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm shadow-lg group-hover:scale-110 transition-transform">
-              <svg [lucideIcon]="isTrackPlaying(sound) ? 'pause' : 'play'" [size]="16" class="text-white fill-white"></svg>
+          <div class="absolute inset-0 bg-scrim group-hover:bg-scrim-strong transition-colors flex items-center justify-center">
+            <div class="w-10 h-10 bg-scrim-strong rounded-full flex items-center justify-center backdrop-blur-sm shadow-card group-hover:scale-110 transition-transform">
+              <svg [lucideIcon]="isTrackPlaying(sound) ? 'pause' : 'play'" [size]="16" class="text-on-media fill-current"></svg>
             </div>
           </div>
         </div>
@@ -124,21 +130,21 @@
         <!-- Details -->
         <div class="flex-1 min-w-0 pl-4 pr-4">
           <div class="flex items-center gap-3 mb-1">
-            <h3 class="font-bold text-base md:text-lg text-gray-900 dark:text-gray-100 truncate">{{ sound.title }}</h3>
+            <h3 class="font-bold text-lg text-ink truncate">{{ sound.title }}</h3>
             <span class="text-xs uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-full {{ sound.categoryColor }}">
               {{ sound.category }}
             </span>
           </div>
-          <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate">{{ sound.description }}</p>
+          <p class="text-xs text-ink-muted truncate">{{ sound.description }}</p>
         </div>
         
         <!-- Actions -->
         <div class="flex items-center gap-4 md:gap-6 shrink-0 pl-4">
-          <span class="text-xs md:text-sm font-semibold text-gray-500 dark:text-gray-400">{{ sound.duration }}</span>
-          <button class="text-gray-400 hover:text-brand dark:hover:text-purple-400 transition-colors">
+          <span class="text-xs font-semibold text-ink-muted">{{ sound.duration }}</span>
+          <button aria-label="Favorite {{ sound.title }}" class="text-ink-muted hover:text-brand transition-colors">
             <svg [lucideIcon]="'heart'" [size]="18"></svg>
           </button>
-          <button class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
+          <button aria-label="More options for {{ sound.title }}" class="text-ink-muted hover:text-ink transition-colors">
             <svg [lucideIcon]="'ellipsis-vertical'" [size]="18"></svg>
           </button>
         </div>
@@ -148,64 +154,64 @@
 
   <!-- Pagination -->
   <div class="flex items-center justify-end gap-2 mt-8">
-    <button class="w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center text-xs font-bold shadow-md shadow-brand/20">1</button>
-    <button class="w-7 h-7 rounded-full bg-gray-100 dark:bg-player-from text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-player-to transition-colors flex items-center justify-center text-xs font-bold border border-transparent dark:border-white/5">2</button>
-    <button class="w-7 h-7 rounded-full bg-gray-100 dark:bg-player-from text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-player-to transition-colors flex items-center justify-center text-xs font-bold border border-transparent dark:border-white/5">3</button>
+    <button aria-current="page" class="w-7 h-7 rounded-full bg-brand text-on-brand flex items-center justify-center text-xs font-bold shadow-card">1</button>
+    <button class="w-7 h-7 rounded-full bg-sunken-alt text-ink-muted hover:bg-sunken transition-colors flex items-center justify-center text-xs font-bold border border-hairline">2</button>
+    <button class="w-7 h-7 rounded-full bg-sunken-alt text-ink-muted hover:bg-sunken transition-colors flex items-center justify-center text-xs font-bold border border-hairline">3</button>
   </div>
 </section>
 
 <!-- Now Playing Player Bar -->
 @if (playerService.hasTrack()) {
-<div class="stagger-enter fixed bottom-0 left-0 right-0 bg-white/10 dark:bg-sunken/10 backdrop-blur-sm border-t border-white/20 dark:border-white/10 z-50 shadow-player" style="--index:0">
+<div class="stagger-enter fixed bottom-0 left-0 right-0 bg-player-surface border-t border-hairline z-50 shadow-player" style="--index:0">
   <!-- Full-width seekbar -->
   <div class="px-2 md:px-4">
     <div class="flex items-center gap-2 md:gap-3 pt-2 md:pt-3">
-      <span class="text-xs text-gray-500 w-7 md:w-8 text-right">{{ playerService.elapsedFormatted() }}</span>
+      <span class="text-xs text-ink-muted w-7 md:w-8 text-right">{{ playerService.elapsedFormatted() }}</span>
       <div class="relative h-5 flex-1 flex items-center cursor-pointer group"
            (click)="onSeek($event)">
-        <div class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
+        <div class="w-full h-1.5 bg-hairline rounded-full">
           <div class="h-full bg-brand rounded-full transition-all duration-300" [style.width.%]="playerService.progress()"></div>
         </div>
         <!-- Seek thumb -->
-        <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-brand rounded-full shadow-md border-2 border-white dark:border-gray-900 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-brand rounded-full shadow-card border-2 border-hairline opacity-0 group-hover:opacity-100 transition-opacity duration-200"
              [style.left.%]="playerService.progress()"></div>
       </div>
-      <span class="text-xs text-gray-500 w-7 md:w-8">{{ playerService.remainingFormatted() }}</span>
+      <span class="text-xs text-ink-muted w-7 md:w-8">{{ playerService.remainingFormatted() }}</span>
     </div>
   </div>
 
   <!-- Controls row -->
   <div class="max-w-6xl mx-auto flex items-center justify-between px-2 md:px-4 py-2 md:py-3">
     <div class="flex items-center gap-2 md:gap-4">
-      <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gray-200 dark:bg-gray-800 overflow-hidden shrink-0">
+      <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-sunken-alt overflow-hidden shrink-0">
         <img [src]="playerService.nowPlaying()!.image" class="w-full h-full object-cover">
       </div>
       <div class="hidden sm:block">
-        <h4 class="font-bold text-gray-900 dark:text-gray-100 text-sm">{{ playerService.nowPlaying()!.title }}</h4>
-        <p class="text-xs text-gray-500 w-24">{{ playerService.isPlaying() ? 'Playing' : 'Paused' }}</p>
+        <h4 class="font-bold text-ink text-lg">{{ playerService.nowPlaying()!.title }}</h4>
+        <p class="text-xs text-ink-muted w-24">{{ playerService.isPlaying() ? 'Playing' : 'Paused' }}</p>
       </div>
     </div>
     
     <div class="flex items-center gap-3 md:gap-5">
-      <button (click)="playerService.toggleShuffle()" class="hidden md:flex text-gray-500 hover:text-brand transition-colors active:scale-75 duration-150" [class.text-brand]="playerService.shuffle()">
+      <button (click)="playerService.toggleShuffle()" aria-label="Toggle shuffle" class="hidden md:flex text-ink-muted hover:text-brand transition-colors active:scale-75 duration-150" [class.text-brand]="playerService.shuffle()">
         <svg [lucideIcon]="'shuffle'" [size]="16"></svg>
       </button>
-      <button (click)="playerService.skipBack()" class="text-gray-500 hover:text-brand transition-colors active:scale-75 duration-150"><svg [lucideIcon]="'skip-back'" [size]="18"></svg></button>
-      <button (click)="playerService.togglePlayPause()" class="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brand-dark transition-colors shadow-lg active:scale-90 duration-150">
+      <button (click)="playerService.skipBack()" aria-label="Previous sound" class="text-ink-muted hover:text-brand transition-colors active:scale-75 duration-150"><svg [lucideIcon]="'skip-back'" [size]="18"></svg></button>
+      <button (click)="playerService.togglePlayPause()" aria-label="Toggle play and pause" class="w-10 h-10 bg-brand text-on-brand hover:bg-brand-dark hover:text-on-brand-deep rounded-full flex items-center justify-center transition-colors shadow-card active:scale-90 duration-150">
         <svg [lucideIcon]="playerService.isPlaying() ? 'pause' : 'play'" [size]="18" class="fill-current"></svg>
       </button>
-      <button (click)="playerService.skipForward()" class="text-gray-500 hover:text-brand transition-colors active:scale-75 duration-150"><svg [lucideIcon]="'skip-forward'" [size]="18"></svg></button>
-      <button (click)="playerService.toggleRepeat()" class="hidden md:flex text-gray-500 hover:text-brand transition-colors active:scale-75 duration-150" [class.text-brand]="playerService.repeat()">
+      <button (click)="playerService.skipForward()" aria-label="Next sound" class="text-ink-muted hover:text-brand transition-colors active:scale-75 duration-150"><svg [lucideIcon]="'skip-forward'" [size]="18"></svg></button>
+      <button (click)="playerService.toggleRepeat()" aria-label="Toggle repeat" class="hidden md:flex text-ink-muted hover:text-brand transition-colors active:scale-75 duration-150" [class.text-brand]="playerService.repeat()">
         <svg [lucideIcon]="'repeat'" [size]="16"></svg>
       </button>
     </div>
     
     <div class="hidden md:flex items-center gap-3">
-      <button (click)="playerService.cycleSpeed()" class="text-xs font-bold px-2 py-1 rounded bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
+      <button (click)="playerService.cycleSpeed()" class="text-xs font-bold px-2 py-1 rounded bg-sunken text-ink hover:bg-sunken-alt transition-colors border border-hairline">
         {{ playerService.speed() }}x
       </button>
       <div class="flex items-center gap-2 w-28">
-        <svg [lucideIcon]="'volume-2'" [size]="14" class="text-gray-500 shrink-0"></svg>
+        <svg [lucideIcon]="'volume-2'" [size]="14" class="text-ink-muted shrink-0"></svg>
         <input type="range" min="0" max="1" step="0.1" [value]="playerService.volume()" (input)="playerService.setVolume(+$any($event.target).value)"
                class="w-full h-1 accent-brand cursor-pointer">
       </div>

@@ -51,7 +51,7 @@
 
 .equalizer span {
   width: 3px;
-  background: white;
+  background: var(--color-on-media);
   border-radius: 1px;
   animation: eqBounce 0.8s ease-in-out infinite alternate;
 }
@@ -73,7 +73,7 @@
 // ─── Logo Breathing Animation ─────────────────
 @keyframes logoBreathe {
   0% { transform: scale(1); opacity: 0.9; }
-  50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 12px rgba(150, 123, 182, 0.4)); }
+  50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(var(--calmi-shadow-accent-coral)); }
   100% { transform: scale(1); opacity: 0.9; }
 }
 
@@ -85,7 +85,7 @@
 // ─── PrimeNG Dialog Glass Mask Backdrop ─────────────────
 ::ng-deep .p-dialog-mask,
 .p-dialog-mask {
-  background-color: rgba(9, 5, 20, 0.45) !important;
+  background-color: var(--calmi-scrim) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
 }

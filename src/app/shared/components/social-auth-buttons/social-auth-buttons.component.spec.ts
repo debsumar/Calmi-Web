@@ -6,46 +6,40 @@ import { SocialAuthButtonsComponent } from './social-auth-buttons.component';
 describe('SocialAuthButtonsComponent', () => {
   let fixture: ComponentFixture<SocialAuthButtonsComponent>;
   const loginWithGoogle = vi.fn().mockResolvedValue(undefined);
-  const loginWithApple = vi.fn().mockResolvedValue(undefined);
 
   beforeEach(async () => {
     loginWithGoogle.mockClear();
-    loginWithApple.mockClear();
     await TestBed.configureTestingModule({
       imports: [SocialAuthButtonsComponent],
-      providers: [{ provide: AuthService, useValue: { loginWithGoogle, loginWithApple } }],
+      providers: [{ provide: AuthService, useValue: { loginWithGoogle } }],
     }).compileComponents();
     fixture = TestBed.createComponent(SocialAuthButtonsComponent);
     fixture.detectChanges();
   });
 
-  it('renders divider, neutral social buttons, and vendor icons', () => {
+  it('renders divider, one full-width Google button, and vendor icon', () => {
     expect(fixture.nativeElement.textContent).toContain('OR');
-    expect(fixture.nativeElement.textContent).toContain('Login with Google');
-    expect(fixture.nativeElement.textContent).toContain('Login with Apple');
+    expect(fixture.nativeElement.textContent).toContain('Continue with Google');
+    expect(fixture.nativeElement.textContent).not.toContain('Apple');
     expect(fixture.nativeElement.querySelector('img[src="/assets/logos/google.svg"]')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('img[src="/assets/logos/apple.svg"]')).not.toBeNull();
-    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(2);
+    expect(fixture.nativeElement.querySelector('img[src="/assets/logos/apple.svg"]')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(1);
   });
 
-  it('calls selected provider and disables both buttons while pending', async () => {
+  it('calls Google and disables button while pending', async () => {
     let resolveGoogle!: () => void;
     loginWithGoogle.mockReturnValueOnce(new Promise<void>((resolve) => { resolveGoogle = resolve; }));
     const googleButton = fixture.nativeElement.querySelector('img[src="/assets/logos/google.svg"]').closest('button') as HTMLButtonElement;
-    const appleButton = fixture.nativeElement.querySelector('img[src="/assets/logos/apple.svg"]').closest('button') as HTMLButtonElement;
 
     googleButton.click();
     fixture.detectChanges();
     expect(googleButton.disabled).toBe(true);
-    expect(appleButton.disabled).toBe(true);
     expect(loginWithGoogle).toHaveBeenCalledTimes(1);
-    expect(loginWithApple).not.toHaveBeenCalled();
 
     resolveGoogle();
     await fixture.whenStable();
     fixture.detectChanges();
     expect(googleButton.disabled).toBe(false);
-    expect(appleButton.disabled).toBe(false);
   });
 
   it('emits generic failure copy without provider details', async () => {
@@ -67,7 +61,7 @@ describe('SocialAuthButtonsComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).not.toContain('OR');
-    const host = fixture.nativeElement as HTMLElement;
-    expect(Array.from(host.querySelectorAll<HTMLButtonElement>('button')).every((button) => button.disabled)).toBe(true);
+    const googleButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(googleButton.disabled).toBe(true);
   });
 });

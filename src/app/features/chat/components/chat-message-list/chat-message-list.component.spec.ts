@@ -116,6 +116,7 @@ const seedMessages = (store: ChatStoreService): void => {
     const emptyState = fixture.nativeElement.querySelector('.bg-sunken-alt') as HTMLElement;
     expect(emptyState).not.toBeNull();
     expect(emptyState.classList).toContain('bg-sunken-alt');
-    expect(fixture.nativeElement.querySelector('.dark\\:text-brand-light')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.text-ink-soft')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.dark\\:text-brand-light')).toBeNull();
   });
 });

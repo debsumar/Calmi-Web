@@ -79,10 +79,10 @@ export class SleepComponent {
   ]);
 
   allSounds = signal([
-    { title: 'Night Ambience', category: 'Ambient', categoryColor: 'bg-brand/15 text-brand-dark dark:bg-brand/20 dark:text-brand', description: 'Crickets, breeze and calm night', duration: '60:00', image: 'assets/sound-images/night-ambience.avif' },
-    { title: 'Heavy Rain', category: 'Rain', categoryColor: 'bg-brand/15 text-brand-dark dark:bg-brand/20 dark:text-brand', description: 'Deep rain for deep sleep', duration: '45:00', image: 'assets/sound-images/heavy-rain.avif', audio: 'assets/sounds/rain.mp3' },
-    { title: 'Calming Ocean', category: 'Ocean', categoryColor: 'bg-brand/15 text-brand-dark dark:bg-brand/20 dark:text-brand', description: 'Gentle waves and horizon', duration: '30:00', image: 'assets/sound-images/ocean-waves.avif' },
-    { title: 'Cozy Fireplace', category: 'Nature', categoryColor: 'bg-brand/15 text-brand-dark dark:bg-brand/20 dark:text-brand', description: 'Crackling fire to relax', duration: '15:00', image: 'assets/sound-images/fireplace.avif' },
+    { title: 'Night Ambience', category: 'Ambient', categoryColor: 'bg-sunken text-ink-soft', description: 'Crickets, breeze and calm night', duration: '60:00', image: 'assets/sound-images/night-ambience.avif' },
+    { title: 'Heavy Rain', category: 'Rain', categoryColor: 'bg-sunken text-ink-soft', description: 'Deep rain for deep sleep', duration: '45:00', image: 'assets/sound-images/heavy-rain.avif', audio: 'assets/sounds/rain.mp3' },
+    { title: 'Calming Ocean', category: 'Ocean', categoryColor: 'bg-sunken text-ink-soft', description: 'Gentle waves and horizon', duration: '30:00', image: 'assets/sound-images/ocean-waves.avif' },
+    { title: 'Cozy Fireplace', category: 'Nature', categoryColor: 'bg-sunken text-ink-soft', description: 'Crackling fire to relax', duration: '15:00', image: 'assets/sound-images/fireplace.avif' },
   ]);
 
   playSound(track: SoundTrack, list?: SoundTrack[]): void {

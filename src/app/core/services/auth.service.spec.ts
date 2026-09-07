@@ -4,10 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   getSession: vi.fn(),
   onAuthStateChange: vi.fn(),
-  signInWithPassword: vi.fn(),
-  signUp: vi.fn(),
-  resetPasswordForEmail: vi.fn(),
-  updateUser: vi.fn(),
   signOut: vi.fn(),
   signInWithOAuth: vi.fn(),
   createClient: vi.fn(),
@@ -25,19 +21,11 @@ const session = { user, access_token: 'test-token' } as any;
 function setAuthDefaults(): void {
   mocks.getSession.mockResolvedValue({ data: { session: null } });
   mocks.onAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
-  mocks.signInWithPassword.mockResolvedValue({ data: { user, session }, error: null });
-  mocks.signUp.mockResolvedValue({ data: { user, session }, error: null });
-  mocks.resetPasswordForEmail.mockResolvedValue({ error: null });
-  mocks.updateUser.mockResolvedValue({ error: null });
   mocks.signOut.mockResolvedValue({ error: null });
   mocks.signInWithOAuth.mockResolvedValue({ data: { provider: 'google', url: null }, error: null });
   mocks.createClient.mockReturnValue({ auth: {
     getSession: mocks.getSession,
     onAuthStateChange: mocks.onAuthStateChange,
-    signInWithPassword: mocks.signInWithPassword,
-    signUp: mocks.signUp,
-    resetPasswordForEmail: mocks.resetPasswordForEmail,
-    updateUser: mocks.updateUser,
     signOut: mocks.signOut,
     signInWithOAuth: mocks.signInWithOAuth,
   } });
@@ -89,19 +77,6 @@ describe('AuthService', () => {
     expect(service.isAuthenticated()).toBe(true);
   });
 
-  it('passes login credentials to Supabase without logging them', async () => {
-    const errorSpy = vi.spyOn(console, 'error');
-    await service.login('person@example.com', 'correct horse battery staple');
-
-    expect(mocks.signInWithPassword).toHaveBeenCalledWith({
-      email: 'person@example.com',
-      password: 'correct horse battery staple',
-    });
-    expect(service.isAuthenticated()).toBe(true);
-    expect(errorSpy).not.toHaveBeenCalled();
-    errorSpy.mockRestore();
-  });
-
   it('persists the selected role and clears it on logout', async () => {
     service.selectedRole.set('specialist');
     TestBed.tick();
@@ -113,19 +88,6 @@ describe('AuthService', () => {
     expect(localStorage.getItem('calmi-auth-role')).toBeNull();
   });
 
-  it('uses a browser-safe reset destination and swallows provider errors', async () => {
-    mocks.resetPasswordForEmail.mockRejectedValue(new Error('unknown account'));
-    await expect(service.requestPasswordReset('person@example.com')).resolves.toBeUndefined();
-    expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith('person@example.com', {
-      redirectTo: expect.stringContaining('/auth/reset'),
-    });
-  });
-
-  it('updates password through the active recovery session', async () => {
-    await service.updatePassword('correct horse battery staple');
-    expect(mocks.updateUser).toHaveBeenCalledWith({ password: 'correct horse battery staple' });
-  });
-
   it('configures persistent storage for OAuth PKCE and refresh survival', () => {
     const authConfig = mocks.createClient.mock.calls[0][2].auth;
     expect(authConfig.persistSession).toBe(true);
@@ -134,16 +96,13 @@ describe('AuthService', () => {
     expect(authConfig.detectSessionInUrl).toBe(true);
   });
 
-  it.each([
-    ['google', 'loginWithGoogle'],
-    ['apple', 'loginWithApple'],
-  ] as const)('starts %s OAuth with a validated same-origin redirect', async (provider, method) => {
+  it('starts Google OAuth with a validated same-origin redirect', async () => {
     window.history.pushState({}, '', '/auth/login?returnUrl=%2Fhome%3Ftab%3Dcalm');
 
-    await service[method]();
+    await service.loginWithGoogle();
 
     expect(mocks.signInWithOAuth).toHaveBeenCalledWith({
-      provider,
+      provider: 'google',
       options: { redirectTo: `${window.location.origin}/?returnUrl=%2Fhome%3Ftab%3Dcalm` },
     });
     window.history.pushState({}, '', '/');

@@ -11,12 +11,16 @@
   padding: 0;
   color: var(--color-ink-muted);
   font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .verification-step {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  padding: 0.2rem 0.4rem;
   transition: color var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
 }
 
@@ -25,19 +29,55 @@
   height: 0.25rem;
   border-radius: 9999px;
   background: var(--color-hairline);
-  background-image: linear-gradient(90deg, var(--color-brand) 0 100%, var(--color-hairline) 100%);
-  background-size: 0% 100%;
-  background-repeat: no-repeat;
 }
 
-.verification-step[data-done="true"] .verification-step__connector {
-  animation: connectorFill var(--dur-base) var(--ease-out) both;
+.verification-step__marker {
+  display: inline-grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  border: 1px solid var(--color-hairline);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-ink-muted);
+  line-height: 1;
 }
 
-.verification-step--current {
+.verification-step[data-state="complete"] .verification-step__connector,
+.verification-step[data-state="complete"] .verification-step__marker {
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+.verification-step[data-state="active"] {
+  border-color: var(--color-brand);
+  background: var(--color-sunken-alt);
   color: var(--color-ink);
-  font-weight: 600;
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
   animation: stepCurrent var(--dur-base) var(--ease-out) both;
+}
+
+.verification-step[data-state="active"] .verification-step__marker {
+  border-color: var(--color-brand);
+  color: var(--color-ink);
+}
+
+.verification-step[data-state="error"] {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  outline: 2px dashed var(--color-danger);
+  outline-offset: 2px;
+}
+
+.verification-step[data-state="error"] .verification-step__marker {
+  border-color: var(--color-danger);
+  border-style: dashed;
+  color: var(--color-danger);
+}
+
+.verification-step__status {
+  font-size: 0.75rem;
 }
 
 @media (max-width: 30rem) {

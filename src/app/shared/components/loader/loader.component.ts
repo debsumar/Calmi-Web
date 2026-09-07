@@ -8,7 +8,7 @@ import { ProgressSpinner } from 'primeng/progressspinner';
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (loader.loading()) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-surface-0/50">
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-glass backdrop-blur-sm">
         <p-progress-spinner />
       </div>
     }

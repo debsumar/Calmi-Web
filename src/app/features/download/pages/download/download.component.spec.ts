@@ -50,8 +50,11 @@ describe('DownloadComponent', () => {
     const badges = element.querySelectorAll('[data-store]');
 
     expect(badges).toHaveLength(2);
-    expect(element.querySelector('[data-store="apple"] img')?.getAttribute('src')).toBe('/assets/logos/apple.svg');
-    expect(element.querySelector('[data-store="google-play"] img')?.getAttribute('src')).toBe('/assets/logos/Playstore.svg');
+    // Themeable PrimeIcons glyphs, not fixed-fill SVG assets: they inherit `text-ink`
+    // from the pill and so follow the active colour scheme.
+    expect(element.querySelector('[data-store="apple"] i')?.className).toContain('pi-apple');
+    expect(element.querySelector('[data-store="google-play"] i')?.className).toContain('pi-android');
+    expect(element.querySelectorAll('[data-store] img')).toHaveLength(0);
     expect(element.querySelectorAll('a[href^="http"]').length).toBe(0);
     expect(element.querySelectorAll('a[href="#"]').length).toBe(0);
   });

@@ -47,7 +47,7 @@
         </div>
       </header>
 
-      <app-verification-stepper [currentStep]="currentStep()" />
+      <app-verification-stepper [currentStep]="currentStep()" [status]="service.status()" />
 
       <p class="sr-only" role="status" aria-live="polite">{{ statusAnnouncement() }}</p>
 

@@ -10,13 +10,8 @@ export function createAuthServiceStub(): Partial<AuthService> {
     accessToken: signal<string | null>(null),
     selectedRole: signal<AuthRole | null>(null),
     restoreSession: vi.fn().mockResolvedValue(undefined),
-    logout: vi.fn().mockResolvedValue(undefined),
-    login: vi.fn().mockResolvedValue(undefined),
-    signup: vi.fn().mockResolvedValue(undefined),
     loginWithGoogle: vi.fn().mockResolvedValue(undefined),
-    loginWithApple: vi.fn().mockResolvedValue(undefined),
-    requestPasswordReset: vi.fn().mockResolvedValue(undefined),
-    updatePassword: vi.fn().mockResolvedValue(undefined),
+    logout: vi.fn().mockResolvedValue(undefined),
   } as Partial<AuthService>;
 }
 

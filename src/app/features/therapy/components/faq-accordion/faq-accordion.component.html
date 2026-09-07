@@ -10,14 +10,14 @@
     @for (faq of faqs(); track faq.question; let i = $index) {
       <div appAnimateOnScroll [style.--index]="i + 2"
            class="bg-surface rounded-2xl overflow-hidden transition-all duration-300 motion-reduce:transition-none"
-           [class]="openFaq() === i ? 'shadow-card ring-1 ring-brand/20' : 'shadow-card'">
+           [class]="openFaq() === i ? 'shadow-card ring-1 ring-brand' : 'shadow-card'">
         <h3>
           <button type="button"
                   (click)="toggleFaq(i)"
                   [attr.aria-expanded]="openFaq() === i"
                   [attr.aria-controls]="idPrefix() + '-panel-' + i"
                   [id]="idPrefix() + '-trigger-' + i"
-                  class="w-full flex items-center justify-between gap-4 text-left px-5 md:px-6 py-5 text-lg font-semibold text-ink hover:text-brand-dark dark:hover:text-brand-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset">
+                  class="w-full flex items-center justify-between gap-4 text-left px-5 md:px-6 py-5 text-lg font-semibold text-ink hover:text-brand dark:hover:text-brand-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset">
             <span>{{ faq.question }}</span>
             <svg lucideChevronDown [size]="18" aria-hidden="true"
                  class="shrink-0 transition-all duration-300 motion-reduce:transition-none"
@@ -31,7 +31,7 @@
                [attr.inert]="openFaq() === i ? null : ''"
                class="overflow-hidden">
             <div class="mx-5 md:mx-6 border-t border-hairline pt-4 pb-5">
-              <p class="max-w-2xl text-base text-ink-soft leading-relaxed">
+              <p class="text-base text-ink-soft leading-relaxed">
                 {{ faq.answer }}
               </p>
             </div>
