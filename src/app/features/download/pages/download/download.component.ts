@@ -38,11 +38,11 @@ import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.
               <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">Available soon on</p>
               <div class="flex flex-wrap gap-3">
                 <div data-store="apple" class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-hairline bg-elevated px-3 py-2 text-ink">
-                  <img src="/assets/logos/apple.svg" alt="" aria-hidden="true" class="h-6 w-auto" decoding="async">
+                  <i class="pi pi-apple text-xl" aria-hidden="true"></i>
                   <span class="text-sm font-semibold">App Store</span>
                 </div>
                 <div data-store="google-play" class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-hairline bg-elevated px-3 py-2 text-ink">
-                  <img src="/assets/logos/Playstore.svg" alt="" aria-hidden="true" class="h-6 w-auto" decoding="async">
+                  <i class="pi pi-android text-xl" aria-hidden="true"></i>
                   <span class="text-sm font-semibold">Google Play</span>
                 </div>
               </div>
