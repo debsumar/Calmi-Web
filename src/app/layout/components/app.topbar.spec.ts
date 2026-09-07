@@ -5,6 +5,7 @@ import { provideRouter, Router } from '@angular/router';
 import { Component } from '@angular/core';
 import { provideLucideIcons, LucideMoon, LucideSun, LucideUser, LucideCircleUser, LucideMenu, LucideX, LucideLogOut } from '@lucide/angular';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { provideAuthServiceStub } from '../../core/services/testing/auth.service.stub';
 import { AppTopbar } from './app.topbar';
 
@@ -132,6 +133,62 @@ describe('AppTopbar', () => {
     expect(fallback.classList).toContain('text-ink');
   });
 
+  it('renders an https avatar with no referrer so Google serves the photo', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.currentUser.set({
+      email: 'person@example.com',
+      user_metadata: { full_name: 'Person', avatar_url: 'https://lh3.googleusercontent.com/a/photo.jpg' },
+    } as never);
+    fixture.detectChanges();
+
+    const img = fixture.nativeElement.querySelector('button img') as HTMLImageElement;
+    expect(img).not.toBeNull();
+    expect(img.getAttribute('src')).toBe('https://lh3.googleusercontent.com/a/photo.jpg');
+    expect(img.getAttribute('referrerpolicy')).toBe('no-referrer');
+  });
+
+  it('falls back to initials when the avatar fails to load instead of a broken image', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.currentUser.set({
+      email: 'person@example.com',
+      user_metadata: { full_name: 'Person', avatar_url: 'https://lh3.googleusercontent.com/a/photo.jpg' },
+    } as never);
+    fixture.detectChanges();
+
+    (fixture.nativeElement.querySelector('button img') as HTMLImageElement).dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('button img')).toBeNull();
+    const fallback = fixture.nativeElement.querySelector('button div.bg-sunken-alt') as HTMLElement;
+    expect(fallback.textContent?.trim()).toBe('P');
+  });
+
+  it('rejects a non-https avatar url and renders initials instead', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.currentUser.set({
+      email: 'person@example.com',
+      user_metadata: { full_name: 'Person', avatar_url: 'javascript:alert(1)' },
+    } as never);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('button img')).toBeNull();
+    expect(fixture.nativeElement.querySelector('button div.bg-sunken-alt')).not.toBeNull();
+  });
+
+  it('names the profile trigger even though the avatar image is decorative', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.currentUser.set({
+      email: 'person@example.com',
+      user_metadata: { full_name: 'Person', avatar_url: 'https://lh3.googleusercontent.com/a/photo.jpg' },
+    } as never);
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector('button.overflow-hidden') as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-label')).toBe('Open profile menu');
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect((fixture.nativeElement.querySelector('button img') as HTMLImageElement).getAttribute('alt')).toBe('');
+  });
+
   it('opens the desktop logout confirmation without signing out', () => {
     const auth = openDesktopLogout();
 
@@ -189,6 +246,21 @@ describe('AppTopbar', () => {
     expect(auth.logout).not.toHaveBeenCalled();
   });
 
+  it('labels the auto theme state with readable text rather than a bare letter', () => {
+    const theme = TestBed.inject(ThemeService);
+    const toggle = fixture.nativeElement.querySelector('button[title^="Theme:"]') as HTMLButtonElement;
+
+    // toggle() cycles light -> dark -> auto, so advance until auto is showing.
+    for (let i = 0; i < 3 && theme.mode() !== 'auto'; i++) {
+      toggle.click();
+      fixture.detectChanges();
+    }
+
+    expect(theme.mode()).toBe('auto');
+    expect(toggle.textContent?.trim()).toBe('Auto');
+    expect(toggle.getAttribute('title')).toBe('Theme: auto');
+  });
+
   it('confirms logout exactly once and closes the dialog', () => {
     const auth = openDesktopLogout();
 
@@ -198,6 +270,31 @@ describe('AppTopbar', () => {
 
     expect(auth.logout).toHaveBeenCalledTimes(1);
     expect(dialog()).toBeNull();
+  });
+
+  it('sends the user to home after a successful logout', async () => {
+    const auth = openDesktopLogout();
+
+    const buttons = Array.from(dialog()?.querySelectorAll('button') ?? []) as HTMLButtonElement[];
+    buttons[1].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(auth.logout).toHaveBeenCalledTimes(1);
+    expect(router.url).toBe('/home');
+  });
+
+  it('still sends the user to home when signing out fails', async () => {
+    const auth = openDesktopLogout();
+    (auth.logout as unknown as { mockRejectedValueOnce: (e: unknown) => void })
+      .mockRejectedValueOnce(new Error('network down'));
+
+    const buttons = Array.from(dialog()?.querySelectorAll('button') ?? []) as HTMLButtonElement[];
+    buttons[1].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(router.url).toBe('/home');
   });
 
   it('cancels logout on Escape', () => {

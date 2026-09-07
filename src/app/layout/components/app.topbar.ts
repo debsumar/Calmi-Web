@@ -18,6 +18,7 @@ import { filter, map, startWith } from 'rxjs';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
+import { resolveHttpsAvatarUrl } from '../../core/identity/avatar-url';
 
 /** Variant C timings at the chosen 1.5x speed (520ms / 620ms base). */
 const INK_DURATION_MS = 350;
@@ -53,12 +54,12 @@ const RIPPLE_DURATION_MS = 420;
       <div class="flex items-center gap-3">
         <div class="hidden h-5 border-l border-hairline md:block"></div>
         <button (click)="themeService.toggle()"
-                class="w-9 h-9 flex items-center justify-center rounded-full text-ink hover:bg-sunken"
+                class="h-9 min-w-9 px-2 flex items-center justify-center rounded-full text-ink hover:bg-sunken"
                 [title]="'Theme: ' + themeService.mode()">
           @switch (themeService.mode()) {
             @case ('light') { <svg [lucideIcon]="'moon'" [size]="20" class="text-ink"></svg> }
             @case ('dark') { <svg [lucideIcon]="'sun'" [size]="20" class="text-ink"></svg> }
-            @case ('auto') { <span aria-hidden="true" class="w-5 h-5 flex items-center justify-center text-base font-bold leading-none text-ink">A</span> }
+            @case ('auto') { <span aria-hidden="true" class="text-xs font-semibold leading-none text-ink">Auto</span> }
           }
         </button>
 
@@ -66,11 +67,13 @@ const RIPPLE_DURATION_MS = 420;
           <div class="relative">
             <!-- Profile Trigger -->
             <button #profileTrigger (click)="dropdownOpen.set(!dropdownOpen())"
-                    class="w-9 h-9 flex items-center justify-center rounded-full overflow-hidden border border-hairline hover:ring-2 hover:ring-brand transition-all">
-              @if (user.user_metadata['avatar_url']) {
-                <img [src]="user.user_metadata['avatar_url']" alt="Avatar" class="w-full h-full object-cover">
+                    aria-label="Open profile menu" aria-haspopup="menu" [attr.aria-expanded]="dropdownOpen()"
+                    class="w-9 h-9 flex items-center justify-center rounded-full overflow-hidden border border-hairline hover:ring-2 hover:ring-brand transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+              @if (avatarUrl(); as avatar) {
+                <img [src]="avatar" alt="" aria-hidden="true" referrerpolicy="no-referrer" decoding="async"
+                     width="36" height="36" class="w-full h-full object-cover" (error)="onAvatarError()">
               } @else {
-                <div class="w-full h-full bg-sunken-alt text-ink flex items-center justify-center font-bold text-sm">
+                <div aria-hidden="true" class="w-full h-full bg-sunken-alt text-ink flex items-center justify-center font-bold text-sm">
                   {{ (user.user_metadata['full_name']?.[0] || user.email?.[0] || 'U').toUpperCase() }}
                 </div>
               }
@@ -184,6 +187,24 @@ export class AppTopbar {
   dropdownOpen = signal(false);
   logoutConfirmOpen = signal(false);
 
+  /**
+   * Google serves `lh3.googleusercontent.com` photos only to requests that send no
+   * referrer, so the img below needs `referrerpolicy="no-referrer"`. If the fetch
+   * still fails we fall back to initials rather than leaving a broken image icon.
+   */
+  private readonly avatarFailed = signal(false);
+
+  /** Only https URLs reach the img src; `javascript:`/`data:`/http: are rejected. */
+  readonly avatarUrl = computed(() => {
+    if (this.avatarFailed()) return null;
+    const metadata = this.authService.currentUser()?.user_metadata as Record<string, unknown> | undefined;
+    return resolveHttpsAvatarUrl(metadata);
+  });
+
+  onAvatarError(): void {
+    this.avatarFailed.set(true);
+  }
+
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
@@ -269,11 +290,16 @@ export class AppTopbar {
     this.restoreLogoutFocus();
   }
 
-  confirmLogout(): void {
-    void this.authService.logout().catch(() => undefined);
+  async confirmLogout(): Promise<void> {
     this.logoutConfirmOpen.set(false);
     this.dropdownOpen.set(false);
     this.restoreLogoutFocus();
+
+    // `logout()` clears the local session in a `finally`, so the user is signed out
+    // even when the network call fails. Either way we must leave the protected route:
+    // staying put would keep a guarded page on screen until the next navigation.
+    await this.authService.logout().catch(() => undefined);
+    await this.router.navigate(['/home']).catch(() => undefined);
   }
 
   private restoreLogoutFocus(): void {

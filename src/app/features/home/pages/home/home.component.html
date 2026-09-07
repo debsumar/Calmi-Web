@@ -10,9 +10,9 @@
     <p appAnimateOnScroll class="text-on-hero text-base md:text-lg mb-2" style="--index:1">Feeling anxious, stuck, or can't sleep?</p>
     <p appAnimateOnScroll class="text-on-hero text-base md:text-lg mb-6" style="--index:2">Start a guided calm session instantly.</p>
     <div appAnimateOnScroll class="flex flex-wrap items-center justify-center gap-3 md:gap-6 text-on-hero text-xs mb-8" style="--index:3">
-      <span>ΓÇó Mood-based guidance</span>
-      <span>ΓÇó Licensed therapists</span>
-      <span>ΓÇó Sleep better</span>
+      <span>• Mood-based guidance</span>
+      <span>• Licensed therapists</span>
+      <span>• Sleep better</span>
     </div>
     @if (!authService.currentUser()) {
       <app-waitlist-card appAnimateOnScroll class="block max-w-2xl mx-auto mt-8 md:mt-10" style="--index:4" />
@@ -157,7 +157,7 @@
     </div>
     <div class="w-full md:w-56 shrink-0 flex flex-col justify-center text-center md:text-left md:pl-2">
       <p class="text-xs text-ink-muted">*from</p>
-      <p class="text-2xl font-bold text-ink leading-tight">Γé╣99 <span class="text-xs font-normal text-ink-muted">/ month</span></p>
+      <p class="text-2xl font-bold text-ink leading-tight">₹99 <span class="text-xs font-normal text-ink-muted">/ month</span></p>
       <p class="mt-3 text-xs text-ink-muted flex items-center justify-center md:justify-start gap-1">
         <svg [lucideIcon]="'lock'" [size]="12" class="shrink-0"></svg>
         <span>Secure payment. Cancel anytime.</span>
@@ -230,7 +230,7 @@
           <a href="/faq" class="text-ink-soft hover:text-brand text-base">FAQ</a>
         </div>
       </div>
-      <p class="text-ink-muted text-xs mt-auto">┬⌐ 2026 Calmi. All Rights Reserved. Built With Care.</p>
+      <p class="text-ink-muted text-xs mt-auto">© 2026 Calmi. All Rights Reserved. Built With Care.</p>
     </app-card>
 
     <!-- Right - CTA card -->
@@ -242,7 +242,8 @@
       </div>
       <a routerLink="/therapy" class="relative z-10 bg-surface text-ink border border-hairline font-semibold px-8 py-4 rounded-full hover:shadow-card transition-shadow w-full flex items-center justify-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
         <span>Start Your Journey</span>
-        <span aria-hidden="true" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand text-on-brand text-xs">ΓåÆ</span>
+        <svg [lucideIcon]="'arrow-right'" [size]="18" aria-hidden="true"
+             class="rounded-full border border-hairline p-0.5"></svg>
       </a>
     </div>
   </div>

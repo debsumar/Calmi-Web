@@ -198,7 +198,7 @@
                   <span class="h-3 w-3 shrink-0 rounded-sm" [ngClass]="segment.swatch" aria-hidden="true"></span>
                   <span class="min-w-0 flex-1 break-words text-base font-bold text-ink">{{ segment.title }}</span>
                   <span class="shrink-0 text-xs font-semibold text-ink-soft">
-                    {{ segment.minutes }} min Â· {{ segment.share }}%
+                    {{ segment.minutes }} min · {{ segment.share }}%
                   </span>
                 </li>
               }
@@ -215,7 +215,7 @@
         class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
         <h2 id="sessions-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Sessions</h2>
         <p appAnimateOnScroll [style.--index]="1" class="mt-1 text-base text-ink-soft">
-          Next available with {{ therapistName }} Â· {{ therapistSession }}
+          Next available with {{ therapistName }} · {{ therapistSession }}
         </p>
 
         @if (nextSessionDays.length > 0) {
