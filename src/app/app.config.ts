@@ -19,6 +19,9 @@ import {
   LucideCalendarDays, LucideBadgePercent, LucideMinus,
   LucideLoaderCircle, LucideMailCheck, LucideCircleAlert, LucideSend, LucideArrowDown,
   LucideFlaskConical, LucideHeartCrack,
+  LucideNotebookPen, LucideMessageCircleHeart, LucideMoonStar,
+  LucidePlus, LucideArrowUpDown, LucideTrash2, LucideBold, LucideItalic, LucideUnderline,
+  LucideMaximize2, LucideMinimize2, LucideChevronUp,
 } from '@lucide/angular';
 import { primeLicenseKey } from '../environments/license';
 import { appRoutes } from './app.routes';
@@ -54,6 +57,9 @@ export const appConfig: ApplicationConfig = {
       LucideCalendarDays, LucideBadgePercent, LucideMinus,
       LucideLoaderCircle, LucideMailCheck, LucideCircleAlert, LucideSend, LucideArrowDown,
       LucideFlaskConical, LucideHeartCrack,
+      LucideNotebookPen, LucideMessageCircleHeart, LucideMoonStar,
+      LucidePlus, LucideArrowUpDown, LucideTrash2, LucideBold, LucideItalic, LucideUnderline,
+      LucideMaximize2, LucideMinimize2, LucideChevronUp,
     ),
   ],
 };

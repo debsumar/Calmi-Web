@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { Component } from '@angular/core';
-import { provideLucideIcons, LucideMoon, LucideSun, LucideUser, LucideCircleUser, LucideMenu, LucideX, LucideLogOut } from '@lucide/angular';
+import { provideLucideIcons, LucideMoon, LucideSun, LucideUser, LucideCircleUser, LucideMenu, LucideX, LucideLogOut, LucideNotebookPen } from '@lucide/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { provideAuthServiceStub } from '../../core/services/testing/auth.service.stub';
@@ -67,8 +67,9 @@ describe('AppTopbar', () => {
         provideRouter([
           { path: 'home', component: BlankComponent },
           { path: 'pricing', component: BlankComponent },
+          { path: 'journal', component: BlankComponent },
         ]),
-        provideLucideIcons(LucideMoon, LucideSun, LucideUser, LucideCircleUser, LucideMenu, LucideX, LucideLogOut),
+        provideLucideIcons(LucideMoon, LucideSun, LucideUser, LucideCircleUser, LucideMenu, LucideX, LucideLogOut, LucideNotebookPen),
       ],
     }).compileComponents();
 
@@ -189,8 +190,26 @@ describe('AppTopbar', () => {
     expect((fixture.nativeElement.querySelector('button img') as HTMLImageElement).getAttribute('alt')).toBe('');
   });
 
-  it('opens the desktop logout confirmation without signing out', () => {
-    const auth = openDesktopLogout();
+  it('offers My Journals in the profile menu and navigates to the journal page', async () => {
+    authenticate();
+    (fixture.nativeElement.querySelector('button.overflow-hidden') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const journalItem = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.trim() === 'My Journals') as HTMLButtonElement;
+    expect(journalItem).toBeDefined();
+    expect(journalItem.getAttribute('aria-label')).toBe('My Journals');
+
+    journalItem.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(router.url).toBe('/journal');
+    // Menu closes on navigation, like View Profile does.
+    expect(fixture.nativeElement.textContent).not.toContain('My Journals');
+  });
+
+  it('opens the desktop logout confirmation without signing out', () => {    const auth = openDesktopLogout();
 
     expect(dialog()).not.toBeNull();
     expect(auth.logout).not.toHaveBeenCalled();

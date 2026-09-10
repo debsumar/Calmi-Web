@@ -15,6 +15,7 @@ import {
   LucideLock,
   LucideMinus,
   LucideMoon,
+  LucideNotebookPen,
   LucideShieldCheck,
   LucideSparkles,
   LucideTrendingDown,
@@ -47,6 +48,7 @@ interface SessionDay {
     LucideLock,
     LucideMinus,
     LucideMoon,
+    LucideNotebookPen,
     LucideShieldCheck,
     LucideSparkles,
     LucideTrendingDown,
@@ -117,6 +119,30 @@ export class ProfileComponent {
   private readonly host = inject(ElementRef<HTMLElement>);
 
   readonly dashboard = this.dashboardService.dashboard;
+  /** Real journal figures from this device, shown beside the preview tiles. */
+  readonly journal = this.dashboardService.journal;
+
+  /** Human-friendly recency for the journal tile: today, yesterday, or a date. */
+  readonly journalLastEntryLabel = computed(() => {
+    const iso = this.journal().lastEntryAt;
+    if (!iso) return null;
+    const parsed = Date.parse(iso);
+    if (!Number.isFinite(parsed)) return null;
+
+    const entryDay = new Date(parsed);
+    const today = new Date();
+    const days = Math.round(
+      (new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
+        - new Date(entryDay.getFullYear(), entryDay.getMonth(), entryDay.getDate()).getTime())
+      / 86_400_000,
+    );
+
+    if (days <= 0) return 'today';
+    if (days === 1) return 'yesterday';
+    if (days < 7) return `${days} days ago`;
+    return `on ${entryDay.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}`;
+  });
+
   readonly user = this.authService.currentUser;
   readonly closureRequested = signal(false);
   readonly closureConfirmation = signal('');

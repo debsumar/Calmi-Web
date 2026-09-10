@@ -21,6 +21,11 @@ export const appRoutes: Routes = [
         loadComponent: () => import('@/features/download/pages/download/download.component').then((m) => m.DownloadComponent),
       },
       {
+        path: 'journal',
+        title: 'Journal | Calmi',
+        loadComponent: () => import('@/features/journal/pages/journal/journal.component').then((m) => m.JournalComponent),
+      },
+      {
         path: 'rumi-ai',
         loadComponent: () => import('@/features/rumi-ai/pages/rumi-ai/rumi-ai.component').then((m) => m.RumiAiComponent),
       },

@@ -1,8 +1,25 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { JournalService } from '@/features/journal/services/journal.service';
 
 export interface PreviewSource {
   readonly kind: 'mock';
   readonly label: 'Preview data — backend connection pending';
+}
+
+/** Marks a tile whose numbers are measured, not previewed. */
+export interface DeviceSource {
+  readonly kind: 'device';
+  readonly label: 'Measured on this device';
+}
+
+/** Journal totals for the dashboard, derived from real entries on this device. */
+export interface JournalSummary {
+  readonly entries: number;
+  readonly drafts: number;
+  readonly words: number;
+  readonly streakDays: number;
+  readonly lastEntryAt: string | null;
+  readonly source: DeviceSource;
 }
 
 export interface SubscriptionSummary {
@@ -102,6 +119,11 @@ export interface ProfileDashboardSnapshot {
 const PREVIEW_SOURCE: PreviewSource = {
   kind: 'mock',
   label: 'Preview data — backend connection pending',
+};
+
+const DEVICE_SOURCE: DeviceSource = {
+  kind: 'device',
+  label: 'Measured on this device',
 };
 
 @Injectable({ providedIn: 'root' })
@@ -207,4 +229,22 @@ export class ProfileDashboardService {
   });
 
   readonly dashboard = this.snapshot.asReadonly();
+
+  private readonly journalService = inject(JournalService);
+
+  /**
+   * Real journal figures, kept beside the preview snapshot rather than inside it:
+   * these come from the device, so they must not carry the preview label.
+   */
+  readonly journal = computed<JournalSummary>(() => {
+    const stats = this.journalService.stats();
+    return {
+      entries: stats.total,
+      drafts: stats.drafts,
+      words: stats.totalWords,
+      streakDays: stats.streakDays,
+      lastEntryAt: stats.lastEntryAt,
+      source: DEVICE_SOURCE,
+    };
+  });
 }

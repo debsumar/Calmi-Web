@@ -1,9 +1,22 @@
-import { describe, expect, it } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { provideAuthServiceStub } from '@/core/services/testing/auth.service.stub';
+import { JournalService } from '@/features/journal/services/journal.service';
 import { ProfileDashboardService } from './profile-dashboard.service';
 
+function service(): ProfileDashboardService {
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({ providers: [provideAuthServiceStub()] });
+  return TestBed.inject(ProfileDashboardService);
+}
+
 describe('ProfileDashboardService', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it('exposes source-labelled preview groups through a typed signal', () => {
-    const dashboard = new ProfileDashboardService().dashboard();
+    const dashboard = service().dashboard();
     const sourceLabels = [
       dashboard.subscription.source.label,
       dashboard.quotasSource.label,
@@ -21,7 +34,7 @@ describe('ProfileDashboardService', () => {
   });
 
   it('summarises sleep-sound listening without claiming sleep measurement', () => {
-    const audio = new ProfileDashboardService().dashboard().audio;
+    const audio = service().dashboard().audio;
     expect(audio.tracks.length).toBeGreaterThan(0);
     expect(audio.totalMinutes).toBeGreaterThan(0);
     audio.tracks.forEach((track) => {
@@ -32,13 +45,35 @@ describe('ProfileDashboardService', () => {
   });
 
   it('uses neutral account-closure wording, not danger-zone framing', () => {
-    const serialized = JSON.stringify(new ProfileDashboardService().dashboard());
-    expect(serialized).not.toMatch(/danger zone/i);
-    expect(new ProfileDashboardService().dashboard().accountClosure.label).toBe('Close your account');
+    const dashboard = service().dashboard();
+    expect(JSON.stringify(dashboard)).not.toMatch(/danger zone/i);
+    expect(dashboard.accountClosure.label).toBe('Close your account');
   });
 
   it('does not provide a credential value or secret-shaped fixture', () => {
-    const serialized = JSON.stringify(new ProfileDashboardService().dashboard());
-    expect(serialized).not.toMatch(/developer key|secret|token|password_value/i);
+    expect(JSON.stringify(service().dashboard())).not.toMatch(/developer key|secret|token|password_value/i);
+  });
+
+  it('reports an empty journal summary marked as device data, not preview data', () => {
+    const journal = service().journal();
+
+    expect(journal.entries).toBe(0);
+    expect(journal.streakDays).toBe(0);
+    expect(journal.lastEntryAt).toBeNull();
+    expect(journal.source).toEqual({ kind: 'device', label: 'Measured on this device' });
+  });
+
+  it('reflects real journal entries in the summary', () => {
+    const dashboard = service();
+    const journalService = TestBed.inject(JournalService);
+    journalService.upsert({ id: null, title: 'Today', content: 'three little words', status: 'saved' });
+    const draft = journalService.upsert({ id: null, title: 'Draft', content: 'two words', status: 'draft' }).entry;
+
+    const summary = dashboard.journal();
+    expect(summary.entries).toBe(2);
+    expect(summary.drafts).toBe(1);
+    expect(summary.words).toBe(5);
+    expect(summary.streakDays).toBe(1);
+    expect(summary.lastEntryAt).toBe(draft.updatedAt);
   });
 });

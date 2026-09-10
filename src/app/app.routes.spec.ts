@@ -9,4 +9,12 @@ describe('appRoutes', () => {
     expect(downloadRoute?.loadComponent).toBeTypeOf('function');
     expect(downloadRoute?.title).toBe('Download Calmi App | Calmi');
   });
+
+  it('registers Journal as a lazy public shell child with a page title', () => {
+    const shellRoute = appRoutes.find((route) => route.path === '');
+    const journalRoute = shellRoute?.children?.find((route) => route.path === 'journal');
+
+    expect(journalRoute?.loadComponent).toBeTypeOf('function');
+    expect(journalRoute?.title).toBe('Journal | Calmi');
+  });
 });
