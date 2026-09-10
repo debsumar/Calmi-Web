@@ -20,36 +20,55 @@
   </div>
 </section>
 
-<!-- What are you feeling section -->
+<!-- What do you need section -->
 <section class="py-16 px-4">
   <h2 appAnimateOnScroll class="text-3xl md:text-4xl font-bold text-center text-ink mb-12" style="--index:0">
     @if (authService.currentUser()) {
-      How are you feeling today,<br>{{ getUserFirstName() }}?
+      What do you need<br>right now, {{ getUserFirstName() }}?
     } @else {
-      What are you<br>feeling right now?
+      What do you need<br>right now?
     }
   </h2>
 
-  <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-    @for (card of moodCards(); track card.title; let i = $index) {
-      <app-card appAnimateOnScroll class="cursor-pointer hover:-translate-y-2 transition-transform duration-300 group" [style.--index]="i">
-        <div class="flex flex-col h-full items-start">
-          <div class="w-14 h-14 rounded-2xl bg-player-surface text-brand flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-            <svg [lucideIcon]="card.icon" [size]="28"></svg>
-          </div>
-          <h3 class="text-lg font-bold mb-3 text-ink">{{ card.title }}</h3>
-          <p class="text-ink-soft leading-relaxed mb-6 flex-1">
-            {{ card.description }}
-          </p>
-          <div class="mt-auto flex items-center gap-2 text-brand font-semibold group-hover:translate-x-2 transition-transform duration-300">
-            <span>Start Session</span>
-            <svg [lucideIcon]="'arrow-right'" [size]="18"></svg>
-          </div>
+  <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    @for (card of needCards(); track card.title; let i = $index) {
+      @if (card.route) {
+        <a
+          [routerLink]="card.route"
+          appAnimateOnScroll
+          class="group block rounded-2xl transition-transform duration-300 hover:-translate-y-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          [style.--index]="i"
+          [attr.aria-label]="card.title + ' — ' + card.description"
+        >
+          <ng-container [ngTemplateOutlet]="needCardBody" [ngTemplateOutletContext]="{ card: card, interactive: true }" />
+        </a>
+      } @else {
+        <div appAnimateOnScroll class="rounded-2xl" [style.--index]="i">
+          <ng-container [ngTemplateOutlet]="needCardBody" [ngTemplateOutletContext]="{ card: card, interactive: false }" />
         </div>
-      </app-card>
+      }
     }
   </div>
 </section>
+
+<ng-template #needCardBody let-card="card" let-interactive="interactive">
+  <app-card>
+    <div class="flex h-full flex-col items-center text-center">
+      <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-brand-soft text-on-brand transition-transform duration-300 group-hover:scale-110">
+        <svg [lucideIcon]="card.icon" [size]="26" aria-hidden="true"></svg>
+      </div>
+      <h3 class="mb-3 text-lg font-bold text-ink">{{ card.title }}</h3>
+      <p class="mb-6 flex-1 leading-relaxed text-ink-soft">{{ card.description }}</p>
+      @if (interactive) {
+        <span class="mt-auto flex h-9 w-9 items-center justify-center rounded-full border border-brand text-brand transition-transform duration-300 group-hover:translate-x-1">
+          <svg [lucideIcon]="'arrow-right'" [size]="18" aria-hidden="true"></svg>
+        </span>
+      } @else {
+        <span class="mt-auto rounded-full bg-sunken px-3 py-1 text-xs font-semibold text-ink-muted">Coming soon</span>
+      }
+    </div>
+  </app-card>
+</ng-template>
 
 <!-- You don't need an app section -->
 <section class="py-12 md:py-20 px-4 md:px-8 max-w-6xl mx-auto">

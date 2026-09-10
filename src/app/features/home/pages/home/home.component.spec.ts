@@ -11,8 +11,12 @@ import {
   LucideHeadphones,
   LucideHeart,
   LucideLock,
+  LucideMessageCircleHeart,
   LucideMoon,
+  LucideMoonStar,
+  LucideNotebookPen,
   LucidePlay,
+  LucideStethoscope,
   LucideZap,
   provideLucideIcons,
 } from '@lucide/angular';
@@ -37,8 +41,12 @@ describe('HomeComponent', () => {
           LucideHeadphones,
           LucideHeart,
           LucideLock,
+          LucideMessageCircleHeart,
           LucideMoon,
+          LucideMoonStar,
+          LucideNotebookPen,
           LucidePlay,
+          LucideStethoscope,
           LucideZap,
         ),
       ],
@@ -46,6 +54,32 @@ describe('HomeComponent', () => {
 
     fixture = TestBed.createComponent(HomeComponent);
     await fixture.whenStable();
+  });
+
+  it('renders the four "What do you need right now?" options', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const section = Array.from(root.querySelectorAll('section')).find((s) => s.querySelector('h2')?.textContent?.includes('What do you need'));
+
+    expect(section).toBeDefined();
+    expect(Array.from(section!.querySelectorAll('h3')).map((h) => h.textContent?.trim())).toEqual([
+      'Write it out',
+      'Talk it through',
+      'Sleep better',
+      'Get support',
+    ]);
+    expect(section?.textContent).toContain('Journal your thoughts.');
+    expect(section?.textContent).toContain('Talk with Rumi AI.');
+    expect(section?.textContent).toContain('Relax and fall asleep faster.');
+    expect(section?.textContent).toContain('Connect with an expert.');
+  });
+
+  it('links every shipped option to its route, journaling included', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const section = Array.from(root.querySelectorAll('section')).find((s) => s.querySelector('h2')?.textContent?.includes('What do you need'));
+    const hrefs = Array.from(section!.querySelectorAll('a')).map((a) => a.getAttribute('href'));
+
+    expect(hrefs).toEqual(['/journal', '/rumi-ai', '/sleep', '/therapy']);
+    expect(section?.textContent).not.toContain('Coming soon');
   });
 
   it('does not render a page-local Download App banner', () => {

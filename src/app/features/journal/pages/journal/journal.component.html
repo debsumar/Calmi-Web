@@ -1,0 +1,244 @@
+<div class="bg-canvas text-ink">
+  <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:px-8 md:py-10" aria-labelledby="journal-title">
+    <header appAnimateOnScroll style="--index:0" class="mx-auto max-w-xl text-center">
+      <h1 id="journal-title" class="font-sans text-3xl font-bold leading-tight text-ink md:text-5xl">Journal</h1>
+      <p class="mt-2 text-lg leading-relaxed text-ink-soft">A private space for your thoughts.</p>
+    </header>
+
+    <div class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)_minmax(0,17rem)]">
+
+      <!-- Entry list. Editor comes first on small screens; the list collapses behind
+           a disclosure so writing is never pushed below the fold. -->
+      <aside appAnimateOnScroll style="--index:1" aria-labelledby="journal-entries-title"
+             class="order-2 min-w-0 rounded-2xl border border-hairline bg-sunken p-6 lg:order-1">
+        <button type="button" (click)="startNewEntry()"
+                class="mx-auto flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand-deep px-8 py-3 text-base font-semibold text-on-brand-deep transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
+          <svg [lucideIcon]="'plus'" [size]="18" aria-hidden="true"></svg>
+          New Entry
+        </button>
+
+        <div class="mt-8 flex items-center justify-between gap-2">
+          <h2 id="journal-entries-title" class="text-lg font-bold text-ink">
+            Recent Entries
+            @if (rows().length > 0) {
+              <span class="font-normal text-ink-soft">({{ rows().length }})</span>
+            }
+          </h2>
+          <button type="button" (click)="toggleSortOrder()"
+                  class="inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-xs font-semibold text-ink-soft transition-colors hover:bg-sunken-alt hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <svg [lucideIcon]="'arrow-up-down'" [size]="16" aria-hidden="true"></svg>
+            <span>{{ sortOrder() === 'newest' ? 'Newest first' : 'Oldest first' }}</span>
+          </button>
+        </div>
+
+        <!-- Disclosure only exists below lg; the list is always open from lg up. -->
+        <button type="button" (click)="toggleList()"
+                [attr.aria-expanded]="listOpen()"
+                aria-controls="journal-entry-list"
+                class="mt-3 inline-flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border border-hairline bg-surface px-4 text-base font-semibold text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:hidden">
+          <span>{{ listOpen() ? 'Hide entries' : 'Show entries' }}</span>
+          <svg [lucideIcon]="listOpen() ? 'chevron-up' : 'chevron-down'" [size]="18" aria-hidden="true"></svg>
+        </button>
+
+        <div id="journal-entry-list" class="lg:block" [class.hidden]="!listOpen()">
+          @if (rows().length === 0) {
+            <p class="mt-4 rounded-xl border border-hairline bg-surface p-4 text-base text-ink-soft">
+              No entries yet. Start with whatever is on your mind — even one line counts.
+            </p>
+          } @else {
+            <ul class="mt-4 flex flex-col gap-4">
+            @for (row of rows(); track row.entry.id) {
+              <li class="rounded-2xl border bg-surface p-4 transition-colors"
+                  [class.border-brand]="row.entry.id === selectedId()"
+                  [class.border-hairline]="row.entry.id !== selectedId()">
+                <button type="button" (click)="select(row.entry)"
+                        [attr.aria-current]="row.entry.id === selectedId() ? 'true' : null"
+                        class="w-full rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                  <span class="flex flex-wrap items-center gap-2">
+                    <span class="text-base font-bold text-ink">{{ row.entry.title }}</span>
+                    @if (row.entry.status === 'draft') {
+                      <span class="rounded-full bg-sunken px-2 py-0.5 text-xs font-semibold text-ink-soft">Draft</span>
+                    }
+                    @if (row.entry.id === selectedId()) {
+                      <span class="text-xs font-semibold text-brand-dark dark:text-brand-light">Editing</span>
+                    }
+                  </span>
+                  <span class="mt-1 block text-base text-ink-soft">{{ row.preview }}</span>
+                  <span class="mt-3 block text-xs text-ink-soft">{{ row.entry.updatedAt | date:'d MMMM y' }}</span>
+                </button>
+
+                @if (pendingDeleteId() === row.entry.id) {
+                  <p [id]="'journal-delete-hint-' + row.entry.id" class="mt-3 text-xs text-ink-soft">
+                    Delete “{{ row.entry.title }}”? This cannot be undone.
+                  </p>
+                  <div class="mt-2 flex gap-2">
+                    <button #deleteConfirmButton type="button" (click)="confirmDelete(row.entry)"
+                            [attr.aria-describedby]="'journal-delete-hint-' + row.entry.id"
+                            class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-brand-deep px-3 text-xs font-semibold text-on-brand-deep hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                      Yes, delete
+                    </button>
+                    <button type="button" (click)="cancelDelete()"
+                            [attr.aria-describedby]="'journal-delete-hint-' + row.entry.id"
+                            class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-hairline bg-sunken px-3 text-xs font-semibold text-ink hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                      Keep it
+                    </button>
+                  </div>
+                } @else {
+                  <button type="button" (click)="requestDelete(row.entry, $event)"
+                          [attr.aria-label]="'Delete entry ' + row.entry.title"
+                          class="mt-2 inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-ink-soft hover:bg-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                    <svg [lucideIcon]="'trash-2'" [size]="14" aria-hidden="true"></svg>
+                    Delete
+                  </button>
+                }
+              </li>
+            }
+          </ul>
+          }
+        </div>
+      </aside>
+
+      <!-- Editor -->
+      <div appAnimateOnScroll style="--index:2" class="order-1 min-w-0 lg:order-2">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <p class="text-base text-ink-soft">{{ startedAt() | date:'EEEE, d MMMM y' }}</p>
+          <p class="text-base text-ink-soft">{{ startedAt() | date:'h:mm a' }}</p>
+        </div>
+
+        @if (pendingSwitch(); as pending) {
+          <div role="alertdialog" aria-labelledby="journal-discard-title"
+               class="mt-4 rounded-2xl border border-hairline bg-sunken p-4">
+            <p id="journal-discard-title" class="text-base font-bold text-ink">
+              This entry has unsaved changes.
+            </p>
+            <p class="mt-1 text-base text-ink-soft">
+              Save it first, or discard the changes to open
+              {{ pending.kind === 'new' ? 'a new entry' : '“' + pending.entry.title + '”' }}.
+            </p>
+            <div class="mt-3 flex flex-wrap gap-3">
+              <button type="button" (click)="cancelSwitch()"
+                      class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-deep px-6 text-base font-semibold text-on-brand-deep hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
+                Keep editing
+              </button>
+              <button type="button" (click)="discardAndSwitch()"
+                      class="inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-surface px-6 text-base font-semibold text-ink hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
+                Discard changes
+              </button>
+            </div>
+          </div>
+        }
+
+        <label for="journal-entry-title" class="sr-only">Entry title</label>
+        <input id="journal-entry-title" type="text" [value]="title()" (input)="title.set($any($event.target).value)"
+               placeholder="Give this entry a title"
+               autocomplete="off"
+               class="mt-2 w-full rounded-lg bg-transparent text-lg font-bold text-ink placeholder:text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+
+        <p id="journal-entry-prompt" class="mt-6 text-xs text-ink-soft">What's on your mind today?</p>
+        <div class="mt-2 rounded-2xl border border-hairline bg-surface">
+          <div class="relative">
+            <div #editor
+                 role="textbox"
+                 aria-multiline="true"
+                 aria-labelledby="journal-entry-prompt"
+                 contenteditable="true"
+                 (input)="onEditorInput()"
+                 (keyup)="onSelectionChange()"
+                 (mouseup)="onSelectionChange()"
+                 (focus)="onSelectionChange()"
+                 (keydown)="onEditorKeydown($event)"
+                 (paste)="onPaste($event)"
+                 class="journal-editor w-full whitespace-pre-wrap break-words px-6 py-5 text-base leading-relaxed text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset"
+                 [style.min-height]="expanded() ? '70vh' : '16rem'"></div>
+            @if (isEmptyEditor()) {
+              <p aria-hidden="true" class="pointer-events-none absolute left-6 top-5 text-base leading-relaxed text-ink-soft">
+                Write freely. Nobody else sees this.
+              </p>
+            }
+          </div>
+
+          <div class="flex items-center justify-between gap-3 border-t border-hairline px-4 py-2">
+            <div class="flex items-center gap-1" role="group" aria-label="Text formatting">
+              @for (format of formats; track format.id) {
+                <button type="button" (click)="applyFormat(format.id)" [attr.aria-label]="format.label"
+                        (mousedown)="$event.preventDefault()"
+                        [attr.aria-pressed]="isActive(format.id)"
+                        [title]="format.label + ' (' + format.shortcut + ')'"
+                        class="flex h-9 w-9 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        [class.bg-brand-deep]="isActive(format.id)"
+                        [class.text-on-brand-deep]="isActive(format.id)"
+                        [class.text-ink-soft]="!isActive(format.id)"
+                        [class.hover:bg-sunken]="!isActive(format.id)"
+                        [class.hover:text-ink]="!isActive(format.id)">
+                  <svg [lucideIcon]="format.icon" [size]="16" aria-hidden="true"></svg>
+                </button>
+              }
+            </div>
+
+            <div class="flex items-center gap-3">
+              <p class="text-xs text-ink-soft">{{ wordCount() }} {{ wordCount() === 1 ? 'word' : 'words' }}</p>
+              <button type="button" (click)="toggleExpanded()"
+                      [attr.aria-pressed]="expanded()"
+                      aria-label="Expand editor"
+                      class="flex h-9 w-9 items-center justify-center rounded-lg text-ink-soft hover:bg-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <svg [lucideIcon]="expanded() ? 'minimize-2' : 'maximize-2'" [size]="16" aria-hidden="true"></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-hairline bg-sunken px-6 py-4">
+          <p class="flex items-center gap-2 text-base text-ink-soft">
+            <svg [lucideIcon]="'lock'" [size]="16" class="text-brand-dark dark:text-brand-light" aria-hidden="true"></svg>
+            <span>Your journal stays on this device.</span>
+          </p>
+          <div class="flex items-center gap-3">
+            <button type="button" (click)="save('draft')" [disabled]="!hasContent()"
+                    class="inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-surface px-6 text-base font-semibold text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:text-ink-muted">
+              Draft
+            </button>
+            <button type="button" (click)="save('saved')" [disabled]="!hasContent()"
+                    class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-deep px-6 text-base font-semibold text-on-brand-deep transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:border disabled:border-hairline disabled:bg-sunken disabled:text-ink-muted">
+              Save
+            </button>
+          </div>
+        </div>
+
+        <p class="mt-3 text-xs text-ink-soft" role="status" aria-live="polite">
+          @if (storageFailed()) {
+            <span class="inline-flex items-center gap-1 font-semibold text-danger">
+              <svg [lucideIcon]="'circle-alert'" [size]="14" aria-hidden="true"></svg>
+              This device blocked saving. Your entry stays only until you leave the page.
+            </span>
+          } @else {
+            @switch (lastSaved()) {
+              @case ('saved') { <span class="inline-flex items-center gap-1"><svg [lucideIcon]="'circle-check'" [size]="14" aria-hidden="true"></svg> Entry saved.</span> }
+              @case ('draft') { <span class="inline-flex items-center gap-1"><svg [lucideIcon]="'circle-check'" [size]="14" aria-hidden="true"></svg> Draft saved.</span> }
+              @default { <span>{{ isDirty() ? 'Unsaved changes.' : 'Not saved yet.' }}</span> }
+            }
+          }
+        </p>
+      </div>
+
+      <!-- Continue on app: below the editor on small screens, third column from xl -->
+      <aside appAnimateOnScroll style="--index:3" class="order-3 min-w-0 lg:col-span-2 xl:col-span-1" aria-labelledby="journal-app-title">
+        <div class="rounded-2xl border border-hairline bg-surface p-5 shadow-card">
+          <div class="flex items-start gap-3">
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-on-brand" aria-hidden="true">
+              <svg [lucideIcon]="'smartphone'" [size]="18"></svg>
+            </span>
+            <div class="min-w-0">
+              <h2 id="journal-app-title" class="text-lg font-bold text-ink">Continue on App</h2>
+              <p class="mt-1 text-xs text-ink-soft">Your journal is even better on the Calmi app. Pick up where you left off.</p>
+            </div>
+          </div>
+          <a routerLink="/download"
+             class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-deep px-4 text-base font-semibold text-on-brand-deep transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
+            <span>Open in App</span>
+            <svg [lucideIcon]="'arrow-right'" [size]="16" aria-hidden="true"></svg>
+          </a>
+        </div>
+      </aside>
+    </div>
+  </section>
+</div>
