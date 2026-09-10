@@ -1,13 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, DOCUMENT, ElementRef, inject, Injector, SecurityContext, signal, viewChild, afterNextRender } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
+import { AuthService } from '@/core/services/auth.service';
 import { countWords, JournalEntry, JournalEntryStatus, plainTextFrom, previewOf, toEditorHtml } from '../../models/journal-entry.model';
 import { JournalService } from '../../services/journal.service';
 
 type InlineFormat = 'bold' | 'italic' | 'underline';
+
+/** Carries an unsaved entry across the sign-in round trip, for this tab only. */
+const PENDING_ENTRY_KEY = 'calmi.journal.pending-entry.v1';
 
 /** Tag each format produces when the browser has no `execCommand`. */
 const FALLBACK_TAGS: Record<InlineFormat, string> = {
@@ -40,13 +44,25 @@ type PendingSwitch = { kind: 'new' } | { kind: 'entry'; entry: JournalEntry };
 })
 export class JournalComponent {
   private readonly journal = inject(JournalService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   private readonly injector = inject(Injector);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly document = inject(DOCUMENT);
   private readonly editor = viewChild<ElementRef<HTMLElement>>('editor');
   private readonly deleteConfirmButton = viewChild<ElementRef<HTMLButtonElement>>('deleteConfirmButton');
+  private readonly signInPromptButton = viewChild<ElementRef<HTMLElement>>('signInPromptButton');
   /** Element to hand focus back to after the delete prompt closes. */
   private deleteReturnFocus: HTMLElement | null = null;
+  private signInReturnFocus: HTMLElement | null = null;
+
+  readonly isAuthenticated = computed(() => this.authService.currentUser() !== null);
+  /** Open when a save was attempted without an account. */
+  readonly signInPromptOpen = signal(false);
+
+  constructor() {
+    afterNextRender({ write: () => this.restorePendingEntry() });
+  }
 
   readonly sortOrder = this.journal.sortOrder;
   readonly storageFailed = this.journal.storageFailed;
@@ -130,6 +146,14 @@ export class JournalComponent {
 
   save(status: JournalEntryStatus): void {
     if (!this.hasContent()) return;
+
+    // Journals belong to an account. Without one there is nothing to save them
+    // against, so ask the writer to sign in instead of silently dropping the entry.
+    if (!this.authService.currentUser()) {
+      this.openSignInPrompt();
+      return;
+    }
+
     const { entry, persisted } = this.journal.upsert({
       id: this.selectedId(),
       title: this.title(),
@@ -140,6 +164,68 @@ export class JournalComponent {
     this.title.set(entry.title);
     this.lastSaved.set(persisted ? status : null);
     this.baseline.set({ title: entry.title, content: this.content() });
+  }
+
+  private openSignInPrompt(): void {
+    const active = this.document.activeElement;
+    this.signInReturnFocus = active instanceof HTMLElement ? active : null;
+    this.signInPromptOpen.set(true);
+    afterNextRender({
+      write: () => this.signInPromptButton()?.nativeElement.focus(),
+    }, { injector: this.injector });
+  }
+
+  cancelSignIn(): void {
+    this.signInPromptOpen.set(false);
+    const target = this.signInReturnFocus;
+    this.signInReturnFocus = null;
+    if (target?.isConnected) target.focus();
+    else this.editor()?.nativeElement.focus();
+  }
+
+  /** Keeps the in-progress entry for this tab, then hands over to sign-in. */
+  continueToSignIn(): void {
+    this.stashPendingEntry();
+    this.signInPromptOpen.set(false);
+    void this.router.navigate(['/auth/identify'], { queryParams: { returnUrl: '/journal' } });
+  }
+
+  private stashPendingEntry(): void {
+    try {
+      globalThis.sessionStorage?.setItem(PENDING_ENTRY_KEY, JSON.stringify({
+        title: this.title(),
+        content: this.content(),
+      }));
+    } catch {
+      // Without session storage the entry simply is not carried across sign-in.
+    }
+  }
+
+  /** Restores an entry the writer had typed before being sent to sign in. */
+  private restorePendingEntry(): void {
+    let raw: string | null = null;
+    try {
+      raw = globalThis.sessionStorage?.getItem(PENDING_ENTRY_KEY) ?? null;
+      if (raw) globalThis.sessionStorage?.removeItem(PENDING_ENTRY_KEY);
+    } catch {
+      return;
+    }
+    if (!raw) return;
+
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (typeof parsed !== 'object' || parsed === null) return;
+      const pending = parsed as { title?: unknown; content?: unknown };
+      if (typeof pending.title === 'string') this.title.set(pending.title);
+      if (typeof pending.content === 'string') {
+        this.writeEditor(pending.content);
+        const element = this.editor()?.nativeElement;
+        this.content.set(element ? this.sanitize(element.innerHTML) : pending.content);
+      }
+      this.baseline.set({ title: '', content: '' });
+    } catch {
+      // Malformed stash is discarded; it was already removed above.
+    }
   }
 
   requestDelete(entry: JournalEntry, event?: Event): void {

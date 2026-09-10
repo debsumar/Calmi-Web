@@ -190,7 +190,11 @@
         <div class="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-hairline bg-sunken px-6 py-4">
           <p class="flex items-center gap-2 text-base text-ink-soft">
             <svg [lucideIcon]="'lock'" [size]="16" class="text-brand-dark dark:text-brand-light" aria-hidden="true"></svg>
-            <span>Your journal stays on this device.</span>
+            @if (isAuthenticated()) {
+              <span>Your journal stays on this device.</span>
+            } @else {
+              <span>Sign in to save entries. Nothing is stored until you do.</span>
+            }
           </p>
           <div class="flex items-center gap-3">
             <button type="button" (click)="save('draft')" [disabled]="!hasContent()"
@@ -242,3 +246,29 @@
     </div>
   </section>
 </div>
+
+@if (signInPromptOpen()) {
+  <div class="fixed inset-0 z-50 grid place-items-center bg-scrim p-4" (click)="cancelSignIn()">
+    <div role="dialog" aria-modal="true" aria-labelledby="journal-signin-title" aria-describedby="journal-signin-body"
+         tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="cancelSignIn()"
+         class="w-full max-w-sm overflow-hidden rounded-2xl border border-hairline bg-elevated p-8 shadow-card">
+      <h2 id="journal-signin-title" class="dialog-stagger-item text-center font-sans text-lg font-bold text-ink" style="--index: 0">
+        Sign in to save this entry
+      </h2>
+      <p id="journal-signin-body" class="dialog-stagger-item mt-2 text-center text-base text-ink-soft" style="--index: 1">
+        Your journal is tied to your account. Nothing has been saved yet — what you wrote is kept while you sign in.
+      </p>
+      <div class="dialog-stagger-item mt-6 flex gap-3" style="--index: 2">
+        <button type="button" (click)="cancelSignIn()"
+                class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-hairline bg-sunken px-4 py-3 text-base font-semibold text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+          Keep writing
+        </button>
+        <button #signInPromptButton type="button" (click)="continueToSignIn()"
+                class="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand-deep transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+          <svg [lucideIcon]="'user'" [size]="16" aria-hidden="true"></svg>
+          Sign in
+        </button>
+      </div>
+    </div>
+  </div>
+}

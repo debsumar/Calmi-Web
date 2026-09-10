@@ -1,5 +1,6 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import {
   LucideArrowRight,
   LucideArrowUpDown,
@@ -16,17 +17,27 @@ import {
   LucideSmartphone,
   LucideTrash2,
   LucideUnderline,
+  LucideUser,
   provideLucideIcons,
 } from '@lucide/angular';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AuthService } from '@/core/services/auth.service';
 import { provideAuthServiceStub } from '@/core/services/testing/auth.service.stub';
 import { JournalService } from '../../services/journal.service';
 import { JournalComponent } from './journal.component';
+
+@Component({ template: '' })
+class BlankComponent {}
 
 describe('JournalComponent', () => {
   let fixture: ComponentFixture<JournalComponent>;
   let component: JournalComponent;
   let journal: JournalService;
+
+  /** Journals require an account, so most save paths need a signed-in user. */
+  function signIn(): void {
+    TestBed.inject(AuthService).currentUser.set({ id: 'user-1', email: 'person@example.com' } as never);
+  }
 
   /** Selects a character range inside the first text node of `host`. */
   function selectText(host: HTMLElement, start: number, end: number): void {
@@ -39,24 +50,30 @@ describe('JournalComponent', () => {
     selection?.addRange(range);
   }
 
-  beforeEach(async () => {
-    localStorage.clear();
-    TestBed.resetTestingModule();
+  /** Configures the TestBed and mounts the page. Used by the sign-in restore test too. */
+  async function createFixture(): Promise<ComponentFixture<JournalComponent>> {
     await TestBed.configureTestingModule({
       imports: [JournalComponent],
       providers: [
-        provideRouter([]),
+        provideRouter([{ path: 'auth/identify', component: BlankComponent }]),
         provideAuthServiceStub(),
         provideLucideIcons(
           LucideArrowRight, LucideArrowUpDown, LucideBold, LucideChevronDown, LucideChevronUp,
           LucideCircleAlert, LucideCircleCheck,
           LucideItalic, LucideLock, LucideMaximize2, LucideMinimize2, LucidePlus, LucideSmartphone,
-          LucideTrash2, LucideUnderline,
+          LucideTrash2, LucideUnderline, LucideUser,
         ),
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(JournalComponent);
+    return TestBed.createComponent(JournalComponent);
+  }
+
+  beforeEach(async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    TestBed.resetTestingModule();
+    fixture = await createFixture();
     component = fixture.componentInstance;
     journal = TestBed.inject(JournalService);
     await fixture.whenStable();
@@ -77,6 +94,7 @@ describe('JournalComponent', () => {
   });
 
   it('saves an entry and lists it', async () => {
+    signIn();
     component.title.set('A quiet moment');
     component.content.set('Today felt heavier than usual.');
     component.save('saved');
@@ -92,6 +110,7 @@ describe('JournalComponent', () => {
   });
 
   it('reports a blocked write instead of claiming a save', async () => {
+    signIn();
     const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new DOMException('QuotaExceededError');
     });
@@ -114,6 +133,7 @@ describe('JournalComponent', () => {
   });
 
   it('re-saving the selected entry updates it instead of adding one', () => {
+    signIn();
     component.content.set('first pass');
     component.save('draft');
     component.content.set('second pass');
@@ -294,6 +314,94 @@ describe('JournalComponent', () => {
 
     expect(component.sortOrder()).toBe('oldest');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Oldest first');
+  });
+
+  it('blocks saving while signed out and prompts for sign-in instead', async () => {
+    component.title.set('A quiet moment');
+    component.content.set('Today felt heavier than usual.');
+
+    component.save('saved');
+    await fixture.whenStable();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const dialog = root.querySelector('[role="dialog"]');
+
+    expect(journal.count()).toBe(0);
+    expect(component.lastSaved()).toBeNull();
+    expect(component.signInPromptOpen()).toBe(true);
+    expect(dialog?.getAttribute('aria-modal')).toBe('true');
+    expect(dialog?.textContent).toContain('Sign in to save this entry');
+    // The writing is not thrown away.
+    expect(component.content()).toBe('Today felt heavier than usual.');
+  });
+
+  it('blocks Draft as well as Save while signed out', () => {
+    component.content.set('draft body');
+
+    component.save('draft');
+
+    expect(journal.count()).toBe(0);
+    expect(component.signInPromptOpen()).toBe(true);
+  });
+
+  it('focuses the sign-in action and closes on Keep writing', async () => {
+    component.content.set('unsaved thought');
+    component.save('saved');
+    await fixture.whenStable();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const signIn = Array.from(root.querySelectorAll('button')).find((b) => b.textContent?.includes('Sign in')) as HTMLButtonElement;
+    expect(document.activeElement).toBe(signIn);
+
+    const keepWriting = Array.from(root.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Keep writing') as HTMLButtonElement;
+    keepWriting.click();
+    await fixture.whenStable();
+
+    expect(component.signInPromptOpen()).toBe(false);
+    expect(journal.count()).toBe(0);
+  });
+
+  it('stashes the entry and routes to sign-in with a return url', async () => {
+    const router = TestBed.inject(Router);
+    component.title.set('Held thought');
+    component.content.set('kept across sign-in');
+    component.save('saved');
+    await fixture.whenStable();
+
+    component.continueToSignIn();
+    await fixture.whenStable();
+
+    expect(router.url).toBe('/auth/identify?returnUrl=%2Fjournal');
+    expect(JSON.parse(sessionStorage.getItem('calmi.journal.pending-entry.v1') ?? '{}')).toEqual({
+      title: 'Held thought',
+      content: 'kept across sign-in',
+    });
+  });
+
+  it('restores a stashed entry after returning from sign-in', async () => {
+    sessionStorage.setItem('calmi.journal.pending-entry.v1', JSON.stringify({ title: 'Back again', content: 'restored body' }));
+
+    TestBed.resetTestingModule();
+    const restored = await createFixture();
+    await restored.whenStable();
+
+    expect(restored.componentInstance.title()).toBe('Back again');
+    expect(restored.componentInstance.plainText()).toBe('restored body');
+    // The stash is single-use.
+    expect(sessionStorage.getItem('calmi.journal.pending-entry.v1')).toBeNull();
+  });
+
+  it('saves normally once signed in', async () => {
+    TestBed.inject(AuthService).currentUser.set({ id: 'user-1', email: 'person@example.com' } as never);
+    component.title.set('A quiet moment');
+    component.content.set('Today felt heavier than usual.');
+
+    component.save('saved');
+    await fixture.whenStable();
+
+    expect(component.signInPromptOpen()).toBe(false);
+    expect(journal.count()).toBe(1);
+    expect(component.lastSaved()).toBe('saved');
   });
 
   it('links Continue on App to the download page at every width', () => {
