@@ -122,8 +122,8 @@ const MESSAGE_MAX = 200;
             @if (!phoneInvalid()) { <p id="booking-phone-help" class="sr-only">Use an international phone number, for example plus country code followed by digits.</p> }
           </div>
           <div>
-            <label for="booking-message" class="sr-only">What would you like support with?</label>
-            <textarea id="booking-message" name="message" autocomplete="off" placeholder="What would you like support with?" rows="4" maxlength="200" [value]="message()" (input)="setMessage($event)"
+            <label for="booking-message" class="sr-only">Anything your therapist should know?</label>
+            <textarea id="booking-message" name="message" autocomplete="off" placeholder="Anything your therapist should know?" rows="4" maxlength="200" [value]="message()" (input)="setMessage($event)"
                       [attr.aria-invalid]="messageInvalid() ? 'true' : null" [attr.aria-describedby]="messageInvalid() ? 'booking-message-error' : 'booking-message-help'"
                       class="w-full resize-y rounded-lg border bg-surface px-4 py-3 text-base text-ink outline-none placeholder:text-ink-soft focus-visible:ring-2 focus-visible:ring-brand"
                       [class.border-danger]="messageInvalid()" [class.border-hairline]="!messageInvalid()"></textarea>
