@@ -10,6 +10,7 @@ import {
   LucideLock,
   LucideMinus,
   LucideMoon,
+  LucideNotebookPen,
   LucideShieldCheck,
   LucideSparkles,
   LucideTrendingDown,
@@ -20,6 +21,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { provideRouter } from '@angular/router';
 import { AuthService } from '@/core/services/auth.service';
 import { THERAPISTS } from '@/features/therapy/data/therapist.data';
+import { JournalService } from '@/features/journal/services/journal.service';
 import { ProfileDashboardService, type ProfileDashboardSnapshot } from '../../services/profile-dashboard.service';
 import { ProfileComponent } from './profile.component';
 
@@ -35,6 +37,15 @@ const authStub = {
 };
 
 
+const emptyJournal = {
+  entries: 0,
+  drafts: 0,
+  words: 0,
+  streakDays: 0,
+  lastEntryAt: null,
+  source: { kind: 'device' as const, label: 'Measured on this device' as const },
+};
+
 const icons = () =>
   provideLucideIcons(
     LucideArrowRight,
@@ -44,6 +55,7 @@ const icons = () =>
     LucideLock,
     LucideMinus,
     LucideMoon,
+    LucideNotebookPen,
     LucideShieldCheck,
     LucideSparkles,
     LucideTrendingDown,
@@ -55,6 +67,8 @@ describe('ProfileComponent', () => {
   let fixture: ComponentFixture<ProfileComponent>;
 
   beforeEach(async () => {
+    localStorage.clear();
+    TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [ProfileComponent],
       providers: [ProfileDashboardService, { provide: AuthService, useValue: authStub }, icons(), provideRouter([])],
@@ -67,7 +81,7 @@ describe('ProfileComponent', () => {
   it('renders one ordered page heading and no preview notices', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelectorAll('h1')).toHaveLength(1);
-    // Bento tiles: Rumi dial, sleep sounds, next sessions, KPI strip, personal, security, closure.
+    // Bento tiles: Rumi dial, sleep sounds, next sessions, KPI strip, journal, personal, credentials (with closure).
     expect(root.querySelectorAll('h2')).toHaveLength(7);
     expect(root.textContent).toContain('Sam Calmi');
     expect(root.textContent).toContain('My space');
@@ -341,7 +355,7 @@ describe('ProfileComponent', () => {
   });
 
   it('renders empty preview groups without dereferencing records', async () => {
-    const snapshot = new ProfileDashboardService().dashboard();
+    const snapshot = TestBed.inject(ProfileDashboardService).dashboard();
     const emptySnapshot: ProfileDashboardSnapshot = {
       ...snapshot,
       quotas: [],
@@ -355,7 +369,7 @@ describe('ProfileComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProfileComponent],
       providers: [
-        { provide: ProfileDashboardService, useValue: { dashboard: signal(emptySnapshot).asReadonly() } },
+        { provide: ProfileDashboardService, useValue: { dashboard: signal(emptySnapshot).asReadonly(), journal: signal(emptyJournal) } },
         { provide: AuthService, useValue: authStub },
         icons(),
         provideRouter([]),
@@ -366,7 +380,7 @@ describe('ProfileComponent', () => {
     emptyFixture.detectChanges();
     const root = emptyFixture.nativeElement as HTMLElement;
 
-    // Always-present tiles: sleep sounds, KPI strip shell, sessions, personal, security, closure.
+    // Always-present tiles: sleep sounds, KPI strip shell, sessions, journal, personal, credentials.
     expect(root.querySelectorAll('h2')).toHaveLength(6);
     expect(root.querySelectorAll('[role="meter"]')).toHaveLength(0);
     expect(root.querySelectorAll('svg[role="img"]')).toHaveLength(0);
@@ -402,9 +416,13 @@ describe('ProfileComponent', () => {
     expect(populatedTiles).toHaveLength(7);
     expect(populatedTiles.every((tile) => tile.classList.contains('md:col-span-2'))).toBe(true);
     expect(populatedTiles.filter((tile) => tile.classList.contains('lg:col-span-3'))).toHaveLength(6);
-    expect(populatedTiles.filter((tile) => tile.classList.contains('lg:col-span-6'))).toHaveLength(1);
+    // Credentials and security spans the full row and carries account closure.
+    const fullRow = populatedTiles.filter((tile) => tile.classList.contains('lg:col-span-6'));
+    expect(fullRow).toHaveLength(1);
+    expect(fullRow[0].getAttribute('aria-labelledby')).toBe('security-title');
+    expect(fullRow[0].textContent).toContain('Close your account');
 
-    const snapshot = new ProfileDashboardService().dashboard();
+    const snapshot = TestBed.inject(ProfileDashboardService).dashboard();
     const emptySnapshot: ProfileDashboardSnapshot = {
       ...snapshot,
       quotas: [],
@@ -418,7 +436,7 @@ describe('ProfileComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProfileComponent],
       providers: [
-        { provide: ProfileDashboardService, useValue: { dashboard: signal(emptySnapshot).asReadonly() } },
+        { provide: ProfileDashboardService, useValue: { dashboard: signal(emptySnapshot).asReadonly(), journal: signal(emptyJournal) } },
         { provide: AuthService, useValue: authStub },
         icons(),
         provideRouter([]),
@@ -431,7 +449,7 @@ describe('ProfileComponent', () => {
     const emptyTiles = Array.from(emptyRoot.querySelectorAll<HTMLElement>('section[aria-labelledby]'));
     expect(emptyTiles).toHaveLength(6);
     expect(emptyTiles.every((tile) => tile.classList.contains('md:col-span-2'))).toBe(true);
-    expect(emptyTiles.filter((tile) => tile.classList.contains('lg:col-span-3'))).toHaveLength(4);
+    expect(emptyTiles.filter((tile) => tile.classList.contains('lg:col-span-3'))).toHaveLength(5);
     const emptySecurity = emptyRoot.querySelector<HTMLElement>('[aria-labelledby="security-title"]');
     expect(emptySecurity?.classList.contains('lg:col-span-6')).toBe(true);
     expect(emptySecurity?.classList.contains('lg:col-span-3')).toBe(false);
@@ -450,7 +468,7 @@ describe('ProfileComponent', () => {
       true,
       true,
     ]);
-    expect(tiles.map((tile) => tile.style.getPropertyValue('--index'))).toEqual(['0', '1', '2', '3', '4', '5', '5']);
+    expect(tiles.map((tile) => tile.style.getPropertyValue('--index'))).toEqual(['0', '1', '2', '3', '4', '4', '5']);
     expect(tiles.every((tile) => tile.classList.contains('stagger-enter'))).toBe(true);
   });
 
@@ -503,6 +521,37 @@ describe('ProfileComponent', () => {
     const security = root.querySelector<HTMLElement>('[aria-labelledby="security-title"]');
     // Google-only auth leaves the sign-in-method row as the sole security entry.
     expect(security!.querySelectorAll('li[appanimateonscroll]').length).toBeGreaterThan(0);
+  });
+
+  it('shows an empty journal tile that invites a first entry', () => {
+    const tile = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[aria-labelledby="journal-summary-title"]');
+
+    expect(tile).not.toBeNull();
+    expect(tile?.querySelector('h2')?.textContent?.trim()).toBe('Journal');
+    expect(tile?.textContent).toContain('No entries yet.');
+    const cta = tile?.querySelector<HTMLAnchorElement>('a[href="/journal"]');
+    expect(cta?.textContent?.trim()).toBe('Start writing');
+    // Device data must not be labelled as preview data.
+    expect(tile?.textContent).toContain('Measured on this device');
+  });
+
+  it('reports real journal entries, streak and words once written', async () => {
+    const journal = TestBed.inject(JournalService);
+    journal.upsert({ id: null, title: 'Today', content: 'three little words', status: 'saved' });
+    journal.upsert({ id: null, title: 'Later', content: 'two words', status: 'draft' });
+    await fixture.whenStable();
+
+    const tile = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[aria-labelledby="journal-summary-title"]');
+    const values = Array.from(tile!.querySelectorAll('dd')).map((dd) => dd.textContent?.replace(/\s+/g, ' ').trim());
+
+    expect(values).toHaveLength(3);
+    expect(values[0]).toContain('2');
+    expect(values[0]).toContain('in draft');
+    expect(values[1]).toContain('1');
+    expect(values[1]).toContain('day');
+    expect(values[2]).toBe('5');
+    expect(tile?.textContent).toContain('Last entry today.');
+    expect(tile?.querySelector<HTMLAnchorElement>('a[href="/journal"]')?.textContent?.trim()).toBe('Open Journal');
   });
 
   it('uses semantic token utilities and avoids forbidden view literals', () => {
