@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { LucideDynamicIcon } from '@lucide/angular';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { ChatStoreService } from '@/features/chat/services/chat-store.service';
-import { ChatConversationComponent } from '@/features/chat/components/chat-conversation/chat-conversation.component';
+import { RumiChatPreviewComponent } from '@/features/rumi-ai/components/rumi-chat-preview/rumi-chat-preview.component';
 import {
   RUMI_HELP_CARDS,
   RUMI_HERO_BULLETS,
@@ -13,7 +13,7 @@ import {
 
 @Component({
   selector: 'app-rumi-ai',
-  imports: [LucideDynamicIcon, AnimateOnScrollDirective, ChatConversationComponent],
+  imports: [LucideDynamicIcon, AnimateOnScrollDirective, RumiChatPreviewComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './rumi-ai.component.html',
   styles: `
@@ -36,6 +36,8 @@ export class RumiAiComponent {
   readonly chatStore = inject(ChatStoreService);
 
   constructor() {
+    // Seeds Rumi's greeting, so the floating panel opens on a welcome rather than
+    // an empty transcript.
     this.chatStore.ensureWelcomeMessage();
   }
 
@@ -44,12 +46,12 @@ export class RumiAiComponent {
   readonly supportTopics = signal(RUMI_SUPPORT_TOPICS);
   readonly trustPoints = signal(RUMI_TRUST_POINTS);
 
-  /** Hero CTA uses shared chat state; this page keeps its embedded Rumi surface visible. */
+  /** Hero CTA opens the floating chat: the only interactive Rumi surface. */
   startConversation(): void {
     this.chatStore.open();
   }
 
-  /** Topic cards seed the shared embedded conversation draft and state. */
+  /** Topic cards seed the floating chat's draft and open it. */
   startTopic(topic: RumiSupportTopic): void {
     this.chatStore.setDraft(topic.prompt);
     this.chatStore.open();

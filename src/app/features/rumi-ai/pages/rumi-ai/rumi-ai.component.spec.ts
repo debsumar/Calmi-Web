@@ -99,30 +99,35 @@ describe('RumiAiComponent', () => {
     expect(root.textContent).toContain('Reflect and understand your thoughts, patterns and emotions.');
   });
 
-  it('keeps embedded conversation mounted while shared chat state is open', async () => {
+  it('keeps the design preview untouched when the floating chat opens', async () => {
     const chatStore = TestBed.inject(ChatStoreService);
-    const conversation = fixture.nativeElement.querySelector('app-chat-conversation[data-variant="embedded"]');
+    const preview = fixture.nativeElement.querySelector('app-rumi-chat-preview');
 
-    expect(conversation).not.toBeNull();
+    expect(preview).not.toBeNull();
     chatStore.open();
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(chatStore.isOpen()).toBe(true);
-    expect(fixture.nativeElement.querySelector('app-chat-conversation[data-variant="embedded"]')).toBe(conversation);
-    expect(fixture.nativeElement.querySelector('[role="log"][aria-label="Conversation with Rumi AI on the Rumi AI page"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-rumi-chat-preview')).toBe(preview);
+    // The page surface is no longer a conversation: no live transcript, no log region.
+    expect(fixture.nativeElement.querySelector('app-chat-conversation')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[role="log"]')).toBeNull();
   });
 
-  it('renders one embedded transcript on the Rumi page itself', async () => {
+  it('shows a scripted exchange that ignores the shared chat store', async () => {
     const chatStore = TestBed.inject(ChatStoreService);
-    chatStore.open();
+    chatStore.setDraft('typed elsewhere');
     await fixture.whenStable();
     fixture.detectChanges();
 
     const root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelectorAll('app-chat-conversation')).toHaveLength(1);
-    expect(root.querySelectorAll('[role="log"][aria-label="Conversation with Rumi AI on the Rumi AI page"]')).toHaveLength(1);
-    expect(root.querySelectorAll('app-chat-message')).toHaveLength(chatStore.messages().length);
+    expect(root.querySelectorAll('app-rumi-chat-preview')).toHaveLength(1);
+    expect(root.querySelectorAll('app-chat-message')).toHaveLength(0);
+    expect(root.textContent).toContain('Hi there, I’m Rumi. How are you feeling today?');
+    expect(root.textContent).toContain('Honestly, a bit anxious.');
+    expect(root.textContent).toContain('what feels heaviest right now?');
+    expect(root.textContent).not.toContain('typed elsewhere');
   });
 
   it('uses shared chat state when the hero CTA is clicked', () => {
@@ -168,35 +173,42 @@ describe('RumiAiComponent', () => {
     }
   });
 
-  it('renders the safe-space live conversation and trust points', () => {
+  it('renders the safe-space preview card and trust points', () => {
     const root = fixture.nativeElement as HTMLElement;
 
     expect(root.textContent).toContain('A safe space to be you.');
     expect(root.textContent).toContain('Hi there, I’m Rumi.');
-    // The static preview was replaced by the live shared-store conversation.
-    const conversation = root.querySelector('app-chat-conversation') as HTMLElement | null;
-    expect(conversation).not.toBeNull();
-    expect(root.querySelector('app-chat-conversation[data-variant="embedded"]')).toBe(conversation);
-    expect(getComputedStyle(conversation!).getPropertyValue('min-block-size')).toBe('40rem');
+    const preview = root.querySelector('app-rumi-chat-preview') as HTMLElement | null;
+    expect(preview).not.toBeNull();
+    expect(getComputedStyle(preview!).getPropertyValue('min-block-size')).toBe('40rem');
     expect(root.querySelector('figure.rumi-conversation-figure')).not.toBeNull();
-    const firstMessage = root.querySelector('app-chat-message article') as HTMLElement | null;
-    expect(firstMessage).not.toBeNull();
-    expect(firstMessage?.classList).toContain('stagger-enter');
-    expect(firstMessage?.style.getPropertyValue('--index')).toBe('0');
-    expect(root.querySelector('textarea')).not.toBeNull();
     expect(root.textContent).toContain('Private & Secure');
     expect(root.textContent).toContain('Backed by Science');
     expect(root.textContent).toContain('Available Anytime');
     expect(root.textContent).toContain('Made for You');
   });
 
-  it('keeps embedded composer opaque and free of floating glass classes', () => {
-    const form = fixture.nativeElement.querySelector('app-chat-conversation form') as HTMLFormElement;
+  it('makes the preview inert: nothing to click, type in, or tab into', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const preview = root.querySelector('app-rumi-chat-preview') as HTMLElement;
+    const inertBlock = preview.querySelector('.rumi-chat-preview') as HTMLElement;
 
-    expect(form).not.toBeNull();
-    expect(form.classList).toContain('bg-surface');
-    expect(form.classList).not.toContain('bg-glass');
-    expect(form.classList).not.toContain('backdrop-blur-xl');
+    expect(inertBlock.hasAttribute('inert')).toBe(true);
+    expect(inertBlock.getAttribute('aria-hidden')).toBe('true');
+    expect(preview.querySelectorAll('button, a, textarea, input, [tabindex], [contenteditable]')).toHaveLength(0);
+    // Chips and composer keep full contrast: this reads as a finished chat, not a disabled one.
+    expect(inertBlock.className).not.toContain('opacity-');
+    // The text alternative stays readable to assistive tech.
+    expect(preview.querySelector('.sr-only')?.textContent).toContain('Preview of a conversation with Rumi AI');
+  });
+
+  it('shows the placeholder but hides suggestion chips after the scripted user message', () => {
+    const preview = fixture.nativeElement.querySelector('app-rumi-chat-preview') as HTMLElement;
+
+    expect(preview.textContent).toContain("Share what's on your mind...");
+    expect(preview.textContent).not.toContain('I feel anxious');
+    expect(preview.textContent).not.toContain('Help me sleep');
+    expect(preview.textContent).not.toContain('Guide a breathing exercise');
   });
 
   it('renders geometry for every Rumi icon', () => {
@@ -273,7 +285,7 @@ describe('RumiAiComponent in the production layout', () => {
     await TestBed.compileComponents();
   });
 
-  it('keeps the embedded transcript and the floating bubble available after the Rumi CTA opens chat', async () => {
+  it('keeps the static preview and opens the working floating chat from the Rumi CTA', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/rumi-ai');
     await harness.fixture.whenStable();
@@ -281,10 +293,10 @@ describe('RumiAiComponent in the production layout', () => {
     const root = harness.fixture.nativeElement as HTMLElement;
     const chatStore = TestBed.inject(ChatStoreService);
     const initialMessageMetadata = chatStore.messages().map(({ id, timestamp }) => ({ id, timestamp }));
-    const conversation = root.querySelector('app-chat-conversation[data-variant="embedded"]');
+    const preview = root.querySelector('app-rumi-chat-preview');
     const cta = root.querySelector('button[data-testid="hero-cta"]') as HTMLButtonElement;
 
-    expect(conversation).not.toBeNull();
+    expect(preview).not.toBeNull();
     expect(root.querySelector('#rumi-chat-bubble')).not.toBeNull();
 
     cta.click();
@@ -292,8 +304,11 @@ describe('RumiAiComponent in the production layout', () => {
 
     expect(chatStore.isOpen()).toBe(true);
     expect(chatStore.messages().map(({ id, timestamp }) => ({ id, timestamp }))).toEqual(initialMessageMetadata);
-    expect(root.querySelector('app-chat-conversation[data-variant="embedded"]')).toBe(conversation);
+    expect(root.querySelector('app-rumi-chat-preview')).toBe(preview);
     expect(root.querySelector('#rumi-chat-bubble')).not.toBeNull();
-    expect(root.querySelectorAll('[role="log"][aria-label="Conversation with Rumi AI on the Rumi AI page"]')).toHaveLength(1);
+    // Only the floating panel is a real conversation, and it has a working composer.
+    expect(root.querySelectorAll('[role="log"][aria-label="Conversation with Rumi AI in the floating chat"]')).toHaveLength(1);
+    expect(root.querySelectorAll('[role="log"][aria-label="Conversation with Rumi AI on the Rumi AI page"]')).toHaveLength(0);
+    expect(root.querySelector('app-chat-panel textarea')).not.toBeNull();
   });
 });
