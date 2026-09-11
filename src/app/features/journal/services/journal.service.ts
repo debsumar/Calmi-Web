@@ -97,14 +97,15 @@ export class JournalService {
    * Creates the entry when `id` is null, otherwise updates it in place. `persisted`
    * is false when storage rejected the write, so callers never claim a false save.
    */
-  upsert(input: { id: string | null; title: string; content: string; status: JournalEntryStatus }): { entry: JournalEntry; persisted: boolean } {
+  upsert(input: { id: string | null; title: string; content: string; status: JournalEntryStatus; tags?: readonly string[] }): { entry: JournalEntry; persisted: boolean } {
     const now = new Date().toISOString();
     const title = input.title.trim() || 'Untitled entry';
     const existing = this.byId(input.id);
+    const tags = normalizeTags(input.tags ?? existing?.tags ?? []);
 
     const entry: JournalEntry = existing
-      ? { ...existing, title, content: input.content, status: input.status, updatedAt: now }
-      : { id: this.nextId(), title, content: input.content, status: input.status, createdAt: now, updatedAt: now };
+      ? { ...existing, title, content: input.content, status: input.status, tags, updatedAt: now }
+      : { id: this.nextId(), title, content: input.content, status: input.status, tags, createdAt: now, updatedAt: now };
 
     // Merge onto the latest stored copy so a concurrent tab's entries survive.
     const merged = this.merge(entry, existing !== null);
@@ -152,7 +153,7 @@ export class JournalService {
     if (!raw) return [];
     try {
       const parsed: unknown = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed.filter(isJournalEntry) : [];
+      return Array.isArray(parsed) ? parsed.filter(isJournalEntry).map(withTags) : [];
     } catch {
       return [];
     }
@@ -226,4 +227,20 @@ function isJournalEntry(value: unknown): value is JournalEntry {
     && (candidate.status === 'draft' || candidate.status === 'saved')
     && isIsoDate(candidate.createdAt)
     && isIsoDate(candidate.updatedAt);
+}
+
+/** Trims, drops blanks and de-duplicates, so stored tags stay clean. */
+function normalizeTags(tags: readonly unknown[]): readonly string[] {
+  const seen = new Set<string>();
+  for (const tag of tags) {
+    if (typeof tag !== 'string') continue;
+    const trimmed = tag.trim();
+    if (trimmed.length > 0) seen.add(trimmed);
+  }
+  return [...seen];
+}
+
+/** Entries written before tags existed read back with an empty tag list. */
+function withTags(entry: JournalEntry): JournalEntry {
+  return { ...entry, tags: normalizeTags(Array.isArray(entry.tags) ? entry.tags : []) };
 }

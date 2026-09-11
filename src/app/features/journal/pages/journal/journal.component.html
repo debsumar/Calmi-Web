@@ -224,8 +224,10 @@
         </p>
       </div>
 
-      <!-- Continue on app: below the editor on small screens, third column from xl -->
-      <aside appAnimateOnScroll style="--index:3" class="order-3 min-w-0 lg:col-span-2 xl:col-span-1" aria-labelledby="journal-app-title">
+      <!-- Right rail: continue-on-app, tags and prompts. Below the editor on small
+           screens, third column from xl. -->
+      <aside appAnimateOnScroll style="--index:3" aria-label="Journal tools"
+             class="order-3 flex min-w-0 flex-col gap-6 lg:col-span-2 xl:col-span-1">
         <div class="rounded-2xl border border-hairline bg-surface p-5 shadow-card">
           <div class="flex items-start gap-3">
             <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-on-brand" aria-hidden="true">
@@ -241,6 +243,69 @@
             <span>Open in App</span>
             <svg [lucideIcon]="'arrow-right'" [size]="16" aria-hidden="true"></svg>
           </a>
+        </div>
+
+        <div class="rounded-2xl border border-hairline bg-sunken p-5">
+          <!-- Tags. Each chip is a toggle button, so state is announced, not colour-only. -->
+          <div role="group" aria-labelledby="journal-tags-title">
+            <h2 id="journal-tags-title" class="text-base font-bold text-ink">Add tags (optional)</h2>
+            <div class="mt-3 flex flex-wrap gap-2">
+              @for (tag of allTags; track tag) {
+                <button type="button" (click)="toggleTag(tag)"
+                        [attr.aria-pressed]="isTagSelected(tag)"
+                        class="inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-sunken"
+                        [class.border-brand-deep]="isTagSelected(tag)"
+                        [class.bg-brand-deep]="isTagSelected(tag)"
+                        [class.text-on-brand-deep]="isTagSelected(tag)"
+                        [class.border-hairline]="!isTagSelected(tag)"
+                        [class.bg-surface]="!isTagSelected(tag)"
+                        [class.text-ink-soft]="!isTagSelected(tag)"
+                        [class.hover:bg-sunken-alt]="!isTagSelected(tag)"
+                        [class.hover:text-ink]="!isTagSelected(tag)">
+                  @if (isTagSelected(tag)) {
+                    <svg [lucideIcon]="'check'" [size]="12" aria-hidden="true"></svg>
+                  }
+                  <span>{{ tag }}</span>
+                </button>
+              }
+            </div>
+            <p class="mt-2 text-xs text-ink-soft" role="status">
+              @if (selectedTags().length === 0) {
+                No tags selected.
+              } @else {
+                {{ selectedTags().length }} selected: {{ selectedTags().join(', ') }}
+              }
+            </p>
+          </div>
+
+          <!-- Writing prompts. Choosing one drops it into the editor. -->
+          <div class="mt-6 border-t border-hairline pt-5">
+            <div class="flex items-center justify-between gap-2">
+              <h2 id="journal-prompts-title" class="text-base font-bold text-ink">Need a little help?</h2>
+              <button type="button" (click)="refreshPrompts()"
+                      class="inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-xs font-semibold text-brand-dark transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-brand-light">
+                <span>Refresh</span>
+                <svg [lucideIcon]="'refresh-cw'" [size]="14" aria-hidden="true"></svg>
+              </button>
+            </div>
+            <ul class="mt-3 flex flex-col gap-3" aria-labelledby="journal-prompts-title">
+              <!-- Tracked by slot, not text: Refresh replaces every prompt, so the
+                   three rows are reused rather than destroyed and rebuilt. -->
+              @for (prompt of prompts(); track $index) {
+                <li>
+                  <button type="button" (click)="usePrompt(prompt)"
+                          [attr.aria-label]="'Use prompt: ' + prompt"
+                          class="flex w-full items-center gap-3 rounded-xl border border-hairline bg-surface px-3 py-3 text-left text-xs font-medium text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-sunken">
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-on-brand" aria-hidden="true">
+                      <svg [lucideIcon]="'notebook-pen'" [size]="14"></svg>
+                    </span>
+                    <span class="min-w-0">{{ prompt }}</span>
+                  </button>
+                </li>
+              }
+            </ul>
+            <p class="mt-2 text-xs text-ink-soft" role="status">{{ promptStatus() }}</p>
+          </div>
         </div>
       </aside>
     </div>

@@ -5,10 +5,37 @@ export interface JournalEntry {
   content: string;
   /** `draft` is an unfinished note, `saved` is one the user committed. */
   status: JournalEntryStatus;
+  /** Optional mood/activity labels chosen from `JOURNAL_TAGS`. */
+  tags: readonly string[];
   /** ISO timestamps so stored entries survive JSON round-trips. */
   createdAt: string;
   updatedAt: string;
 }
+
+/**
+ * Tag catalogue offered beside the editor, grouped so related labels stay together
+ * as the chip list wraps: state, feeling, activity, routine, then meals.
+ */
+export const JOURNAL_TAGS: readonly string[] = [
+  'Overthinking', 'Working', 'Self-care',
+  'Excited', 'Relaxed', 'Hopeful', 'Grateful',
+  'Exercise', 'TV', 'Music', 'Gaming',
+  'Shower', 'Brush teeth', 'Walk', 'Drawing',
+  'Breakfast', 'Lunch', 'Dinner', 'Night-snack',
+];
+
+/** Writing prompts for a blank page; `Refresh` rotates through this pool. */
+export const JOURNAL_PROMPTS: readonly string[] = [
+  "What's been on my mind lately?",
+  "What's one thing I'm proud of today?",
+  'How can I be kinder to myself?',
+  'What drained me today, and what refilled me?',
+  'What am I grateful for right now?',
+  'What would I tell a friend in my situation?',
+  'What do I want tomorrow to feel like?',
+  'What am I avoiding, and why?',
+  'When did I feel most like myself today?',
+];
 
 export type JournalEntryStatus = 'draft' | 'saved';
 

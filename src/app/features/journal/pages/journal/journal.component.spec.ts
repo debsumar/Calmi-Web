@@ -5,6 +5,7 @@ import {
   LucideArrowRight,
   LucideArrowUpDown,
   LucideBold,
+  LucideCheck,
   LucideChevronDown,
   LucideChevronUp,
   LucideCircleAlert,
@@ -13,7 +14,9 @@ import {
   LucideLock,
   LucideMaximize2,
   LucideMinimize2,
+  LucideNotebookPen,
   LucidePlus,
+  LucideRefreshCw,
   LucideSmartphone,
   LucideTrash2,
   LucideUnderline,
@@ -58,9 +61,10 @@ describe('JournalComponent', () => {
         provideRouter([{ path: 'auth/identify', component: BlankComponent }]),
         provideAuthServiceStub(),
         provideLucideIcons(
-          LucideArrowRight, LucideArrowUpDown, LucideBold, LucideChevronDown, LucideChevronUp,
+          LucideArrowRight, LucideArrowUpDown, LucideBold, LucideCheck, LucideChevronDown, LucideChevronUp,
           LucideCircleAlert, LucideCircleCheck,
-          LucideItalic, LucideLock, LucideMaximize2, LucideMinimize2, LucidePlus, LucideSmartphone,
+          LucideItalic, LucideLock, LucideMaximize2, LucideMinimize2, LucideNotebookPen, LucidePlus,
+          LucideRefreshCw, LucideSmartphone,
           LucideTrash2, LucideUnderline, LucideUser,
         ),
       ],
@@ -375,6 +379,7 @@ describe('JournalComponent', () => {
     expect(JSON.parse(sessionStorage.getItem('calmi.journal.pending-entry.v1') ?? '{}')).toEqual({
       title: 'Held thought',
       content: 'kept across sign-in',
+      tags: [],
     });
   });
 
@@ -405,13 +410,162 @@ describe('JournalComponent', () => {
   });
 
   it('links Continue on App to the download page at every width', () => {
-    const card = (fixture.nativeElement as HTMLElement).querySelector('aside[aria-labelledby="journal-app-title"]') as HTMLElement;
-    const link = card.querySelector('a[href="/download"]');
+    const link = (fixture.nativeElement as HTMLElement).querySelector('a[href="/download"]') as HTMLAnchorElement;
+    const rail = link.closest('aside') as HTMLElement;
 
     // Previously xl-only; it must not be hidden on phones and tablets.
-    expect(card.className).not.toContain('hidden');
-    expect(card.className).toContain('order-3');
-    expect(link?.textContent).toContain('Open in App');
+    expect(rail.className).not.toContain('hidden');
+    expect(rail.className).toContain('order-3');
+    expect(link.textContent).toContain('Open in App');
+    expect(rail.querySelector('#journal-app-title')?.textContent).toContain('Continue on App');
+  });
+
+  it('toggles tags from the rail and reports the selection', async () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const chip = Array.from(root.querySelectorAll('button[aria-pressed]'))
+      .find((button) => button.textContent?.trim() === 'Overthinking') as HTMLButtonElement;
+
+    expect(root.querySelector('#journal-tags-title')?.textContent).toContain('Add tags (optional)');
+    expect(chip.getAttribute('aria-pressed')).toBe('false');
+
+    chip.click();
+    await fixture.whenStable();
+
+    expect(component.selectedTags()).toEqual(['Overthinking']);
+    expect(chip.getAttribute('aria-pressed')).toBe('true');
+    expect(root.textContent).toContain('1 selected: Overthinking');
+
+    chip.click();
+    await fixture.whenStable();
+
+    expect(component.selectedTags()).toEqual([]);
+    expect(root.textContent).toContain('No tags selected.');
+  });
+
+  it('saves selected tags with the entry and restores them on select', () => {
+    signIn();
+    component.content.set('tagged body');
+    component.toggleTag('Grateful');
+    component.toggleTag('Walk');
+    component.save('saved');
+
+    const stored = journal.entries()[0];
+    expect(stored.tags).toEqual(['Grateful', 'Walk']);
+    expect(component.isDirty()).toBe(false);
+
+    component.startNewEntry();
+    expect(component.selectedTags()).toEqual([]);
+
+    component.select(stored);
+    expect(component.selectedTags()).toEqual(['Grateful', 'Walk']);
+    expect(component.isDirty()).toBe(false);
+  });
+
+  it('treats a tag change as unsaved work', () => {
+    signIn();
+    component.content.set('body');
+    component.save('saved');
+    expect(component.isDirty()).toBe(false);
+
+    component.toggleTag('Relaxed');
+    expect(component.isDirty()).toBe(true);
+  });
+
+  it('rotates the writing prompts on Refresh', async () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const first = component.prompts();
+
+    expect(first).toHaveLength(3);
+    expect(root.textContent).toContain(first[0]);
+
+    const refresh = Array.from(root.querySelectorAll('button'))
+      .find((button) => button.textContent?.includes('Refresh')) as HTMLButtonElement;
+    refresh.click();
+    await fixture.whenStable();
+
+    expect(component.prompts()).not.toEqual(first);
+    expect(root.textContent).toContain(component.prompts()[0]);
+  });
+
+  it('inserts a chosen prompt into the editor', async () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const prompt = component.prompts()[0];
+    const promptButton = root.querySelector(`button[aria-label="Use prompt: ${prompt}"]`) as HTMLButtonElement;
+
+    promptButton.click();
+    await fixture.whenStable();
+
+    expect(component.plainText()).toContain(prompt);
+    expect(component.isDirty()).toBe(true);
+    expect(root.textContent).toContain('Prompt added to your entry.');
+  });
+
+  it('appends a prompt after existing writing without replacing the selection', async () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const editor = root.querySelector('[contenteditable="true"]') as HTMLElement;
+    editor.textContent = 'already written';
+    component.onEditorInput();
+    await fixture.whenStable();
+
+    // A rail click leaves the editor selection in place; the prompt must not eat it.
+    selectText(editor, 0, 7);
+    const prompt = component.prompts()[1];
+    component.usePrompt(prompt);
+    await fixture.whenStable();
+
+    // Inserted at the caret (end of the selection), with nothing deleted.
+    expect(component.plainText()).toContain('already');
+    expect(component.plainText()).toContain('written');
+    expect(component.plainText()).toContain(prompt);
+    expect(component.plainText().indexOf(prompt)).toBeGreaterThan(0);
+  });
+
+  it('drops a prompt at the end when the caret is outside the editor', async () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const editor = root.querySelector('[contenteditable="true"]') as HTMLElement;
+    editor.textContent = 'first line';
+    component.onEditorInput();
+    document.getSelection()?.removeAllRanges();
+    await fixture.whenStable();
+
+    const prompt = component.prompts()[0];
+    component.usePrompt(prompt);
+    await fixture.whenStable();
+
+    expect(component.plainText().trim().startsWith('first line')).toBe(true);
+    expect(component.plainText()).toContain(prompt);
+  });
+
+  it('cycles the prompt window back to the start', () => {
+    const first = component.prompts();
+
+    component.refreshPrompts();
+    component.refreshPrompts();
+    expect(component.prompts()).not.toEqual(first);
+
+    component.refreshPrompts();
+    expect(component.prompts()).toEqual(first);
+  });
+
+  it('carries selected tags across the sign-in round trip and ignores unknown ones', async () => {
+    component.content.set('kept across sign-in');
+    component.toggleTag('Hopeful');
+    component.save('saved');
+    await fixture.whenStable();
+    component.continueToSignIn();
+
+    expect(JSON.parse(sessionStorage.getItem('calmi.journal.pending-entry.v1') ?? '{}').tags).toEqual(['Hopeful']);
+
+    sessionStorage.setItem('calmi.journal.pending-entry.v1', JSON.stringify({
+      title: 'Back again',
+      content: 'restored body',
+      tags: ['Hopeful', 'Not-a-real-tag'],
+    }));
+    TestBed.resetTestingModule();
+    const restored = await createFixture();
+    await restored.whenStable();
+
+    expect(restored.componentInstance.selectedTags()).toEqual(['Hopeful']);
   });
 
   it('collapses the entry list behind a disclosure below lg', async () => {
