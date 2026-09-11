@@ -113,28 +113,29 @@ describe('ProfileComponent', () => {
     expect(tile?.querySelector('h2 svg')).not.toBeNull();
     expect(tile?.querySelector('h2 svg')?.getAttribute('aria-hidden')).toBe('true');
     expect(tile?.textContent).toContain('/ 10');
-    expect(tile?.textContent).toContain('90% used');
-    expect(tile?.textContent).toContain('Approaching limit');
-    // Warning is plain danger text, not a filled container.
-    const warning = Array.from(tile!.querySelectorAll('p')).find((p) => p.textContent?.includes('Approaching limit'));
-    expect(warning?.className).toContain('text-danger');
-    expect(warning?.className).not.toMatch(/bg-(sunken|surface|elevated|danger)/);
+    expect(tile?.textContent).toContain('0% used');
+    expect(tile?.textContent).not.toContain('Approaching limit');
+    // Below the limit the remaining allowance reads as a calm confirmation.
+    const remaining = Array.from(tile!.querySelectorAll('p')).find((p) => p.textContent?.includes('conversations remain'));
+    expect(remaining?.textContent).toContain('10 conversations remain');
+    expect(remaining?.className).not.toMatch(/bg-(sunken|surface|elevated|danger)/);
     expect(tile?.textContent).not.toContain('no action is required');
 
     // The ring is the meter: one arc, no separate progress bar.
     const arcs = tile!.querySelectorAll('circle[stroke-dasharray]');
     expect(arcs).toHaveLength(1);
-    expect(Number(arcs[0].getAttribute('stroke-dashoffset'))).toBeGreaterThan(0);
+    // Nothing used yet, so the arc is fully offset (empty ring).
+    expect(Number(arcs[0].getAttribute('stroke-dashoffset'))).toBe(Number(arcs[0].getAttribute('stroke-dasharray')));
     expect(tile?.querySelectorAll('[role="meter"]')).toHaveLength(1);
     expect(tile?.querySelector('[role="meter"]')?.tagName.toLowerCase()).toBe('svg');
 
     const meter = tile?.querySelector('[role="meter"]');
     expect(meter?.getAttribute('aria-label')).toBe('Rumi AI conversations used this month');
-    expect(meter?.getAttribute('aria-valuenow')).toBe('9');
+    expect(meter?.getAttribute('aria-valuenow')).toBe('0');
     expect(meter?.getAttribute('aria-valuemax')).toBe('10');
-    expect(meter?.getAttribute('aria-valuetext')).toBe('9 of 10 conversations used');
-    // Near the limit the arc switches to the coral accent, and it draws itself in.
-    expect(arcs[0].classList.contains('stroke-accent-coral')).toBe(true);
+    expect(meter?.getAttribute('aria-valuetext')).toBe('0 of 10 conversations used');
+    // Away from the limit the arc keeps the brand stroke, and it draws itself in.
+    expect(arcs[0].classList.contains('stroke-accent-coral')).toBe(false);
     expect(arcs[0].classList.contains('ring-arc')).toBe(true);
     expect(arcs[0].getAttribute('style')).toContain('--ring-offset');
     // The percentage inside the ring is decorative; the meter carries the value.
@@ -144,7 +145,7 @@ describe('ProfileComponent', () => {
     expect(upgrade?.getAttribute('href')).toBe('/pricing');
   });
 
-  it('shows listening composition as a labelled donut with exact values in the key', () => {
+  it('shows an empty listening summary until playback data arrives', () => {
     const root = fixture.nativeElement as HTMLElement;
     const tile = root.querySelector<HTMLElement>('[aria-labelledby="audio-title"]');
     expect(tile).not.toBeNull();
@@ -154,36 +155,17 @@ describe('ProfileComponent', () => {
     const caption = Array.from(tile!.querySelectorAll('p')).find((p) => p.textContent?.includes('What you played most'));
     expect(caption?.className).toContain('text-xs');
     expect(caption?.textContent?.trim()).toBe('What you played most over the last 30 days.');
-    expect(tile?.textContent).toContain('412');
-    expect(tile?.textContent).toContain('19 nights');
+    expect(tile?.textContent).toContain('0');
+    expect(tile?.textContent).toContain('0 nights');
 
-    const donut = tile?.querySelector<SVGElement>('svg[role="img"]');
-    expect(donut?.getAttribute('aria-label')).toContain('Share of listening minutes');
-    expect(donut?.getAttribute('aria-label')).toContain('Rain on a tent 41 percent');
-
-    // One track slice per record, plus the track background.
-    const slices = donut!.querySelectorAll('circle');
-    expect(slices).toHaveLength(5);
-    expect(slices[1].getAttribute('stroke-dasharray')).toMatch(/^\d+(\.\d+)? \d+(\.\d+)?$/);
-    expect(slices[1].getAttribute('transform')).toBe('rotate(-90 48 48)');
-    // Each slice draws itself in, staggered after the ring.
-    expect(slices[1].classList.contains('donut-arc')).toBe(true);
-    expect(slices[1].getAttribute('style')).toContain('--seg-dash');
-    expect(slices[4].getAttribute('style')).toContain('--index: 3');
-
-    // Shares sum to the whole and each row states minutes and percentage as text.
-    const rows = tile!.querySelectorAll('li');
-    expect(rows).toHaveLength(4);
-    expect(rows[0].textContent).toContain('Rain on a tent');
-    expect(rows[0].textContent).toContain('168 min');
-    expect(rows[0].textContent).toContain('41%');
-    // Swatches are decorative.
-    tile?.querySelectorAll('li span[aria-hidden="true"]').forEach((swatch) => {
-      expect(swatch.className).toMatch(/bg-brand/);
-    });
+    // No tracks, so no donut and no key: an invitation stands in for both.
+    expect(tile?.querySelector('svg[role="img"]')).toBeNull();
+    expect(tile!.querySelectorAll('li')).toHaveLength(0);
+    const empty = Array.from(tile!.querySelectorAll('p')).find((p) => p.textContent?.includes('No listening yet'));
+    expect(empty).not.toBeUndefined();
   });
 
-  it('renders the KPI signal strip with exact values, deltas, and labelled sparklines', () => {
+  it('renders the KPI signal strip at zero with neutral deltas and no sparklines', () => {
     const root = fixture.nativeElement as HTMLElement;
     const strip = root.querySelector<HTMLElement>('[aria-labelledby="signals-title"]');
     expect(strip).not.toBeNull();
@@ -196,20 +178,18 @@ describe('ProfileComponent', () => {
     expect(strip?.textContent).toContain('Check-ins');
     expect(strip?.textContent).toContain('Calm minutes');
     expect(strip?.textContent).toContain('Gentle streak');
-    expect(strip?.textContent).toContain('+3 vs July');
-    expect(strip?.textContent).toContain('+22 vs July');
+    expect(strip?.textContent).toContain('No history yet');
     expect(strip?.textContent).toContain('Your own pace');
-
-    // Sparklines are plotted from the KPI trend points, not decorative filler.
-    const sparks = strip!.querySelectorAll('svg[role="img"]');
-    expect(sparks).toHaveLength(3);
-    const firstPath = sparks[0].querySelectorAll('path')[1];
-    const commands = firstPath.getAttribute('d')!.match(/[ML]/g) ?? [];
-    expect(commands).toHaveLength(7);
-    expect(firstPath.getAttribute('d')).toMatch(/^M 4 /);
-    sparks.forEach((spark) => {
-      expect(spark.getAttribute('aria-label')).toMatch(/trend across the last 7 weeks/);
+    cells.forEach((cell) => {
+      expect(cell.querySelector('p span')?.textContent?.trim()).toBe('0');
     });
+
+    // No trend points yet, so no sparkline is drawn at all.
+    const sparks = strip!.querySelectorAll('svg[role="img"]');
+    expect(sparks).toHaveLength(0);
+    // Deltas stay neutral rather than claiming a rise or a fall.
+    expect(strip?.querySelectorAll('.text-success')).toHaveLength(0);
+    expect(strip?.querySelectorAll('.text-danger')).toHaveLength(0);
   });
 
   it('lists the next bookable days with real slot times from the therapist data', () => {
@@ -397,9 +377,11 @@ describe('ProfileComponent', () => {
     expect(headerIdentity?.className).toContain('min-w-0');
     expect(root.querySelector('h1')?.className).toContain('break-words');
 
-    const audioLayout = root.querySelector<HTMLElement>('[aria-labelledby="audio-title"] > div.mt-5');
-    expect(audioLayout?.className).toContain('flex-col');
-    expect(audioLayout?.className).toContain('sm:flex-row');
+    // Empty listening summary: the invitation replaces the donut/key row.
+    const audioEmpty = Array.from(
+      root.querySelectorAll<HTMLElement>('[aria-labelledby="audio-title"] > p'),
+    ).find((p) => p.textContent?.includes('No listening yet'));
+    expect(audioEmpty?.className).toContain('bg-sunken');
 
     const sessions = root.querySelector<HTMLElement>('[aria-labelledby="sessions-title"]');
     expect(sessions?.querySelector('li')?.className).toContain('sm:flex-row');
@@ -407,7 +389,6 @@ describe('ProfileComponent', () => {
 
     const signals = root.querySelector<HTMLElement>('[aria-labelledby="signals-title"] > div.grid');
     expect(signals?.className).toContain('sm:grid-cols-3');
-    expect(signals?.querySelector('svg[role="img"]')?.getAttribute('class')).toContain('aspect-[10/7]');
 
     const rumiValue = root.querySelector<HTMLElement>('[aria-labelledby="chat-usage-title"] span.text-4xl');
     expect(rumiValue?.className).toContain('md:text-5xl');
@@ -489,11 +470,9 @@ describe('ProfileComponent', () => {
     expect(arc?.hasAttribute('appDrawOnScroll')).toBe(true);
 
     const audio = root.querySelector<HTMLElement>('[aria-labelledby="audio-title"]');
-    const donut = audio?.querySelector('svg[role="img"]');
-    expect(donut?.hasAttribute('appAnimateOnScroll')).toBe(false);
-    const segments = audio!.querySelectorAll('.donut-arc');
-    expect(segments).toHaveLength(4);
-    segments.forEach((segment) => expect(segment.hasAttribute('appDrawOnScroll')).toBe(true));
+    // No listening data yet: no donut, so no slices to draw in.
+    expect(audio?.querySelector('svg[role="img"]')).toBeNull();
+    expect(audio!.querySelectorAll('.donut-arc')).toHaveLength(0);
 
     // Sparklines draw themselves in; pathLength normalises the dash math.
     const strip = root.querySelector<HTMLElement>('[aria-labelledby="signals-title"]');
@@ -501,16 +480,15 @@ describe('ProfileComponent', () => {
       expect(spark.hasAttribute('appAnimateOnScroll')).toBe(false);
     });
     const lines = strip!.querySelectorAll('.spark-line');
-    expect(lines).toHaveLength(3);
+    expect(lines).toHaveLength(0);
     lines.forEach((line) => {
       // These wait for the reader to scroll, unlike the ring and donut.
       expect(line.getAttribute('appDrawOnScroll')).toBe('scroll');
       expect(line.getAttribute('pathLength')).toBe('1');
       expect(line.getAttribute('stroke-dasharray')).toBe('1');
     });
-    // Ring and donut keep the default trigger, so they draw on load.
+    // Ring keeps the default trigger, so it draws on load. No donut segments yet.
     expect(arc?.getAttribute('appDrawOnScroll')).toBe('');
-    segments.forEach((segment) => expect(segment.getAttribute('appDrawOnScroll')).toBe(''));
     expect(strip!.querySelectorAll('article[appanimateonscroll]')).toHaveLength(3);
 
     // Every tile still staggers its own rows.

@@ -204,6 +204,10 @@
               }
             </ul>
           </div>
+        } @else {
+          <p class="mt-5 rounded-2xl bg-sunken p-4 text-base text-ink-soft">
+            No listening yet. Play a sleep sound and it will show up here.
+          </p>
         }
       </section>
 
@@ -306,26 +310,28 @@
                 }
                 {{ signal.comparison.label }}
               </span>
-              <svg
-                class="mt-3 aspect-[10/7] w-full text-brand-deep dark:text-brand-light"
-                viewBox="0 0 200 140"
-                preserveAspectRatio="none"
-                role="img"
-                [attr.aria-label]="signal.sparkLabel">
-                <path d="M 4 134 L 196 134" class="stroke-hairline" stroke-width="2" fill="none" />
-                <path
-                  class="spark-line"
-                  appDrawOnScroll="scroll"
-                  [style.--index]="$index"
-                  pathLength="1"
-                  stroke-dasharray="1"
-                  [attr.d]="signal.sparkPath"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
+              @if (signal.sparkPath) {
+                <svg
+                  class="mt-3 aspect-[10/7] w-full text-brand-deep dark:text-brand-light"
+                  viewBox="0 0 200 140"
+                  preserveAspectRatio="none"
+                  role="img"
+                  [attr.aria-label]="signal.sparkLabel">
+                  <path d="M 4 134 L 196 134" class="stroke-hairline" stroke-width="2" fill="none" />
+                  <path
+                    class="spark-line"
+                    appDrawOnScroll="scroll"
+                    [style.--index]="$index"
+                    pathLength="1"
+                    stroke-dasharray="1"
+                    [attr.d]="signal.sparkPath"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              }
               <p class="mt-auto pt-2 text-xs text-ink-soft">{{ signal.description }}</p>
             </article>
           }

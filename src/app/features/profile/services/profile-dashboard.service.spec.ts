@@ -35,12 +35,23 @@ describe('ProfileDashboardService', () => {
 
   it('summarises sleep-sound listening without claiming sleep measurement', () => {
     const audio = service().dashboard().audio;
-    expect(audio.tracks.length).toBeGreaterThan(0);
-    expect(audio.totalMinutes).toBeGreaterThan(0);
-    audio.tracks.forEach((track) => {
-      expect(track.title.length).toBeGreaterThan(0);
-      expect(track.minutes).toBeGreaterThanOrEqual(0);
-      expect(track.plays).toBeGreaterThanOrEqual(0);
+    // Zeroed baseline until the backend supplies real playback figures.
+    expect(audio.tracks).toHaveLength(0);
+    expect(audio.totalMinutes).toBe(0);
+    expect(audio.nightsWithAudio).toBe(0);
+    expect(audio.rangeLabel).toBe('last 30 days');
+  });
+
+  it('starts every quota and KPI at zero', () => {
+    const dashboard = service().dashboard();
+    dashboard.quotas.forEach((quota) => {
+      expect(quota.used).toBe(0);
+      expect(quota.limit).toBeGreaterThan(0);
+    });
+    dashboard.kpis.forEach((kpi) => {
+      expect(kpi.value).toBe('0');
+      expect(kpi.trend).toHaveLength(0);
+      expect(kpi.comparison.direction).toBe('flat');
     });
   });
 
