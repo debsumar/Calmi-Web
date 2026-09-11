@@ -101,6 +101,31 @@ describe('JournalService', () => {
     expect(configure().entries()).toEqual([]);
   });
 
+  it('normalizes tags and keeps them across an update', () => {
+    const entry = service.upsert({
+      id: null,
+      title: 'Tagged',
+      content: 'x',
+      status: 'saved',
+      tags: [' Walk ', 'Walk', '', 'Music', 42 as unknown as string],
+    }).entry;
+
+    expect(entry.tags).toEqual(['Walk', 'Music']);
+
+    // Omitting tags on a later save must not wipe the ones already stored.
+    const updated = service.upsert({ id: entry.id, title: 'Tagged', content: 'y', status: 'draft' }).entry;
+    expect(updated.tags).toEqual(['Walk', 'Music']);
+    expect(JSON.parse(localStorage.getItem(GUEST_KEY) ?? '[]')[0].tags).toEqual(['Walk', 'Music']);
+  });
+
+  it('reads pre-tag entries back with an empty tag list', () => {
+    localStorage.setItem(GUEST_KEY, JSON.stringify([
+      { id: 'legacy', title: 'Old', content: 'x', status: 'saved', createdAt: '2026-09-09T04:15:00.000Z', updatedAt: '2026-09-09T04:15:00.000Z' },
+    ]));
+
+    expect(configure().entries()[0].tags).toEqual([]);
+  });
+
   it('keeps entries per identity so a shared device does not leak them', () => {
     service.upsert({ id: null, title: 'Guest note', content: 'guest', status: 'saved' });
 
@@ -194,6 +219,7 @@ describe('journal stats', () => {
       title: id,
       content: 'x',
       status: 'saved' as const,
+      tags: [] as readonly string[],
       createdAt: localDay(day, hour).toISOString(),
       updatedAt: localDay(day, hour).toISOString(),
     });

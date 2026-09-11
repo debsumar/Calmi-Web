@@ -21,7 +21,7 @@ import {
   LucideFlaskConical, LucideHeartCrack,
   LucideNotebookPen, LucideMessageCircleHeart, LucideMoonStar,
   LucidePlus, LucideArrowUpDown, LucideTrash2, LucideBold, LucideItalic, LucideUnderline,
-  LucideMaximize2, LucideMinimize2, LucideChevronUp,
+  LucideMaximize2, LucideMinimize2, LucideChevronUp, LucideCheck, LucideRefreshCw,
 } from '@lucide/angular';
 import { primeLicenseKey } from '../environments/license';
 import { appRoutes } from './app.routes';
@@ -60,6 +60,7 @@ export const appConfig: ApplicationConfig = {
       LucideNotebookPen, LucideMessageCircleHeart, LucideMoonStar,
       LucidePlus, LucideArrowUpDown, LucideTrash2, LucideBold, LucideItalic, LucideUnderline,
       LucideMaximize2, LucideMinimize2, LucideChevronUp,
+      LucideCheck, LucideRefreshCw,
     ),
   ],
 };
