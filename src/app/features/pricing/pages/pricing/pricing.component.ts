@@ -121,7 +121,7 @@ export class PricingComponent {
         'Exclusive Weekly Content',
         'Priority Support'
       ],
-      buttonText: 'Start 7-Day Free Trial',
+      buttonText: 'Start 10-Day Free Trial',
       buttonVariant: 'solid',
       emphasis: 'popular',
       action: 'trial'
