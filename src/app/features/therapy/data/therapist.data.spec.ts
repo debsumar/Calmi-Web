@@ -62,7 +62,10 @@ describe('therapist filtering data', () => {
       sessionMode: 'Chat',
     });
 
-    expect(languages.map((therapist) => therapist.id)).toEqual(expect.arrayContaining(['yukta-bansal', 'meera-sen', 'vishal-naik', 'kavya-reddy']));
+    expect(languages.map((therapist) => therapist.id)).toEqual(expect.arrayContaining(['meera-sen', 'vishal-naik', 'kavya-reddy']));
+    expect(languages.map((therapist) => therapist.id)).not.toContain('yukta-bansal');
+    // Yukta does not speak Bengali, so the language must be absent at the source too.
+    expect(THERAPISTS.find((therapist) => therapist.id === 'yukta-bansal')?.languages).toEqual(['English', 'Hindi']);
     expect(combined.map((therapist) => therapist.id)).toEqual(['meera-sen']);
   });
 });

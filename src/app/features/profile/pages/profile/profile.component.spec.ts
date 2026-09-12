@@ -17,7 +17,7 @@ import {
   LucideTrendingUp,
   LucideUser,
 } from '@lucide/angular';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideRouter } from '@angular/router';
 import { AuthService } from '@/core/services/auth.service';
 import { THERAPISTS } from '@/features/therapy/data/therapist.data';
@@ -81,7 +81,7 @@ describe('ProfileComponent', () => {
   it('renders one ordered page heading and no preview notices', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelectorAll('h1')).toHaveLength(1);
-    // Bento tiles: Rumi dial, sleep sounds, next sessions, KPI strip, journal, personal, credentials (with closure).
+    // Bento tiles: Rumi dial, sleep sounds, booked sessions, KPI strip, journal, personal, credentials (with closure).
     expect(root.querySelectorAll('h2')).toHaveLength(7);
     expect(root.textContent).toContain('Sam Calmi');
     expect(root.textContent).toContain('My space');
@@ -192,26 +192,22 @@ describe('ProfileComponent', () => {
     expect(strip?.querySelectorAll('.text-danger')).toHaveLength(0);
   });
 
-  it('lists the next bookable days with real slot times from the therapist data', () => {
+  it('holds an empty state in the sessions tile until a session is booked', () => {
     const root = fixture.nativeElement as HTMLElement;
     const tile = root.querySelector<HTMLElement>('[aria-labelledby="sessions-title"]');
     expect(tile).not.toBeNull();
     expect(tile?.textContent).toContain('Sessions');
-    expect(tile?.textContent).toContain(THERAPISTS[0].name);
+    expect(tile?.textContent).toContain("You haven't booked a session yet");
 
-    // Up to three upcoming open days, each with its own slot chips and Book action.
-    const days = tile!.querySelectorAll('li');
-    expect(days.length).toBeGreaterThan(0);
-    expect(days.length).toBeLessThanOrEqual(3);
+    // No booked rows, and no therapist availability is borrowed to fill the card.
+    expect(tile!.querySelectorAll('li')).toHaveLength(0);
+    expect(tile?.textContent).not.toContain(THERAPISTS[0].name);
+    expect(tile?.textContent).not.toContain('open days remain');
 
-    const openDays = THERAPISTS[0].availability.filter((day) => day.state === 'available');
-    expect(openDays.length).toBeGreaterThan(0);
-    // Slot labels come from the dataset, not from hardcoded template text.
-    expect(tile?.textContent).toContain(openDays[0].slots[1].label);
-
-    const book = days[0].querySelector<HTMLAnchorElement>('a');
-    expect(book?.getAttribute('href')).toBe(`/therapy/${THERAPISTS[0].id}`);
-    expect(book?.getAttribute('aria-label')).toMatch(/^Book a session on /);
+    // The empty state routes to the therapist directory instead of a fake booking.
+    const cta = tile!.querySelector<HTMLAnchorElement>('a');
+    expect(cta?.getAttribute('href')).toBe('/therapy');
+    expect(cta?.textContent).toContain('Find a therapist');
 
     // The guided-sessions dial is gone and the rail does not carry it either.
     expect(root.querySelector('[aria-labelledby="sessions-quota-title"]')).toBeNull();
@@ -219,6 +215,72 @@ describe('ProfileComponent', () => {
     expect(strip?.textContent).not.toContain('Guided sessions');
     // No month grid remains.
     expect(tile?.querySelector('table')).toBeNull();
+  });
+
+  it('lists booked sessions soonest first, capped at three, with past bookings dropped', async () => {
+    // Freeze mid-day so day arithmetic cannot straddle midnight mid-run.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 8, 13, 12, 0, 0));
+
+    try {
+      const snapshot = TestBed.inject(ProfileDashboardService).dashboard();
+      const base = new Date();
+      const dayKey = (offsetDays: number) => {
+        const date = new Date(base.getFullYear(), base.getMonth(), base.getDate() + offsetDays);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      };
+      const booked: ProfileDashboardSnapshot = {
+        ...snapshot,
+        sessions: [
+          // Same day as the 10:00 AM booking below, and later in the day.
+          { id: 'today-afternoon', therapistId: 'meera-sen', therapistName: 'Meera Sen', date: dayKey(0), time: '1:00 PM', duration: '45 mins', mode: 'Chat' },
+          { id: 'past', therapistId: 'meera-sen', therapistName: 'Meera Sen', date: dayKey(-3), time: '4:00 PM', duration: '45 mins', mode: 'Chat' },
+          { id: 'tomorrow', therapistId: 'gargi-yadav', therapistName: 'Gargi Yadav', date: dayKey(1), time: '5:30 PM', duration: '50 mins', mode: 'Audio' },
+          { id: 'today-morning', therapistId: 'gargi-yadav', therapistName: 'Gargi Yadav', date: dayKey(0), time: '10:00 AM', duration: '50 mins', mode: 'Video' },
+          { id: 'far', therapistId: 'vishal-naik', therapistName: 'Vishal Naik', date: dayKey(30), time: '9:00 AM', duration: '60 mins', mode: 'Video' },
+        ],
+      };
+
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [ProfileComponent],
+        providers: [
+          { provide: ProfileDashboardService, useValue: { dashboard: signal(booked).asReadonly(), journal: signal(emptyJournal) } },
+          { provide: AuthService, useValue: authStub },
+          icons(),
+          provideRouter([]),
+        ],
+      }).compileComponents();
+
+      const bookedFixture = TestBed.createComponent(ProfileComponent);
+      bookedFixture.detectChanges();
+      const tile = (bookedFixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[aria-labelledby="sessions-title"]')!;
+
+      // Three soonest upcoming bookings, date then clock time. 10:00 AM precedes
+      // 1:00 PM on the same day, which plain string order would invert.
+      const rows = Array.from(tile.querySelectorAll('li'));
+      expect(rows).toHaveLength(3);
+      expect(rows.map((row) => row.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
+        expect.stringContaining('Today · 10:00 AM'),
+        expect.stringContaining('Today · 1:00 PM'),
+        expect.stringContaining('Tomorrow · 5:30 PM'),
+      ]);
+      // The past booking is dropped, and the 30-day-out one is over the cap.
+      expect(tile.textContent).not.toContain('4:00 PM');
+      expect(tile.textContent).not.toContain('9:00 AM');
+
+      // Each row carries the therapist and the session shape, and links to that therapist.
+      expect(rows[0].textContent).toContain('Gargi Yadav · 50 mins · Video');
+      const link = rows[0].querySelector<HTMLAnchorElement>('a');
+      expect(link?.getAttribute('href')).toBe('/therapy/gargi-yadav');
+      expect(link?.getAttribute('aria-label')).toContain('Open the profile of Gargi Yadav');
+      // Populated rows stagger, and the empty state is gone.
+      expect(tile.querySelectorAll('li[appanimateonscroll]')).toHaveLength(3);
+      expect(tile.textContent).not.toContain("You haven't booked a session yet");
+      expect(tile.textContent).not.toContain('Find a therapist');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows the sign-in provider with a themed icon and the provider logo inline', () => {
@@ -384,7 +446,10 @@ describe('ProfileComponent', () => {
     expect(audioEmpty?.className).toContain('bg-sunken');
 
     const sessions = root.querySelector<HTMLElement>('[aria-labelledby="sessions-title"]');
-    expect(sessions?.querySelector('li')?.className).toContain('sm:flex-row');
+    // Empty state: stacks on small screens, its CTA fills the row width.
+    const sessionsEmpty = sessions?.querySelector<HTMLElement>('div.bg-sunken');
+    expect(sessionsEmpty?.textContent).toContain("You haven't booked a session yet");
+    expect(sessionsEmpty?.className).toContain('sm:flex-row');
     expect(sessions?.querySelector('a')?.className).toContain('w-full');
 
     const signals = root.querySelector<HTMLElement>('[aria-labelledby="signals-title"] > div.grid');
@@ -493,7 +558,8 @@ describe('ProfileComponent', () => {
 
     // Every tile still staggers its own rows.
     const sessions = root.querySelector<HTMLElement>('[aria-labelledby="sessions-title"]');
-    expect(sessions!.querySelectorAll('li[appanimateonscroll]').length).toBeGreaterThan(0);
+    // The empty state itself staggers, not just the tile heading.
+    expect(sessions!.querySelectorAll('div.bg-sunken[appanimateonscroll]')).toHaveLength(1);
     const personal = root.querySelector<HTMLElement>('[aria-labelledby="personal-title"]');
     expect(personal!.querySelectorAll('div[appanimateonscroll]').length).toBeGreaterThanOrEqual(3);
     const security = root.querySelector<HTMLElement>('[aria-labelledby="security-title"]');

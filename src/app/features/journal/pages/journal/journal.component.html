@@ -128,11 +128,10 @@
           </div>
         }
 
-        <label for="journal-entry-title" class="sr-only">Entry title</label>
+        <label for="journal-entry-title" class="mt-4 block text-xs font-semibold text-ink-soft">Give this entry a title</label>
         <input id="journal-entry-title" type="text" [value]="title()" (input)="title.set($any($event.target).value)"
-               placeholder="Give this entry a title"
                autocomplete="off"
-               class="mt-2 w-full rounded-lg bg-transparent text-lg font-bold text-ink placeholder:text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+               class="mt-2 min-h-11 w-full rounded-xl border border-hairline bg-sunken px-4 py-2 text-lg font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
 
         <p id="journal-entry-prompt" class="mt-6 text-xs text-ink-soft">What's on your mind today?</p>
         <div class="mt-2 rounded-2xl border border-hairline bg-surface">

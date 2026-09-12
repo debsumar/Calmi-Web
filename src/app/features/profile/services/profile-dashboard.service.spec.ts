@@ -55,6 +55,11 @@ describe('ProfileDashboardService', () => {
     });
   });
 
+  it('ships no booked sessions until the booking service is connected', () => {
+    // The profile must not fabricate bookings from therapist availability data.
+    expect(service().dashboard().sessions).toEqual([]);
+  });
+
   it('uses neutral account-closure wording, not danger-zone framing', () => {
     const dashboard = service().dashboard();
     expect(JSON.stringify(dashboard)).not.toMatch(/danger zone/i);

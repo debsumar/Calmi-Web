@@ -211,20 +211,20 @@
         }
       </section>
 
-      <!-- Next available sessions, from the same therapist availability data -->
+      <!-- Booked sessions. Nothing is booked yet, so this holds an empty state. -->
       <section
         appAnimateOnScroll
         [style.--index]="2"
         aria-labelledby="sessions-title"
         class="flex flex-col rounded-3xl border border-hairline bg-surface p-6 shadow-card md:col-span-2 lg:col-span-3">
         <h2 id="sessions-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Sessions</h2>
-        <p appAnimateOnScroll [style.--index]="1" class="mt-1 text-base text-ink-soft">
-          Next available with {{ therapistName }} · {{ therapistSession }}
-        </p>
 
-        @if (nextSessionDays.length > 0) {
+        @if (bookedSessions().length > 0) {
+          <p appAnimateOnScroll [style.--index]="1" class="mt-1 text-base text-ink-soft">
+            Your next sessions, soonest first.
+          </p>
           <ul class="mt-4 flex-1 divide-y divide-hairline">
-            @for (day of nextSessionDays; track day.key) {
+            @for (day of bookedSessions(); track day.key) {
               <li
                 appAnimateOnScroll
                 [style.--index]="2 + $index"
@@ -237,39 +237,38 @@
                 </span>
 
                 <span class="min-w-0 flex-1">
-                  <span class="block text-base font-bold text-ink">{{ day.relativeLabel }}</span>
-                  <span class="mt-1 flex flex-wrap gap-1.5">
-                    @for (slot of day.slots; track slot.id) {
-                      <span
-                        class="rounded-full border border-hairline bg-surface px-2.5 py-0.5 break-words text-xs font-semibold text-ink">
-                        {{ slot.label }}
-                      </span>
-                    }
+                  <span class="block text-base font-bold text-ink">{{ day.relativeLabel }} · {{ day.time }}</span>
+                  <span class="mt-1 block break-words text-sm text-ink-soft">
+                    {{ day.therapistName }} · {{ day.detail }}
                   </span>
                 </span>
 
                 <a
-                  [routerLink]="['/therapy', therapistId]"
+                  [routerLink]="['/therapy', day.therapistId]"
                   class="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-brand bg-surface dark:border-brand-light px-4 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:w-auto"
-                  [attr.aria-label]="'Book a session on ' + day.relativeLabel + ', ' + day.weekday + ' ' + day.dayNumber">
-                  Book
+                  [attr.aria-label]="'Open the profile of ' + day.therapistName + ', your session on ' + day.relativeLabel + ' at ' + day.time">
+                  Therapist
                   <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
                 </a>
               </li>
             }
           </ul>
         } @else {
-          <p class="mt-4 rounded-2xl bg-sunken p-4 text-base text-ink-soft">
-            No open days right now. Availability usually reopens within a week.
-          </p>
+          <div
+            appAnimateOnScroll
+            [style.--index]="2"
+            class="mt-4 flex flex-1 flex-col items-start gap-4 rounded-2xl bg-sunken p-5 sm:flex-row sm:items-center sm:justify-between">
+            <p class="text-base text-ink-soft">
+              You haven't booked a session yet. Once you do, it will appear here with the date and time.
+            </p>
+            <a
+              routerLink="/therapy"
+              class="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-brand bg-surface dark:border-brand-light px-4 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-sunken sm:w-auto">
+              Find a therapist
+              <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
+            </a>
+          </div>
         }
-
-        <p appAnimateOnScroll [style.--index]="5" class="mt-auto pt-4 text-xs text-ink-soft">
-          @if (nextClosedDayLabel) {
-            {{ nextClosedDayLabel }} is unavailable.
-          }
-          {{ openSessionDays }} open days remain in {{ sessionMonthLabel }}.
-        </p>
       </section>
 
       <!-- KPI signal strip: one comparative rail, shared baseline, hairline dividers -->

@@ -26,15 +26,18 @@ import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.
 import { DrawOnScrollDirective } from '@/shared/directives/draw-on-scroll.directive';
 import { AuthService } from '@/core/services/auth.service';
 import { resolveHttpsAvatarUrl } from '@/core/identity/avatar-url';
-import { THERAPISTS, type TherapistSessionSlot } from '@/features/therapy/data/therapist.data';
 import { ProfileDashboardService } from '../../services/profile-dashboard.service';
 
-interface SessionDay {
+/** A booked session prepared for display: date parts plus the booking details. */
+interface BookedSessionView {
   readonly key: string;
   readonly dayNumber: number;
   readonly weekday: string;
   readonly relativeLabel: string;
-  readonly slots: readonly TherapistSessionSlot[];
+  readonly therapistId: string;
+  readonly therapistName: string;
+  readonly time: string;
+  readonly detail: string;
 }
 
 @Component({
@@ -315,67 +318,67 @@ export class ProfileComponent {
   readonly closureIsValid = computed(() => this.closureConfirmation().trim().toUpperCase() === 'CLOSE');
 
   /**
-   * Session availability comes from the same dataset the therapist profile
-   * calendar renders, so both screens agree on which days are open.
+   * Upcoming sessions the member has booked, soonest first and capped so the tile
+   * cannot outgrow the bento grid. Nothing is booked yet, so the card holds an
+   * empty state rather than borrowing therapist availability data.
    */
-  private readonly therapist = THERAPISTS[0];
-  private readonly availability = this.therapist?.availability ?? [];
-  readonly therapistId = this.therapist?.id ?? '';
-  readonly therapistName = this.therapist?.name ?? '';
-  readonly therapistSession: string;
-  readonly sessionMonthLabel: string;
-  readonly openSessionDays: number;
-  /** Next few bookable days with their real times, newest first. */
-  readonly nextSessionDays: readonly SessionDay[];
-  readonly nextClosedDayLabel: string | null;
-
-  constructor() {
+  readonly bookedSessions = computed<readonly BookedSessionView[]>(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const month = today.getMonth();
-    const year = today.getFullYear();
 
-    this.sessionMonthLabel = today.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-    this.therapistSession = this.therapist
-      ? `${this.therapist.duration} · ${this.therapist.sessionMode}`
-      : '';
-
-    const upcoming = this.availability
-      .map((day) => ({ day, date: this.parseDateKey(day.date) }))
-      .filter((entry) => entry.date >= today);
-
-    this.openSessionDays = this.availability.filter((day) => {
-      const date = this.parseDateKey(day.date);
-      return date >= today && date.getMonth() === month && date.getFullYear() === year && day.state === 'available';
-    }).length;
-
-    this.nextSessionDays = upcoming
-      .filter((entry) => entry.day.state === 'available' && entry.day.slots.length > 0)
+    return this.dashboard().sessions
+      .map((session) => ({ session, date: this.parseDateKey(session.date) }))
+      .filter((entry) => entry.date >= today)
+      .sort((a, b) => a.date.getTime() - b.date.getTime() || this.minutesOfDay(a.session.time) - this.minutesOfDay(b.session.time))
       .slice(0, 3)
-      .map((entry) => ({
-        key: entry.day.date,
-        dayNumber: entry.date.getDate(),
-        weekday: entry.date.toLocaleDateString(undefined, { weekday: 'short' }),
-        relativeLabel: this.relativeDayLabel(entry.date, today),
-        slots: entry.day.slots,
+      .map(({ session, date }) => ({
+        key: session.id,
+        dayNumber: date.getDate(),
+        weekday: date.toLocaleDateString(undefined, { weekday: 'short' }),
+        relativeLabel: this.relativeDayLabel(date, today),
+        therapistId: session.therapistId,
+        therapistName: session.therapistName,
+        time: session.time,
+        detail: `${session.duration} · ${session.mode}`,
       }));
-
-    const closed = upcoming.find((entry) => entry.day.state === 'unavailable');
-    this.nextClosedDayLabel = closed
-      ? closed.date.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })
-      : null;
-  }
+  });
 
   private parseDateKey(key: string): Date {
     const [year, month, day] = key.split('-').map(Number);
     return new Date(year, month - 1, day);
   }
 
+  /**
+   * Minutes since midnight for a displayed start time, so same-day bookings sort
+   * chronologically. "9:00 AM" must come before "1:00 PM", which string order
+   * gets wrong. Accepts 12-hour ("1:00 PM") and 24-hour ("13:00") forms.
+   */
+  private minutesOfDay(time: string): number {
+    const match = /^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i.exec(time.trim());
+    if (!match) return Number.MAX_SAFE_INTEGER;
+
+    const [, rawHours, rawMinutes, meridiem] = match;
+    let hours = Number(rawHours) % 24;
+    if (meridiem) {
+      hours %= 12;
+      if (meridiem.toUpperCase() === 'PM') hours += 12;
+    }
+    return hours * 60 + Number(rawMinutes);
+  }
+
+  /**
+   * Day wording for a booked session. Beyond this week the weekday alone is
+   * ambiguous, so a date is used; the weekday still shows in the date square.
+   */
   private relativeDayLabel(date: Date, today: Date): string {
     const days = Math.round((date.getTime() - today.getTime()) / 86_400_000);
     if (days === 0) return 'Today';
     if (days === 1) return 'Tomorrow';
-    return date.toLocaleDateString(undefined, { weekday: 'long' });
+    if (days < 7) return date.toLocaleDateString(undefined, { weekday: 'long' });
+    if (date.getFullYear() === today.getFullYear()) {
+      return date.toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
+    }
+    return date.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   onAvatarError(): void {
