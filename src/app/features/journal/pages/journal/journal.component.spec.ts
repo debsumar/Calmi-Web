@@ -90,6 +90,23 @@ describe('JournalComponent', () => {
     expect(root.textContent).toContain('No entries yet.');
   });
 
+  it('labels the title field above the input instead of inside it', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const input = root.querySelector<HTMLInputElement>('#journal-entry-title');
+    const label = root.querySelector<HTMLLabelElement>('label[for="journal-entry-title"]');
+
+    expect(input).not.toBeNull();
+    // The prompt is visible copy above the field, not a placeholder that vanishes on typing.
+    expect(input?.getAttribute('placeholder')).toBeNull();
+    expect(label?.textContent).toContain('Give this entry a title');
+    expect(label?.className).not.toContain('sr-only');
+    // Label precedes the field in DOM order, so it reads as a caption above it.
+    expect(label!.compareDocumentPosition(input!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The field keeps a visible box of its own now that no placeholder hints at it.
+    expect(input?.className).toContain('border-hairline');
+    expect(input?.className).toContain('min-h-11');
+  });
+
   it('ignores Save while the editor is empty', () => {
     component.save('saved');
 
