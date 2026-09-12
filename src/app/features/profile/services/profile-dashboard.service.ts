@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { JournalService } from '@/features/journal/services/journal.service';
+import type { SessionMode } from '@/features/therapy/data/therapist.data';
 
 export interface PreviewSource {
   readonly kind: 'mock';
@@ -94,6 +95,19 @@ export interface SecurityRecord {
   readonly source: PreviewSource;
 }
 
+/** One session the member has actually booked. Empty until booking is live. */
+export interface BookedSessionRecord {
+  readonly id: string;
+  readonly therapistId: string;
+  readonly therapistName: string;
+  /** Date key, YYYY-MM-DD. */
+  readonly date: string;
+  /** Start time as shown, e.g. "10:00 AM". */
+  readonly time: string;
+  readonly duration: string;
+  readonly mode: SessionMode;
+}
+
 export interface AccountClosureRecord {
   readonly id: string;
   readonly label: string;
@@ -104,6 +118,7 @@ export interface AccountClosureRecord {
 
 export interface ProfileDashboardSnapshot {
   readonly subscription: SubscriptionSummary;
+  readonly sessions: readonly BookedSessionRecord[];
   readonly quotas: readonly QuotaRecord[];
   readonly quotasSource: PreviewSource;
   readonly kpis: readonly KpiRecord[];
@@ -136,6 +151,8 @@ export class ProfileDashboardService {
       renewal: 'Allowances reset monthly',
       source: PREVIEW_SOURCE,
     },
+    // TODO(backend): Populate from the booking service. No bookings exist yet.
+    sessions: [],
     quotas: [
       {
         id: 'support-messages',
