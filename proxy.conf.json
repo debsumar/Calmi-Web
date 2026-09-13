@@ -1,4 +1,10 @@
 {
+  "/api/waitlist": {
+    "target": "https://www.calmi.in",
+    "changeOrigin": true,
+    "secure": true,
+    "ws": false
+  },
   "/calmi-api": {
     "target": "https://calmi-voice-demo-production.up.railway.app",
     "changeOrigin": true,

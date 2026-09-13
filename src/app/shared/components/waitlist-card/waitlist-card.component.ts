@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { MessageService } from 'primeng/api';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { WaitlistService } from '@/core/services/waitlist.service';
 
@@ -6,6 +7,8 @@ type WaitlistStatus = 'idle' | 'submitting' | 'success' | 'error';
 
 // Pragmatic client-side shape check only; the server remains the source of truth.
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const FALLBACK_ERROR = "We couldn't add you just now. Please try again.";
+const INVALID_EMAIL_ERROR = 'Enter a valid email address, like you@example.com.';
 
 @Component({
   selector: 'app-waitlist-card',
@@ -52,8 +55,8 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
                  placeholder="Enter Your Email"
                  [value]="email()"
                  (input)="onEmailInput($event)"
-                 [attr.aria-invalid]="fieldError() ? 'true' : null"
-                 [attr.aria-describedby]="errorMessage() ? 'waitlist-error' : null"
+                 [attr.aria-invalid]="isFieldInvalid() ? 'true' : null"
+                 [attr.aria-describedby]="visibleError() ? 'waitlist-error' : null"
                  class="flex-1 min-w-0 rounded-full bg-sunken border border-hairline px-5 py-3 text-base text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface">
           <button type="submit"
                   [disabled]="status() === 'submitting'"
@@ -65,12 +68,17 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
           </button>
         </form>
 
-        @if (errorMessage()) {
+        @if (visibleError()) {
+          <!--
+            Submit failures assert immediately (role="alert"); the live typing
+            hint is polite so a screen reader is not interrupted per keystroke.
+          -->
           <p id="waitlist-error"
-             role="alert"
+             [attr.role]="errorMessage() ? 'alert' : 'status'"
+             aria-live="polite"
              class="mt-3 inline-flex items-center justify-center gap-2 text-xs font-semibold text-danger">
             <svg [lucideIcon]="'circle-alert'" [size]="16" aria-hidden="true"></svg>
-            <span>{{ errorMessage() }}</span>
+            <span>{{ visibleError() }}</span>
           </p>
         }
       }
@@ -79,6 +87,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 })
 export class WaitlistCardComponent {
   private waitlistService = inject(WaitlistService);
+  private messageService = inject(MessageService, { optional: true });
 
   readonly email = signal('');
   /** Decoy field value. Stays empty for real users; forwarded to the server as-is. */
@@ -88,6 +97,17 @@ export class WaitlistCardComponent {
   /** True only when the email field itself is invalid, so aria-invalid never fires on a network failure. */
   readonly fieldError = signal(false);
   readonly isValidEmail = computed(() => EMAIL_PATTERN.test(this.email().trim()));
+  /**
+   * Live regex feedback: shown from the first character typed and cleared the
+   * moment the address becomes valid. Stays silent while the field is empty so
+   * an untouched form never looks broken.
+   */
+  readonly liveEmailError = computed(() =>
+    this.email().trim().length === 0 || this.isValidEmail() ? '' : INVALID_EMAIL_ERROR,
+  );
+  /** Submit-time message wins; otherwise the live hint fills the same slot. */
+  readonly visibleError = computed(() => this.errorMessage() || this.liveEmailError());
+  readonly isFieldInvalid = computed(() => this.fieldError() || this.liveEmailError() !== '');
 
   onEmailInput(event: Event): void {
     this.email.set((event.target as HTMLInputElement).value);
@@ -109,7 +129,7 @@ export class WaitlistCardComponent {
 
     if (!this.isValidEmail()) {
       this.fieldError.set(true);
-      this.errorMessage.set('Enter a valid email address, like you@example.com.');
+      this.errorMessage.set(INVALID_EMAIL_ERROR);
       this.status.set('error');
       return;
     }
@@ -118,21 +138,55 @@ export class WaitlistCardComponent {
     this.errorMessage.set('');
     this.status.set('submitting');
 
-    try {
-      const response = await this.waitlistService.join(this.email().trim(), this.honeypot());
+    const result = await this.waitlistService.submit(this.email().trim(), this.honeypot());
 
-      // A 200 response can still carry a server-side rejection; only affirm on success.
-      if (response?.success === false) {
-        this.errorMessage.set(response.message ?? "We couldn't add you just now. Please try again.");
-        this.status.set('error');
+    /*
+     * Outcome matrix. The backend is the gate: 'created' is the only outcome
+     * that triggered the Brevo call, so it is the only one that can affirm.
+     * A Brevo failure after a successful create still counts as joined - the
+     * sign-up is stored, only the welcome mail is missing.
+     */
+    switch (result.server.outcome) {
+      case 'created':
+        this.showSuccess(result.server.message ?? 'Added to waiting list successfully.');
         return;
-      }
-
-      this.status.set('success');
-      this.email.set('');
-    } catch {
-      this.errorMessage.set("We couldn't add you just now. Please try again.");
-      this.status.set('error');
+      case 'duplicate':
+        this.status.set('idle');
+        this.messageService?.add({
+          severity: 'warn',
+          summary: 'Already on waitlist',
+          detail: result.server.message ?? 'This email is already on the waiting list.',
+        });
+        return;
+      case 'rate_limited':
+        this.status.set('idle');
+        this.messageService?.add({
+          severity: 'warn',
+          summary: 'Too many attempts',
+          detail: 'Too many attempts. Please wait a minute and try again.',
+        });
+        return;
+      case 'invalid':
+      case 'failed':
+        this.showError(result.server.message ?? FALLBACK_ERROR);
+        return;
+      case 'skipped':
+        // Honeypot only: answer a bot exactly like a human, having called nothing.
+        this.status.set('success');
+        this.email.set('');
+        return;
     }
+  }
+
+  private showSuccess(detail: string): void {
+    this.status.set('success');
+    this.email.set('');
+    this.messageService?.add({ severity: 'success', summary: 'Waitlist updated', detail });
+  }
+
+  private showError(detail: string): void {
+    this.errorMessage.set(detail);
+    this.status.set('error');
+    this.messageService?.add({ severity: 'error', summary: 'Waitlist unavailable', detail });
   }
 }

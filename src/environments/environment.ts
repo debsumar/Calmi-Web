@@ -1,6 +1,9 @@
 export const environment = {
   production: false,
   apiUrl: '/api',
+  // Shared backend until separate development and production backends exist.
+  // Routes are served at the root; /api only hosts the Swagger UI and /api-json.
+  serverUrl: 'https://calmi-backend.vercel.app',
   apiBaseUrl: '/calmi-api',
   chat: {
     modelKey: 'openai-lite',
