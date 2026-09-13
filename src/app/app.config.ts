@@ -2,6 +2,7 @@
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
+import { MessageService } from 'primeng/api';
 import {
   provideLucideIcons,
   LucideBot, LucideCheckCheck,
@@ -41,6 +42,7 @@ export const appConfig: ApplicationConfig = {
       license: primeLicenseKey,
       theme: { preset: CalmiPreset, options: { darkModeSelector: '.app-dark' } },
     }),
+    MessageService,
     provideLucideIcons(
       LucideBot, LucideCheckCheck,
       LucideArrowRight, LucideArrowLeft, LucideMoon, LucideUser, LucideFaceSlightlyFrowning, LucideBrain,
