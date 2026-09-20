@@ -20,6 +20,7 @@ describe('therapist filtering data', () => {
     expect(LANGUAGE_OPTIONS).toContain('Bengali');
     expect(LANGUAGE_OPTIONS).toContain('Tamil');
     expect(LANGUAGE_OPTIONS).toContain('Kannada');
+    expect(LANGUAGE_OPTIONS).toContain('Punjabi');
     expect(GENDER_OPTIONS.map((option) => option.value)).toEqual(['female', 'male', 'non-binary']);
   });
 
@@ -50,6 +51,26 @@ describe('therapist filtering data', () => {
     expect(week.every((therapist) => hasAvailability(therapist, 'week', todayWithTime))).toBe(true);
     expect(weekend.length).toBeGreaterThan(0);
     expect(weekend.length).toBeLessThan(THERAPISTS.length);
+  });
+
+  it('includes supplied therapist profiles with real weekday availability', () => {
+    const addedTherapists = THERAPISTS.filter((therapist) => ['pavneet-kaur', 'neena-pareek', 'rini-rao'].includes(therapist.id));
+    const pavneet = addedTherapists.find((therapist) => therapist.id === 'pavneet-kaur');
+    const neena = addedTherapists.find((therapist) => therapist.id === 'neena-pareek');
+    const availableWeekdays = (therapist: typeof pavneet) => (therapist?.availability ?? [])
+      .filter((day) => day.state === 'available')
+      .map((day) => new Date(`${day.date}T00:00:00`).getDay());
+
+    expect(addedTherapists.map(({ id, image }) => ({ id, image }))).toEqual([
+      { id: 'pavneet-kaur', image: 'assets/users/pavneet.avif' },
+      { id: 'neena-pareek', image: 'assets/users/neena.avif' },
+      { id: 'rini-rao', image: 'assets/users/rini.avif' },
+    ]);
+    expect(pavneet?.bio.startsWith('I am a Counselling Psychologist')).toBe(true);
+    expect(THERAPISTS.find((therapist) => therapist.id === 'gargi-yadav')?.bio.startsWith('Gargi Yadav creates a calm')).toBe(true);
+    expect(availableWeekdays(pavneet).filter((weekday) => weekday === 0 || weekday === 6)).toHaveLength(0);
+    expect(availableWeekdays(neena).filter((weekday) => weekday === 0)).toHaveLength(0);
+    expect(availableWeekdays(neena).filter((weekday) => weekday === 6).length).toBeGreaterThan(0);
   });
 
   it('uses OR logic for selected languages and AND logic across criteria', () => {

@@ -125,13 +125,15 @@ function availabilityFor(
   experienceYears: number,
   unavailableThrough = 0,
   unavailableShift = 0,
+  workingDays?: readonly number[],
 ): TherapistAvailabilityDay[] {
   const today = localToday();
   const morningHour = 9 + (Math.floor(experienceYears) % 3);
 
   return Array.from({ length: 60 }, (_, offset) => {
     const date = addDays(today, offset);
-    const unavailable = offset <= unavailableThrough || (offset + unavailableShift) % 4 === 0;
+    const unavailable = offset <= unavailableThrough
+      || (workingDays ? !workingDays.includes(date.getDay()) : (offset + unavailableShift) % 4 === 0);
     const state: AvailabilityState = unavailable ? 'unavailable' : 'available';
     return {
       date: toDateKey(date),
@@ -170,19 +172,24 @@ function sessionModeLabel(sessionModes: readonly SessionMode[]): string {
 }
 
 function createTherapist(
-  base: Omit<Therapist, 'bio' | 'whyChooseUs' | 'testimonials' | 'availability' | 'sessionMode'>,
+  base: Omit<Therapist, 'bio' | 'whyChooseUs' | 'testimonials' | 'availability' | 'sessionMode'> & { bio?: string },
   unavailableThrough = 0,
   unavailableShift = 0,
+  workingDays?: readonly number[],
 ): Therapist {
   return {
     ...base,
     sessionMode: sessionModeLabel(base.sessionModes),
     ...profileContent(base.name, base.specialties[0] ?? 'personal goals', base.rating),
-    availability: availabilityFor(base.id, base.experienceYears, unavailableThrough, unavailableShift),
+    ...(base.bio ? { bio: base.bio } : {}),
+    availability: availabilityFor(base.id, base.experienceYears, unavailableThrough, unavailableShift, workingDays),
   };
 }
 
 export const THERAPISTS: Therapist[] = [
+  createTherapist({ id: 'pavneet-kaur', name: 'Pavneet Kaur', image: 'assets/users/pavneet.avif', subtitle: 'Counselling Psychologist', qualifications: ['Masters in Psychology'], experienceYears: 2, price: 1500, duration: '45 mins', sessionModes: ['Video'], gender: 'female', rating: 4.8, reviews: 24, specialties: ['Anxiety', 'Depression', 'Trauma & PTSD', 'Relationships', 'Stress Management'], languages: ['English', 'Hindi', 'Punjabi'], bio: 'I am a Counselling Psychologist with an MA in Clinical Psychology, trained in CBT and REBT, and a trauma-informed approach to counselling. I work with individuals experiencing anxiety, stress, relationship concerns, emotional difficulties, self-esteem concerns, life transitions, and unhelpful thought patterns. My approach is collaborative, empathetic, and focused on helping clients develop practical coping strategies, healthier perspectives, and sustainable emotional well-being.' }, 0, 0, [1, 2, 3, 4, 5]),
+  createTherapist({ id: 'neena-pareek', name: 'Neena Pareek', image: 'assets/users/neena.avif', subtitle: 'Reiki Healer, Breathwork & Meditation Practitioner', qualifications: ['MSc (IT)', 'Reiki Master'], experienceYears: 15, price: 1000, duration: '45 mins', sessionModes: ['Video'], gender: 'female', rating: 4.9, reviews: 210, specialties: ['Anxiety', 'Stress Management', 'Depression'], languages: ['Hindi'], bio: 'I am a Reiki Healer and Breathwork Practitioner with 15 years of experience, helping people reduce stress, anxiety and emotional overwhelm through personalised Reiki healing, breathwork and meditation practices. My approach is gentle, supportive and focused on creating a calm and balanced state of mind.' }, 0, 0, [1, 2, 3, 4, 5, 6]),
+  createTherapist({ id: 'rini-rao', name: 'Rini Rao', image: 'assets/users/rini.avif', subtitle: 'Relationship and Emotional Wellness Coach', qualifications: ['Certified Life Coach'], experienceYears: 6, price: 1500, duration: '45 mins', sessionModes: ['Video'], gender: 'female', rating: 4.8, reviews: 88, specialties: ['Relationships', 'Postpartum', 'Psychosexual Issues', 'Emotional Intimacy'], languages: ['English', 'Hindi'], bio: 'I help couples and individuals build deeper emotional intimacy, improve communication, repair conflicts, and navigate relationship and parenthood stress. I offer 1:1 coaching to help you build healthier, stronger relationships.' }, 0, 0, [1, 2, 3, 4, 5, 6]),
   createTherapist({ id: 'gargi-yadav', name: 'Gargi Yadav', image: 'assets/users/gargi.avif', subtitle: 'Counselling Psychologist', qualifications: ['B.A', 'M.A. (Psychology)'], experienceYears: 4.5, price: 2000, duration: '50 mins', sessionModes: ['Video', 'Audio'], gender: 'female', rating: 4.9, reviews: 128, specialties: ['Relationship & Communication Issues', 'Anxiety & Emotional Regulation', 'Self-Esteem & Personal Growth', 'Grief & Emotional Well-being'], languages: ['English', 'Hindi'] }, -1, 1),
   createTherapist({ id: 'yukta-bansal', name: 'Yukta Bansal', image: 'assets/users/yukta.avif', subtitle: 'Counselling Psychologist', qualifications: ['BA', 'MA Psychology'], experienceYears: 3, price: 1500, duration: '40 mins', sessionModes: ['Video', 'Audio'], gender: 'female', rating: 4.8, reviews: 96, specialties: ['Teen & Adult Counselling', 'Relationship & Marital Issues', 'Self-Esteem & Depression', 'Women Challenges'], languages: ['English', 'Hindi'] }, 1, 1),
   createTherapist({ id: 'prerna-gawde', name: 'Prerna Gawde', image: '', subtitle: 'Clinical Psychologist', qualifications: ['M.Phil', 'M.A.'], experienceYears: 6, price: 2500, duration: '45 mins', sessionModes: ['Video', 'Audio'], gender: 'female', rating: 4.7, reviews: 74, specialties: ['Bipolar disorder', 'Schizophrenia'], languages: ['English', 'Hindi', 'Marathi'] }, 2, 0),
