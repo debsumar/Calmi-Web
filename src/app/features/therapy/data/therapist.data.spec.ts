@@ -67,10 +67,38 @@ describe('therapist filtering data', () => {
       { id: 'rini-rao', image: 'assets/users/rini.avif' },
     ]);
     expect(pavneet?.bio.startsWith('I am a Counselling Psychologist')).toBe(true);
+    expect(neena?.bio.startsWith('I am a Reiki Healer')).toBe(true);
+    expect(addedTherapists.find((therapist) => therapist.id === 'rini-rao')?.bio.startsWith('I help couples')).toBe(true);
     expect(THERAPISTS.find((therapist) => therapist.id === 'gargi-yadav')?.bio.startsWith('Gargi Yadav creates a calm')).toBe(true);
     expect(availableWeekdays(pavneet).filter((weekday) => weekday === 0 || weekday === 6)).toHaveLength(0);
     expect(availableWeekdays(neena).filter((weekday) => weekday === 0)).toHaveLength(0);
     expect(availableWeekdays(neena).filter((weekday) => weekday === 6).length).toBeGreaterThan(0);
+  });
+
+  it('lists the newly added therapists first and keeps their booking fields', () => {
+    expect(THERAPISTS.slice(0, 3).map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'neena-pareek', 'rini-rao']);
+    expect(THERAPISTS[3]?.id).toBe('gargi-yadav');
+    expect(THERAPISTS.slice(0, 3).map(({ price, experienceYears, duration, sessionModes, languages }) => ({ price, experienceYears, duration, sessionModes, languages }))).toEqual([
+      { price: 1500, experienceYears: 2, duration: '45 mins', sessionModes: ['Video'], languages: ['English', 'Hindi', 'Punjabi'] },
+      { price: 1000, experienceYears: 15, duration: '45 mins', sessionModes: ['Video'], languages: ['Hindi'] },
+      { price: 1500, experienceYears: 6, duration: '45 mins', sessionModes: ['Video'], languages: ['English', 'Hindi'] },
+    ]);
+  });
+
+  it('keeps today bookable for the new therapists when today is one of their working days', () => {
+    const today = new Date();
+    const todayKey = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+    const workingDays: Record<string, readonly number[]> = {
+      'pavneet-kaur': [1, 2, 3, 4, 5],
+      'neena-pareek': [1, 2, 3, 4, 5, 6],
+      'rini-rao': [1, 2, 3, 4, 5, 6],
+    };
+
+    THERAPISTS.slice(0, 3).forEach((therapist) => {
+      const todayEntry = therapist.availability.find((day) => day.date === todayKey);
+      const expected = workingDays[therapist.id]?.includes(today.getDay()) ? 'available' : 'unavailable';
+      expect(todayEntry?.state).toBe(expected);
+    });
   });
 
   it('uses OR logic for selected languages and AND logic across criteria', () => {
