@@ -9,7 +9,7 @@ describe('TherapistProfileAboutComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({ imports: [TherapistProfileAboutComponent] }).compileComponents();
     fixture = TestBed.createComponent(TherapistProfileAboutComponent);
-    fixture.componentRef.setInput('profile', THERAPISTS[0]);
+    fixture.componentRef.setInput('profile', THERAPISTS.find((therapist) => therapist.id === 'gargi-yadav')!);
     fixture.detectChanges();
   });
 

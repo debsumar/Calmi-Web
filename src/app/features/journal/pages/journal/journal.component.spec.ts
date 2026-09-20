@@ -90,21 +90,29 @@ describe('JournalComponent', () => {
     expect(root.textContent).toContain('No entries yet.');
   });
 
-  it('labels the title field above the input instead of inside it', () => {
+  it('uses an accessible title placeholder without a visible label', () => {
     const root = fixture.nativeElement as HTMLElement;
     const input = root.querySelector<HTMLInputElement>('#journal-entry-title');
-    const label = root.querySelector<HTMLLabelElement>('label[for="journal-entry-title"]');
 
     expect(input).not.toBeNull();
-    // The prompt is visible copy above the field, not a placeholder that vanishes on typing.
-    expect(input?.getAttribute('placeholder')).toBeNull();
-    expect(label?.textContent).toContain('Give this entry a title');
-    expect(label?.className).not.toContain('sr-only');
-    // Label precedes the field in DOM order, so it reads as a caption above it.
-    expect(label!.compareDocumentPosition(input!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    // The field keeps a visible box of its own now that no placeholder hints at it.
+    expect(root.querySelector('label[for="journal-entry-title"]')).toBeNull();
+    expect(input?.getAttribute('placeholder')).toBe('New journal entry');
+    expect(input?.getAttribute('aria-label')).toBe('Entry title');
     expect(input?.className).toContain('border-hairline');
     expect(input?.className).toContain('min-h-11');
+  });
+
+  it('shows the Figma body placeholder only while the editor is empty', async () => {
+    const root = fixture.nativeElement as HTMLElement;
+
+    expect(root.textContent).toContain('Take a moment. Write freely.');
+    expect(root.textContent).toContain("What's on your mind today?");
+    expect(root.textContent).toContain('You can write about anything');
+
+    component.content.set('<strong>a first line</strong>');
+    await fixture.whenStable();
+
+    expect(root.textContent).not.toContain("What's on your mind today?");
   });
 
   it('ignores Save while the editor is empty', () => {

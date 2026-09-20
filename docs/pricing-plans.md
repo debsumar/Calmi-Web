@@ -14,7 +14,7 @@ Scope files:
 |---|---:|---:|---|---|
 | Free | `₹0` forever | `₹0` forever | Perfect for exploring Calmi. | Get Started |
 | Student Premium | `₹99`/month | `₹999`/year | Everything you need for everyday self-reflection. | Verify Student Status |
-| Premium | `₹249`/month | `₹2,399`/year | More room to reflect, understand and explore. | Start 7-Day Free Trial |
+| Plus | `₹249`/month | `₹2,399`/year | More room to reflect, understand and explore. | Start 7-Day Free Trial |
 
 The annual values are explicit product prices. They are not calculated from the monthly values.
 The toggle's `Save 20%` label is the shared product message requested for annual billing.
@@ -39,7 +39,7 @@ The toggle's `Save 20%` label is the shared product message requested for annual
 
 The Student Premium card retains its `Recommended` ribbon and `Student Plan` badge. Its `Verify Student Status` CTA opens the dedicated verification dialog. See [Student Plan Verification](student-verification-plan.md).
 
-### Premium
+### Plus
 1. Everything in Student Premium
 2. Higher Rumi AI limits — 100–150 conversations/month
 3. Deeper Mood Insights
@@ -48,7 +48,7 @@ The Student Premium card retains its `Recommended` ribbon and `Student Plan` bad
 6. Exclusive Weekly Content
 7. Priority Support
 
-The Premium card retains its `Most Popular` ribbon and starts the existing 7-day trial onboarding
+The Plus card retains its `Most Popular` ribbon and starts the existing 7-day trial onboarding
 flow.
 
 ## Implementation notes

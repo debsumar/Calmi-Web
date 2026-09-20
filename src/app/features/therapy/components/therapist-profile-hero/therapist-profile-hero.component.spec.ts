@@ -13,7 +13,7 @@ describe('TherapistProfileHeroComponent', () => {
       providers: [provideRouter([])],
     }).compileComponents();
     fixture = TestBed.createComponent(TherapistProfileHeroComponent);
-    fixture.componentRef.setInput('profile', THERAPISTS[0]);
+    fixture.componentRef.setInput('profile', THERAPISTS.find((therapist) => therapist.id === 'gargi-yadav')!);
     fixture.detectChanges();
   });
 
