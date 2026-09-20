@@ -96,7 +96,7 @@ describe('JournalComponent', () => {
 
     expect(input).not.toBeNull();
     expect(root.querySelector('label[for="journal-entry-title"]')).toBeNull();
-    expect(input?.getAttribute('placeholder')).toBe('New journal entry');
+    expect(input?.getAttribute('placeholder')).toBe("What's on your mind today?");
     expect(input?.getAttribute('aria-label')).toBe('Entry title');
     expect(input?.className).toContain('border-hairline');
     expect(input?.className).toContain('min-h-11');
@@ -106,13 +106,14 @@ describe('JournalComponent', () => {
     const root = fixture.nativeElement as HTMLElement;
 
     expect(root.textContent).toContain('Take a moment. Write freely.');
-    expect(root.textContent).toContain("What's on your mind today?");
     expect(root.textContent).toContain('You can write about anything');
+    // The prompt lives in the title placeholder now, so the body must not repeat it.
+    expect(root.textContent).not.toContain("What's on your mind today?");
 
     component.content.set('<strong>a first line</strong>');
     await fixture.whenStable();
 
-    expect(root.textContent).not.toContain("What's on your mind today?");
+    expect(root.textContent).not.toContain('You can write about anything');
   });
 
   it('ignores Save while the editor is empty', () => {

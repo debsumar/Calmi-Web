@@ -129,7 +129,7 @@
         }
 
         <input id="journal-entry-title" type="text" [value]="title()" (input)="title.set($any($event.target).value)"
-               placeholder="New journal entry" aria-label="Entry title" autocomplete="off"
+               placeholder="What's on your mind today?" aria-label="Entry title" autocomplete="off"
                class="mt-4 min-h-11 w-full rounded-xl border border-hairline bg-sunken px-4 py-2 text-lg font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
 
         <p id="journal-entry-prompt" class="mt-6 text-xs text-ink-soft">Take a moment. Write freely.</p>
@@ -150,7 +150,6 @@
                  [style.min-height]="expanded() ? '70vh' : '16rem'"></div>
             @if (isEmptyEditor()) {
               <p aria-hidden="true" class="pointer-events-none absolute left-6 right-6 top-5 text-base leading-relaxed text-ink-muted">
-                What's on your mind today?<br>
                 You can write about anything — your feelings, thoughts, a moment from your day, or how you're feeling right now!
               </p>
             }
