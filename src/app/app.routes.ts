@@ -30,6 +30,10 @@ export const appRoutes: Routes = [
         loadComponent: () => import('@/features/rumi-ai/pages/rumi-ai/rumi-ai.component').then((m) => m.RumiAiComponent),
       },
       {
+        path: 'therapy/wellness-quiz',
+        loadComponent: () => import('@/features/therapy/pages/wellness-quiz/wellness-quiz.component').then((m) => m.WellnessQuizComponent),
+      },
+      {
         path: 'therapy/:id',
         loadComponent: () => import('@/features/therapy/pages/therapist-profile/therapist-profile.component').then((m) => m.TherapistProfileComponent),
       },

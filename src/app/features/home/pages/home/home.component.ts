@@ -31,7 +31,7 @@ export class HomeComponent {
     { icon: 'notebook-pen', title: 'Write it out', description: 'Journal your thoughts.', route: '/journal' },
     { icon: 'message-circle-heart', title: 'Talk it through', description: 'Talk with Rumi AI.', route: '/rumi-ai' },
     { icon: 'moon-star', title: 'Sleep better', description: 'Relax and fall asleep faster.', route: '/sleep' },
-    { icon: 'stethoscope', title: 'Get support', description: 'Connect with an expert.', route: '/therapy' },
+    { icon: 'stethoscope', title: 'Get support', description: 'Connect with an expert.', route: '/therapy/wellness-quiz' },
   ]);
 
   getUserFirstName(): string {
