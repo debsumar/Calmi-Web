@@ -4,6 +4,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
+import { BreadcrumbComponent } from '@/shared/components/breadcrumb/breadcrumb.component';
 import { AuthService } from '@/core/services/auth.service';
 import { countWords, JOURNAL_PROMPTS, JOURNAL_TAGS, JournalEntry, JournalEntryStatus, plainTextFrom, previewOf, toEditorHtml } from '../../models/journal-entry.model';
 import { JournalService } from '../../services/journal.service';
@@ -34,7 +35,7 @@ type PendingSwitch = { kind: 'new' } | { kind: 'entry'; entry: JournalEntry };
 
 @Component({
   selector: 'app-journal',
-  imports: [LucideDynamicIcon, RouterLink, DatePipe, AnimateOnScrollDirective],
+  imports: [LucideDynamicIcon, RouterLink, DatePipe, AnimateOnScrollDirective, BreadcrumbComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './journal.component.html',
   styles: `

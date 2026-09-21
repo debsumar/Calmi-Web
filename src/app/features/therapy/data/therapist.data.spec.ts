@@ -76,12 +76,13 @@ describe('therapist filtering data', () => {
   });
 
   it('lists the newly added therapists first and keeps their booking fields', () => {
-    expect(THERAPISTS.slice(0, 3).map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'neena-pareek', 'rini-rao']);
-    expect(THERAPISTS[3]?.id).toBe('gargi-yadav');
-    expect(THERAPISTS.slice(0, 3).map(({ price, experienceYears, duration, sessionModes, languages }) => ({ price, experienceYears, duration, sessionModes, languages }))).toEqual([
+    expect(THERAPISTS.slice(0, 4).map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'neena-pareek', 'rini-rao', 'isha-attri']);
+    expect(THERAPISTS[4]?.id).toBe('gargi-yadav');
+    expect(THERAPISTS.slice(0, 4).map(({ price, experienceYears, duration, sessionModes, languages }) => ({ price, experienceYears, duration, sessionModes, languages }))).toEqual([
       { price: 1500, experienceYears: 2, duration: '45 mins', sessionModes: ['Video'], languages: ['English', 'Hindi', 'Punjabi'] },
       { price: 1000, experienceYears: 15, duration: '45 mins', sessionModes: ['Video'], languages: ['Hindi'] },
       { price: 1500, experienceYears: 6, duration: '45 mins', sessionModes: ['Video'], languages: ['English', 'Hindi'] },
+      { price: 1500, experienceYears: 1, duration: '60 mins', sessionModes: ['Video'], languages: ['English', 'Hindi'] },
     ]);
   });
 
@@ -92,9 +93,10 @@ describe('therapist filtering data', () => {
       'pavneet-kaur': [1, 2, 3, 4, 5],
       'neena-pareek': [1, 2, 3, 4, 5, 6],
       'rini-rao': [1, 2, 3, 4, 5, 6],
+      'isha-attri': [1, 2, 3, 4, 5],
     };
 
-    THERAPISTS.slice(0, 3).forEach((therapist) => {
+    THERAPISTS.slice(0, 4).forEach((therapist) => {
       const todayEntry = therapist.availability.find((day) => day.date === todayKey);
       const expected = workingDays[therapist.id]?.includes(today.getDay()) ? 'available' : 'unavailable';
       expect(todayEntry?.state).toBe(expected);

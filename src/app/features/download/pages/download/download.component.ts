@@ -1,27 +1,15 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
+import { BreadcrumbComponent } from '@/shared/components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-download',
-  imports: [RouterLink, AnimateOnScrollDirective],
+  imports: [BreadcrumbComponent, AnimateOnScrollDirective],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="bg-canvas text-ink">
       <section class="mx-auto max-w-6xl px-4 pb-16 pt-4 sm:px-6 md:px-8 md:pb-24 md:pt-6" aria-labelledby="download-title">
-        <nav appAnimateOnScroll style="--index:0" aria-label="Breadcrumb" class="mb-10 md:mb-16">
-          <ol class="flex flex-wrap items-center gap-2 text-xs text-ink-soft">
-            <li>
-              <a routerLink="/home"
-                 class="inline-flex min-h-11 items-center gap-2 rounded-full px-3 font-semibold text-brand-dark dark:text-brand-light transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
-                <span aria-hidden="true" class="text-base">←</span>
-                <span>Back to home</span>
-              </a>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li aria-current="page">Download app</li>
-          </ol>
-        </nav>
+        <app-breadcrumb backLink="/home" backLabel="Back to home" currentPage="Download app" navClass="mb-10 md:mb-16" [animate]="true" [animationIndex]="0" />
 
         <div class="grid items-center gap-12 md:grid-cols-[minmax(0,0.9fr)_minmax(20rem,1.1fr)] md:gap-8 lg:gap-16">
           <div appAnimateOnScroll style="--index:1" class="min-w-0 max-w-xl md:order-2">

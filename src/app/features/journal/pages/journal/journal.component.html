@@ -1,6 +1,8 @@
 <div class="bg-canvas text-ink">
   <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:px-8 md:py-10" aria-labelledby="journal-title">
-    <header appAnimateOnScroll style="--index:0" class="mx-auto max-w-xl text-center">
+    <app-breadcrumb backLink="/home" backLabel="Back to home" currentPage="Journal" navClass="mb-6 md:mb-8" [animate]="true" [animationIndex]="0" />
+
+    <header appAnimateOnScroll style="--index:1" class="mx-auto max-w-xl text-center">
       <h1 id="journal-title" class="font-sans text-3xl font-bold leading-tight text-ink md:text-5xl">Journal</h1>
       <p class="mt-2 text-lg leading-relaxed text-ink-soft">A private space for your thoughts.</p>
     </header>
@@ -9,7 +11,7 @@
 
       <!-- Entry list. Editor comes first on small screens; the list collapses behind
            a disclosure so writing is never pushed below the fold. -->
-      <aside appAnimateOnScroll style="--index:1" aria-labelledby="journal-entries-title"
+      <aside appAnimateOnScroll style="--index:2" aria-labelledby="journal-entries-title"
              class="order-2 min-w-0 rounded-2xl border border-hairline bg-sunken p-6 lg:order-1">
         <button type="button" (click)="startNewEntry()"
                 class="mx-auto flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand-deep px-8 py-3 text-base font-semibold text-on-brand-deep transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
@@ -99,7 +101,7 @@
       </aside>
 
       <!-- Editor -->
-      <div appAnimateOnScroll style="--index:2" class="order-1 min-w-0 lg:order-2">
+      <div appAnimateOnScroll style="--index:3" class="order-1 min-w-0 lg:order-2">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <p class="text-base text-ink-soft">{{ startedAt() | date:'EEEE, d MMMM y' }}</p>
           <p class="text-base text-ink-soft">{{ startedAt() | date:'h:mm a' }}</p>
@@ -224,7 +226,7 @@
 
       <!-- Right rail: continue-on-app, tags and prompts. Below the editor on small
            screens, third column from xl. -->
-      <aside appAnimateOnScroll style="--index:3" aria-label="Journal tools"
+      <aside appAnimateOnScroll style="--index:4" aria-label="Journal tools"
              class="order-3 flex min-w-0 flex-col gap-6 lg:col-span-2 xl:col-span-1">
         <div class="rounded-2xl border border-hairline bg-surface p-5 shadow-card">
           <div class="flex items-start gap-3">

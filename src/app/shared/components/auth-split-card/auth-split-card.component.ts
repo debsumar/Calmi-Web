@@ -70,7 +70,7 @@ const SLIDE_INTERVAL_MS = 6000;
               </div>
 
               <ul class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-on-brand-deep">
-                <li>Licensed therapists</li>
+                <li>Licensed experts</li>
                 <li aria-hidden="true">&middot;</li>
                 <li>10k+ sessions</li>
                 <li aria-hidden="true">&middot;</li>

@@ -240,7 +240,7 @@ export class AppTopbar {
   navLinks = signal([
     { path: '/home', label: 'Home' },
     { path: '/rumi-ai', label: 'Rumi AI' },
-    { path: '/therapy', label: 'Therapy' },
+    { path: '/therapy', label: 'Experts' },
     { path: '/sleep', label: 'Sleep' },
     { path: '/about', label: 'About Us' },
     { path: '/pricing', label: 'Pricing' },
