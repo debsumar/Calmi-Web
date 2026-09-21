@@ -1,0 +1,59 @@
+<main class="bg-canvas">
+  <div class="mx-auto max-w-6xl px-4 py-6 md:px-8">
+    <nav aria-label="Breadcrumb" class="mb-6">
+      <ol class="flex flex-wrap items-center gap-2 text-xs text-ink-soft">
+        <li>
+          <a [routerLink]="['/therapy']" class="inline-flex items-center gap-2 rounded-full text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
+            <svg lucideArrowLeft [size]="16" aria-hidden="true"></svg>
+            <span>Therapy</span>
+          </a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" class="text-ink">Wellness Quiz</li>
+      </ol>
+    </nav>
+
+    <section class="overflow-hidden rounded-3xl border border-hairline bg-surface shadow-card" aria-labelledby="wellness-quiz-title">
+      <header class="border-b border-hairline px-4 py-8 text-center md:px-8 md:py-10">
+        <h1 id="wellness-quiz-title" class="text-3xl font-bold leading-tight text-ink md:text-5xl">A little about what you’re experiencing.</h1>
+      </header>
+
+      <form class="p-4 md:p-8" (submit)="$event.preventDefault(); findSupport()">
+        <div class="grid grid-cols-1 gap-10 md:grid-cols-2">
+          @for (question of questions; track question.id) {
+            <section [attr.aria-labelledby]="question.id + '-question'">
+              <h2 [id]="question.id + '-question'" class="text-lg font-bold text-ink">{{ question.title }}</h2>
+              <p class="mt-2 text-xs text-ink-soft">{{ question.helper }}</p>
+
+              <div class="mt-4 grid gap-3" role="radiogroup" [attr.aria-labelledby]="question.id + '-question'">
+                @for (option of question.options; track option) {
+                  <button
+                    type="button"
+                    role="radio"
+                    [attr.aria-checked]="answers()[question.id] === option"
+                    [attr.tabindex]="answers()[question.id] === null ? ($index === 0 ? 0 : -1) : (answers()[question.id] === option ? 0 : -1)"
+                    (click)="selectAnswer(question.id, option)"
+                    (keydown)="onRadioKeydown($event, question)"
+                    [class]="answers()[question.id] === option
+                      ? 'flex items-center gap-4 rounded-xl border border-brand bg-selected px-4 py-3 text-left text-base text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas'
+                      : 'flex items-center gap-4 rounded-xl border border-hairline bg-sunken px-4 py-3 text-left text-base text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas'">
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-brand text-on-brand-deep" aria-hidden="true">
+                      @if (answers()[question.id] === option) {
+                        <svg [lucideIcon]="'circle-check'" [size]="18"></svg>
+                      }
+                    </span>
+                    <span>{{ option }}</span>
+                  </button>
+                }
+              </div>
+            </section>
+          }
+        </div>
+
+        <div class="mt-10 flex justify-center">
+          <button type="submit" [disabled]="!allAnswered()" class="min-h-11 rounded-full bg-brand-deep px-8 text-base font-semibold text-on-brand-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-soft">Find My Support <span aria-hidden="true">→</span></button>
+        </div>
+      </form>
+    </section>
+  </div>
+</main>

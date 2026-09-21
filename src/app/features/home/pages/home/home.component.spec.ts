@@ -78,7 +78,7 @@ describe('HomeComponent', () => {
     const section = Array.from(root.querySelectorAll('section')).find((s) => s.querySelector('h2')?.textContent?.includes('What do you need'));
     const hrefs = Array.from(section!.querySelectorAll('a')).map((a) => a.getAttribute('href'));
 
-    expect(hrefs).toEqual(['/journal', '/rumi-ai', '/sleep', '/therapy']);
+    expect(hrefs).toEqual(['/journal', '/rumi-ai', '/sleep', '/therapy/wellness-quiz']);
     expect(section?.textContent).not.toContain('Coming soon');
   });
 
