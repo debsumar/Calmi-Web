@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { LucideArrowLeft, LucideDynamicIcon } from '@lucide/angular';
+import { Router } from '@angular/router';
+import { LucideDynamicIcon } from '@lucide/angular';
+import { BreadcrumbComponent } from '@/shared/components/breadcrumb/breadcrumb.component';
 
 type QuestionId = 'concern' | 'duration' | 'support' | 'outcome';
 
@@ -40,7 +41,7 @@ const QUESTIONS: readonly WellnessQuestion[] = [
 
 @Component({
   selector: 'app-wellness-quiz',
-  imports: [RouterLink, LucideArrowLeft, LucideDynamicIcon],
+  imports: [BreadcrumbComponent, LucideDynamicIcon],
   templateUrl: './wellness-quiz.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

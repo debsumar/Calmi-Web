@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import {
+  LucideArrowLeft,
   LucideArrowRight,
   LucideArrowUpDown,
   LucideBold,
@@ -61,7 +62,7 @@ describe('JournalComponent', () => {
         provideRouter([{ path: 'auth/identify', component: BlankComponent }]),
         provideAuthServiceStub(),
         provideLucideIcons(
-          LucideArrowRight, LucideArrowUpDown, LucideBold, LucideCheck, LucideChevronDown, LucideChevronUp,
+          LucideArrowLeft, LucideArrowRight, LucideArrowUpDown, LucideBold, LucideCheck, LucideChevronDown, LucideChevronUp,
           LucideCircleAlert, LucideCircleCheck,
           LucideItalic, LucideLock, LucideMaximize2, LucideMinimize2, LucideNotebookPen, LucidePlus,
           LucideRefreshCw, LucideSmartphone,
@@ -87,6 +88,8 @@ describe('JournalComponent', () => {
     const root = fixture.nativeElement as HTMLElement;
 
     expect(root.querySelector('h1#journal-title')?.textContent).toContain('Journal');
+    expect(root.querySelector('nav[aria-label="Breadcrumb"] a[href="/home"]')).not.toBeNull();
+    expect(root.querySelector('nav[aria-label="Breadcrumb"] [aria-current="page"]')?.textContent).toContain('Journal');
     expect(root.textContent).toContain('No entries yet.');
   });
 

@@ -1,33 +1,20 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import {
-  LucideArrowLeft,
   LucideBriefcaseBusiness,
   LucideMedal,
   LucideTarget,
 } from '@lucide/angular';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
+import { BreadcrumbComponent } from '@/shared/components/breadcrumb/breadcrumb.component';
 import { Therapist } from '@/features/therapy/data/therapist.data';
 
 @Component({
   selector: 'app-therapist-profile-hero',
-  imports: [RouterLink, LucideArrowLeft, LucideTarget, LucideBriefcaseBusiness, LucideMedal, AnimateOnScrollDirective],
+  imports: [BreadcrumbComponent, LucideTarget, LucideBriefcaseBusiness, LucideMedal, AnimateOnScrollDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="w-full bg-brand-deep text-on-brand-deep">
-      <nav aria-label="Breadcrumb" class="mx-auto max-w-6xl px-4 py-4 md:px-8">
-        <ol class="flex flex-wrap items-center gap-2 text-xs">
-          <li>
-            <a [routerLink]="['/therapy']" fragment="top-psychologists"
-               class="inline-flex items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep">
-              <svg lucideArrowLeft [size]="16" aria-hidden="true"></svg>
-              <span>Top Experts</span>
-            </a>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li aria-current="page">Therapist Profile</li>
-        </ol>
-      </nav>
+    <div class="w-full bg-canvas text-ink">
+      <app-breadcrumb [backLink]="['/therapy']" backLabel="Top Experts" currentPage="Therapist Profile" fragment="top-psychologists" navClass="mx-auto max-w-6xl px-4 pt-4 md:px-8 md:pt-6" />
     </div>
 
     <section class="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12" aria-labelledby="therapist-name">
