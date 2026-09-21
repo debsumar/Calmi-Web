@@ -89,6 +89,62 @@ describe('TherapyComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelectorAll('[aria-label^="Go to slide"]')).toHaveLength(component.psychologists().length);
   });
 
+  it('renders carousel by default without expert search', () => {
+    const root = fixture.nativeElement as HTMLElement;
+
+    expect(root.querySelector('#top-psychologists > .relative > [appDragScroll]')).not.toBeNull();
+    expect(root.querySelector('input[type="search"]')).toBeNull();
+    expect(root.querySelector<HTMLButtonElement>('[aria-pressed="false"]')?.textContent).toContain('View all');
+  });
+
+  it('shows searchable expert grid and hides carousel controls when View all is clicked', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const viewAll = Array.from(root.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent?.trim() === 'View all')!;
+    viewAll.click();
+    fixture.detectChanges();
+
+    expect(root.querySelector('input[type="search"]')).not.toBeNull();
+    expect(root.querySelector('.grid.grid-cols-1')).not.toBeNull();
+    expect(root.querySelector('#top-psychologists > .relative > [appDragScroll]')).toBeNull();
+    expect(root.querySelector('[aria-label="Previous experts"]')).toBeNull();
+    expect(root.querySelector('[aria-label="Next experts"]')).toBeNull();
+    expect(root.querySelector('[aria-label="Expert carousel pagination"]')).toBeNull();
+  });
+
+  it('announces search-filtered expert count in View all mode', () => {
+    const component = fixture.componentInstance;
+    const root = fixture.nativeElement as HTMLElement;
+
+    component.toggleViewAll();
+    component.setSearchQuery(THERAPISTS[0]!.name);
+    fixture.detectChanges();
+
+    expect(root.querySelector('[aria-live="polite"]')?.textContent?.trim()).toBe('1 expert match these filters');
+  });
+
+  it('filters expert grid by name and restores carousel after Show less', () => {
+    const component = fixture.componentInstance;
+    const root = fixture.nativeElement as HTMLElement;
+    Array.from(root.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent?.trim() === 'View all')!.click();
+    fixture.detectChanges();
+
+    const search = root.querySelector<HTMLInputElement>('input[type="search"]')!;
+    search.value = THERAPISTS[0]!.name;
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    const grid = root.querySelector<HTMLElement>('.grid.grid-cols-1')!;
+
+    expect(component.visiblePsychologists()).toEqual([THERAPISTS[0]]);
+    expect(grid.querySelectorAll('app-psychologist-card')).toHaveLength(1);
+
+    Array.from(root.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent?.trim() === 'Show less')!.click();
+    fixture.detectChanges();
+
+    expect(component.searchQuery()).toBe('');
+    expect(root.querySelector('#top-psychologists > .relative > [appDragScroll]')).not.toBeNull();
+    expect(root.querySelector('input[type="search"]')).toBeNull();
+  });
+
   it('closes an open dropdown on outside click', () => {
     const component = fixture.componentInstance;
     component.toggleFilter('gender');
@@ -145,9 +201,9 @@ describe('TherapyComponent', () => {
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
 
-    expect(root.textContent).toContain('No psychologists match these filters');
-    expect(root.querySelector('[appDragScroll]')).toBeNull();
-    expect(root.querySelector('[aria-label="Psychologist carousel pagination"]')).toBeNull();
+    expect(root.textContent).toContain('No experts match these filters');
+    expect(root.querySelector('#top-psychologists > .relative > [appDragScroll]')).toBeNull();
+    expect(root.querySelector('[aria-label="Expert carousel pagination"]')).toBeNull();
   });
 
   it('toggles aria-expanded and Escape closes popup then restores chip focus', async () => {

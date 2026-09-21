@@ -21,7 +21,7 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
             <a [routerLink]="['/therapy']" fragment="top-psychologists"
                class="inline-flex items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep">
               <svg lucideArrowLeft [size]="16" aria-hidden="true"></svg>
-              <span>Top Psychologists</span>
+              <span>Top Experts</span>
             </a>
           </li>
           <li aria-hidden="true">/</li>

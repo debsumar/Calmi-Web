@@ -1,5 +1,4 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, inject, Injector, signal, ViewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { DragScrollDirective } from '@/shared/directives/drag-scroll.directive';
@@ -32,7 +31,7 @@ const CARD_STRIDE = 284;
 
 @Component({
   selector: 'app-therapy',
-  imports: [RouterLink, LucideDynamicIcon, AnimateOnScrollDirective, DragScrollDirective, PsychologistCardComponent, SelectMenuComponent, FaqAccordionComponent],
+  imports: [LucideDynamicIcon, AnimateOnScrollDirective, DragScrollDirective, PsychologistCardComponent, SelectMenuComponent, FaqAccordionComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './therapy.component.html',
 })
@@ -74,6 +73,17 @@ export class TherapyComponent {
   readonly criteria = this.filterStore.criteria;
   readonly allFiltersDraft = signal<TherapistFilterCriteria>(this.cloneCriteria(DEFAULT_FILTER_CRITERIA));
   readonly psychologists = computed(() => filterTherapists(THERAPISTS, this.criteria()));
+  readonly viewAll = signal(false);
+  readonly searchQuery = signal('');
+  readonly visiblePsychologists = computed(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    if (!query) return this.psychologists();
+    return this.psychologists().filter((psychologist) => [
+      psychologist.name,
+      ...psychologist.specialties,
+      ...psychologist.languages,
+    ].some((value) => value.toLowerCase().includes(query)));
+  });
   readonly activeFilterCount = computed(() => this.countActiveFilters(this.criteria()));
   readonly showLeftShadow = signal(false);
   readonly showRightShadow = signal(true);
@@ -92,10 +102,22 @@ export class TherapyComponent {
     this.psychologists().filter((therapist) => firstAvailableDay(therapist) !== undefined).map((therapist) => therapist.id),
   ));
   readonly resultAnnouncement = computed(() => {
-    const count = this.psychologists().length;
-    if (count === 0) return 'No psychologists match these filters';
-    return `${count} psychologist${count === 1 ? '' : 's'} match these filters`;
+    const count = this.viewAll() ? this.visiblePsychologists().length : this.psychologists().length;
+    if (count === 0) return 'No experts match these filters';
+    return `${count} expert${count === 1 ? '' : 's'} match these filters`;
   });
+
+  toggleViewAll(): void {
+    this.viewAll.update((viewAll) => !viewAll);
+    if (!this.viewAll()) {
+      this.searchQuery.set('');
+      this.resetCarousel();
+    }
+  }
+
+  setSearchQuery(value: string): void {
+    this.searchQuery.set(value);
+  }
 
   toggleFilter(id: FilterId): void {
     if (this.openFilter() === id) {

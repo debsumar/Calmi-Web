@@ -118,36 +118,52 @@
 
   <section id="top-psychologists" class="mx-auto max-w-6xl overflow-hidden px-4 pt-2 pb-8 md:px-8 md:pt-4 md:pb-12">
     <div class="mb-8 flex items-center justify-between">
-      <h2 appAnimateOnScroll style="--index:0" class="text-3xl font-bold text-ink md:text-4xl">Top Psychologists</h2>
+      <h2 appAnimateOnScroll style="--index:0" class="text-3xl font-bold text-ink md:text-4xl">Top Experts</h2>
       <p class="sr-only" aria-live="polite">{{ resultAnnouncement() }}</p>
-    @if (psychologists().length > 0) {
+      @if (psychologists().length > 0) {
         <div class="flex items-center gap-4">
-          <a routerLink="/therapy" class="text-sm font-semibold text-ink underline-offset-2 transition-colors hover:underline">View all {{ psychologists().length }}</a>
-          <div class="hidden gap-2 md:flex">
-            <button type="button" aria-label="Previous psychologists" (click)="scrollCarousel(-320)" class="flex h-11 w-11 items-center justify-center rounded-full border border-hairline text-ink-muted transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><svg [lucideIcon]="'chevron-left'" [size]="20"></svg></button>
-            <button type="button" aria-label="Next psychologists" (click)="scrollCarousel(320)" class="flex h-11 w-11 items-center justify-center rounded-full border border-hairline text-ink-muted transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><svg [lucideIcon]="'chevron-right'" [size]="20"></svg></button>
-          </div>
+          <button type="button" (click)="toggleViewAll()" [attr.aria-pressed]="viewAll()" class="text-sm font-semibold text-ink underline-offset-2 transition-colors hover:underline">{{ viewAll() ? 'Show less' : 'View all' }}</button>
+          @if (!viewAll()) {
+            <div class="hidden gap-2 md:flex">
+              <button type="button" aria-label="Previous experts" (click)="scrollCarousel(-320)" class="flex h-11 w-11 items-center justify-center rounded-full border border-hairline text-ink-muted transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><svg [lucideIcon]="'chevron-left'" [size]="20"></svg></button>
+              <button type="button" aria-label="Next experts" (click)="scrollCarousel(320)" class="flex h-11 w-11 items-center justify-center rounded-full border border-hairline text-ink-muted transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><svg [lucideIcon]="'chevron-right'" [size]="20"></svg></button>
+            </div>
+          }
         </div>
       }
     </div>
     @if (psychologists().length > 0) {
-      <div class="relative">
-        <div #carousel appDragScroll (scroll)="onScroll($event)" class="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          @for (psychologist of psychologists(); track psychologist.id) {
-            <app-psychologist-card appAnimateOnScroll class="w-[70vw] shrink-0 snap-start transition-all duration-300 hover:-translate-y-1 hover:shadow-card md:w-[260px]" [name]="psychologist.name" [profileId]="psychologist.id" [image]="psychologist.image" [price]="psychologist.price" [duration]="psychologist.duration" [rating]="psychologist.rating" [reviews]="psychologist.reviews" [specialties]="psychologist.specialties" [languages]="psychologist.languages" [available]="hasAvailability(psychologist)" />
+      @if (!viewAll()) {
+        <div class="relative">
+          <div #carousel appDragScroll (scroll)="onScroll($event)" class="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            @for (psychologist of psychologists(); track psychologist.id) {
+              <app-psychologist-card appAnimateOnScroll class="w-[70vw] shrink-0 snap-start transition-all duration-300 hover:-translate-y-1 hover:shadow-card md:w-[260px]" [name]="psychologist.name" [profileId]="psychologist.id" [image]="psychologist.image" [price]="psychologist.price" [duration]="psychologist.duration" [rating]="psychologist.rating" [reviews]="psychologist.reviews" [specialties]="psychologist.specialties" [languages]="psychologist.languages" [available]="hasAvailability(psychologist)" />
+            }
+          </div>
+          <div class="pointer-events-none absolute top-0 bottom-4 left-0 z-20 w-16 bg-gradient-to-r from-canvas to-transparent transition-opacity duration-300" [class.opacity-0]="!showLeftShadow()" [class.opacity-100]="showLeftShadow()"></div>
+          <div class="pointer-events-none absolute top-0 right-0 bottom-4 z-20 w-16 bg-gradient-to-l from-canvas to-transparent transition-opacity duration-300" [class.opacity-0]="!showRightShadow()" [class.opacity-100]="showRightShadow()"></div>
+        </div>
+        <div class="mt-4 flex flex-wrap justify-center gap-1.5" aria-label="Expert carousel pagination">
+          @for (dot of slideDots(); track dot) {
+            <button type="button" [attr.aria-label]="'Go to slide ' + (dot + 1)" [attr.aria-current]="activeSlide() === dot ? 'true' : null" (click)="scrollToSlide(dot)" class="flex min-h-11 min-w-11 items-center justify-center rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"><span aria-hidden="true" class="h-2 rounded-full transition-all duration-300" [class]="activeSlide() === dot ? 'w-5 bg-brand' : 'w-2 bg-sunken-alt'"></span></button>
           }
         </div>
-        <div class="pointer-events-none absolute top-0 bottom-4 left-0 z-20 w-16 bg-gradient-to-r from-canvas to-transparent transition-opacity duration-300" [class.opacity-0]="!showLeftShadow()" [class.opacity-100]="showLeftShadow()"></div>
-        <div class="pointer-events-none absolute top-0 right-0 bottom-4 z-20 w-16 bg-gradient-to-l from-canvas to-transparent transition-opacity duration-300" [class.opacity-0]="!showRightShadow()" [class.opacity-100]="showRightShadow()"></div>
-      </div>
-      <div class="mt-4 flex flex-wrap justify-center gap-1.5" aria-label="Psychologist carousel pagination">
-        @for (dot of slideDots(); track dot) {
-          <button type="button" [attr.aria-label]="'Go to slide ' + (dot + 1)" [attr.aria-current]="activeSlide() === dot ? 'true' : null" (click)="scrollToSlide(dot)" class="flex min-h-11 min-w-11 items-center justify-center rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"><span aria-hidden="true" class="h-2 rounded-full transition-all duration-300" [class]="activeSlide() === dot ? 'w-5 bg-brand' : 'w-2 bg-sunken-alt'"></span></button>
+      } @else {
+        <label class="sr-only" for="expert-search">Search experts</label>
+        <input id="expert-search" type="search" placeholder="Search by name, specialty or language" [value]="searchQuery()" (input)="setSearchQuery($any($event.target).value)" class="rounded-full border border-hairline bg-surface px-4 min-h-11 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand w-full">
+        @if (visiblePsychologists().length > 0) {
+          <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            @for (psychologist of visiblePsychologists(); track psychologist.id) {
+              <app-psychologist-card appAnimateOnScroll class="w-full transition-all duration-300 hover:-translate-y-1 hover:shadow-card" [name]="psychologist.name" [profileId]="psychologist.id" [image]="psychologist.image" [price]="psychologist.price" [duration]="psychologist.duration" [rating]="psychologist.rating" [reviews]="psychologist.reviews" [specialties]="psychologist.specialties" [languages]="psychologist.languages" [available]="hasAvailability(psychologist)" />
+            }
+          </div>
+        } @else {
+          <p class="mt-6 text-center text-lg font-bold text-ink">No experts match your search</p>
         }
-      </div>
+      }
     } @else {
       <div class="rounded-2xl border border-hairline bg-surface p-8 text-center">
-        <p class="text-lg font-bold text-ink">No psychologists match these filters</p>
+        <p class="text-lg font-bold text-ink">No experts match these filters</p>
         <button type="button" (click)="clearAllFilters()" class="mt-4 min-h-11 rounded-full bg-brand-deep px-5 text-xs font-semibold text-on-brand-deep transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Clear all filters</button>
       </div>
     }
