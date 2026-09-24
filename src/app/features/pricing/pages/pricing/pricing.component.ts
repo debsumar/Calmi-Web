@@ -107,7 +107,7 @@ export class PricingComponent {
       action: 'verifyStudent'
     },
     {
-      name: 'Plus',
+      name: 'Calmi Plus',
       icon: 'sparkles',
       monthly: { value: '₹249', period: 'month' },
       annual: { value: '₹2,399', period: 'year' },
