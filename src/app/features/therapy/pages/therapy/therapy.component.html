@@ -150,7 +150,10 @@
         </div>
       } @else {
         <label class="sr-only" for="expert-search">Search experts</label>
-        <input id="expert-search" type="search" placeholder="Search by name, specialty or language" [value]="searchQuery()" (input)="setSearchQuery($any($event.target).value)" class="rounded-full border border-hairline bg-surface px-4 min-h-11 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand w-full">
+        <div class="relative w-full">
+          <svg [lucideIcon]="'search'" [size]="18" aria-hidden="true" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted"></svg>
+          <input id="expert-search" type="search" placeholder="Search by name, specialty or language" [value]="searchQuery()" (input)="setSearchQuery($any($event.target).value)" class="rounded-full border border-hairline bg-surface pl-12 pr-4 min-h-11 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand w-full">
+        </div>
         @if (visiblePsychologists().length > 0) {
           <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             @for (psychologist of visiblePsychologists(); track psychologist.id) {
