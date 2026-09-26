@@ -36,7 +36,7 @@ describe('therapist filtering data', () => {
     expect(gender.length).toBeGreaterThan(0);
     expect(gender.length).toBeLessThan(THERAPISTS.length);
     expect(gender.every((therapist) => therapist.gender === 'non-binary')).toBe(true);
-    expect(language.map((therapist) => therapist.id)).toEqual(['vishal-naik', 'kavya-reddy']);
+    expect(language.map((therapist) => therapist.id)).toEqual(['chandana-reddy', 'vishal-naik', 'kavya-reddy']);
   });
 
   it('normalizes supplied dates and narrows week and weekend availability', () => {
@@ -77,7 +77,8 @@ describe('therapist filtering data', () => {
 
   it('lists the newly added therapists first and keeps their booking fields', () => {
     expect(THERAPISTS.slice(0, 4).map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'neena-pareek', 'rini-rao', 'isha-attri']);
-    expect(THERAPISTS[4]?.id).toBe('gargi-yadav');
+    expect(THERAPISTS.slice(4, 7).map((therapist) => therapist.id)).toEqual(['divyanshi-tolani', 'param-sambodhi', 'florentina-martin']);
+    expect(THERAPISTS.findIndex((therapist) => therapist.id === 'gargi-yadav')).toBe(8);
     expect(THERAPISTS.slice(0, 4).map(({ price, experienceYears, duration, sessionModes, languages }) => ({ price, experienceYears, duration, sessionModes, languages }))).toEqual([
       { price: 1500, experienceYears: 2, duration: '45 mins', sessionModes: ['Video'], languages: ['English', 'Hindi', 'Punjabi'] },
       { price: 1000, experienceYears: 15, duration: '45 mins', sessionModes: ['Video'], languages: ['Hindi'] },
@@ -101,6 +102,22 @@ describe('therapist filtering data', () => {
       const expected = workingDays[therapist.id]?.includes(today.getDay()) ? 'available' : 'unavailable';
       expect(todayEntry?.state).toBe(expected);
     });
+  });
+
+  it('includes Florentina Martin and Dr. Chandana Reddy with supplied details and working days', () => {
+    const florentina = THERAPISTS.find((therapist) => therapist.id === 'florentina-martin');
+    const chandana = THERAPISTS.find((therapist) => therapist.id === 'chandana-reddy');
+    const availableWeekdays = (therapist: typeof florentina) => new Set((therapist?.availability ?? [])
+      .filter((day) => day.state === 'available')
+      .map((day) => new Date(`${day.date}T00:00:00`).getDay()));
+
+    expect(florentina).toMatchObject({ image: 'assets/users/florentina.avif', price: 1200, experienceYears: 10, duration: '60 mins', sessionModes: ['Video'], languages: ['English', 'Tamil'] });
+    expect(chandana).toMatchObject({ image: 'assets/users/chandana.avif', price: 2999, experienceYears: 10, duration: '60 mins', sessionModes: ['Video'], languages: ['English', 'Hindi', 'Kannada', 'Telugu'] });
+    expect(florentina?.bio.startsWith("I'm a Certified Life Coach")).toBe(true);
+    expect(chandana?.bio.startsWith("I'm a former oncologist")).toBe(true);
+    expect([...availableWeekdays(florentina)].sort()).toEqual([1, 3]);
+    expect(availableWeekdays(chandana).size).toBe(7);
+    expect(chandana?.testimonials[0]?.quote.startsWith('Finding Chandana on Calmi')).toBe(true);
   });
 
   it('uses OR logic for selected languages and AND logic across criteria', () => {
