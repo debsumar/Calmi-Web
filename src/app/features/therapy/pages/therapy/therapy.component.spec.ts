@@ -6,6 +6,7 @@ import {
   LucideChevronLeft,
   LucideChevronRight,
   LucideFunnel,
+  LucideSearch,
   LucideStar,
   provideLucideIcons,
 } from '@lucide/angular';
@@ -23,7 +24,7 @@ describe('TherapyComponent', () => {
       imports: [TherapyComponent],
       providers: [
         provideRouter([]),
-        provideLucideIcons(LucideFunnel, LucideChevronDown, LucideChevronLeft, LucideChevronRight, LucideStar),
+        provideLucideIcons(LucideFunnel, LucideChevronDown, LucideChevronLeft, LucideChevronRight, LucideStar, LucideSearch),
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(TherapyComponent);
@@ -306,7 +307,7 @@ describe('TherapyComponent', () => {
       imports: [TherapyComponent],
       providers: [
         provideRouter([]),
-        provideLucideIcons(LucideFunnel, LucideChevronDown, LucideChevronLeft, LucideChevronRight, LucideStar),
+        provideLucideIcons(LucideFunnel, LucideChevronDown, LucideChevronLeft, LucideChevronRight, LucideStar, LucideSearch),
       ],
     }).compileComponents();
     const freshFixture = TestBed.createComponent(TherapyComponent);
