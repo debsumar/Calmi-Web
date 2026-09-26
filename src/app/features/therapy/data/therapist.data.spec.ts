@@ -78,7 +78,7 @@ describe('therapist filtering data', () => {
   it('lists the newly added therapists first and keeps their booking fields', () => {
     expect(THERAPISTS.slice(0, 4).map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'neena-pareek', 'rini-rao', 'isha-attri']);
     expect(THERAPISTS.slice(4, 7).map((therapist) => therapist.id)).toEqual(['divyanshi-tolani', 'param-sambodhi', 'florentina-martin']);
-    expect(THERAPISTS.findIndex((therapist) => therapist.id === 'gargi-yadav')).toBe(8);
+    expect(THERAPISTS.findIndex((therapist) => therapist.id === 'gargi-yadav')).toBe(9);
     expect(THERAPISTS.slice(0, 4).map(({ price, experienceYears, duration, sessionModes, languages }) => ({ price, experienceYears, duration, sessionModes, languages }))).toEqual([
       { price: 1500, experienceYears: 2, duration: '45 mins', sessionModes: ['Video'], languages: ['English', 'Hindi', 'Punjabi'] },
       { price: 1000, experienceYears: 15, duration: '45 mins', sessionModes: ['Video'], languages: ['Hindi'] },
@@ -118,6 +118,28 @@ describe('therapist filtering data', () => {
     expect([...availableWeekdays(florentina)].sort()).toEqual([1, 3]);
     expect(availableWeekdays(chandana).size).toBe(7);
     expect(chandana?.testimonials[0]?.quote.startsWith('Finding Chandana on Calmi')).toBe(true);
+  });
+
+  it('includes Heena Pahuja with supplied details and Monday-Saturday availability', () => {
+    const heena = THERAPISTS.find((therapist) => therapist.id === 'heena-pahuja');
+    const availableWeekdays = new Set((heena?.availability ?? [])
+      .filter((day) => day.state === 'available')
+      .map((day) => new Date(`${day.date}T00:00:00`).getDay()));
+
+    expect(THERAPISTS.findIndex((therapist) => therapist.id === 'heena-pahuja')).toBe(8);
+    expect(heena).toMatchObject({
+      image: 'assets/users/heena.avif',
+      subtitle: 'RCI Licensed Counselling Psychologist',
+      qualifications: ['MSc Clinical Psychology'],
+      price: 1500,
+      experienceYears: 4,
+      duration: '60 mins',
+      sessionModes: ['Video'],
+      specialties: ['Relationships', 'Stress Management'],
+      languages: ['English'],
+    });
+    expect(heena?.bio.startsWith('I’m Heena, and my approach focuses on understanding')).toBe(true);
+    expect([...availableWeekdays].sort()).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
   it('uses OR logic for selected languages and AND logic across criteria', () => {
