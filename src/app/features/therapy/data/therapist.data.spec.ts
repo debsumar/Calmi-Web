@@ -138,7 +138,7 @@ describe('therapist filtering data', () => {
       specialties: ['Relationships', 'Stress Management'],
       languages: ['English'],
     });
-    expect(heena?.bio.startsWith('I’m Heena and my approach is simple')).toBe(true);
+    expect(heena?.bio.startsWith('I’m Heena, and my approach focuses on understanding')).toBe(true);
     expect([...availableWeekdays].sort()).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
