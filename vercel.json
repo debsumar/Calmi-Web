@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/calmi-api/(.*)",
-      "destination": "https://calmi-voice-demo-production.up.railway.app/$1"
+      "destination": "https://calmi-voice-demo-production-c29f.up.railway.app/$1"
     },
     {
       "source": "/(.*)",
