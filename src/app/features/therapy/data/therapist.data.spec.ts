@@ -78,7 +78,7 @@ describe('therapist filtering data', () => {
   it('lists the newly added therapists first and keeps their booking fields', () => {
     expect(THERAPISTS.slice(0, 4).map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'neena-pareek', 'rini-rao', 'isha-attri']);
     expect(THERAPISTS.slice(4, 7).map((therapist) => therapist.id)).toEqual(['divyanshi-tolani', 'param-sambodhi', 'florentina-martin']);
-    expect(THERAPISTS.findIndex((therapist) => therapist.id === 'gargi-yadav')).toBe(9);
+    expect(THERAPISTS.findIndex((therapist) => therapist.id === 'gargi-yadav')).toBe(11);
     expect(THERAPISTS.slice(0, 4).map(({ price, experienceYears, duration, sessionModes, languages }) => ({ price, experienceYears, duration, sessionModes, languages }))).toEqual([
       { price: 1500, experienceYears: 2, duration: '45 mins', sessionModes: ['Video'], languages: ['English', 'Hindi', 'Punjabi'] },
       { price: 1000, experienceYears: 15, duration: '45 mins', sessionModes: ['Video'], languages: ['Hindi'] },
@@ -140,6 +140,50 @@ describe('therapist filtering data', () => {
     });
     expect(heena?.bio.startsWith('I’m Heena, and my approach focuses on understanding')).toBe(true);
     expect([...availableWeekdays].sort()).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  it('includes Anisha Gugale with supplied details and weekday availability', () => {
+    const anisha = THERAPISTS.find((therapist) => therapist.id === 'anisha-gugale');
+    const availableWeekdays = new Set((anisha?.availability ?? [])
+      .filter((day) => day.state === 'available')
+      .map((day) => new Date(`${day.date}T00:00:00`).getDay()));
+
+    expect(THERAPISTS.findIndex((therapist) => therapist.id === 'anisha-gugale')).toBe(9);
+    expect(anisha).toMatchObject({
+      image: 'assets/users/anisha.avif',
+      subtitle: 'Clinical Psychology',
+      qualifications: ['Masters in Clinical Psychology'],
+      price: 599,
+      experienceYears: 1,
+      duration: '60 mins',
+      sessionModes: ['Video'],
+      specialties: ['Anxiety', 'Relationships', 'Stress Management'],
+      languages: ['English', 'Hindi', 'Marathi'],
+    });
+    expect(anisha?.bio.startsWith('I’m Anisha and am finishing my Master’s in Clinical Psychology.')).toBe(true);
+    expect([...availableWeekdays].sort()).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('includes Mitali Gupta with supplied details and daily availability', () => {
+    const mitali = THERAPISTS.find((therapist) => therapist.id === 'mitali-gupta');
+    const availableWeekdays = new Set((mitali?.availability ?? [])
+      .filter((day) => day.state === 'available')
+      .map((day) => new Date(`${day.date}T00:00:00`).getDay()));
+
+    expect(THERAPISTS.findIndex((therapist) => therapist.id === 'mitali-gupta')).toBe(10);
+    expect(mitali).toMatchObject({
+      image: 'assets/users/mitali.avif',
+      subtitle: 'Counselling Psychologist',
+      qualifications: ['Masters in Clinical Psychology'],
+      price: 1200,
+      experienceYears: 2,
+      duration: '45 mins',
+      sessionModes: ['Video'],
+      specialties: ['Anxiety', 'Depression', 'Trauma & PTSD', 'Relationships', 'Stress Management'],
+      languages: ['English', 'Hindi'],
+    });
+    expect(mitali?.bio.startsWith('I’m Mitali, and I help young adults overcome stress, anxiety, and relationship problems.')).toBe(true);
+    expect([...availableWeekdays].sort()).toEqual([0, 1, 2, 3, 4, 5, 6]);
   });
 
   it('uses OR logic for selected languages and AND logic across criteria', () => {
