@@ -78,7 +78,7 @@ describe('TherapyComponent', () => {
     component.applyAllFilters();
     fixture.detectChanges();
 
-    expect(component.psychologists().map((therapist) => therapist.id)).toEqual(['rini-rao', 'heena-pahuja']);
+    expect(component.psychologists().map((therapist) => therapist.id)).toEqual(['heena-pahuja', 'rini-rao']);
     component.toggleFilter('all');
     component.toggleDraftGender('female');
     component.applyAllFilters();
@@ -103,12 +103,58 @@ describe('TherapyComponent', () => {
     expect(component.psychologists().length).toBeLessThan(THERAPISTS.length);
   });
 
-  it('renders carousel by default without expert search', () => {
+  it('renders carousel by default with a permanent expert search', () => {
     const root = fixture.nativeElement as HTMLElement;
 
     expect(root.querySelector('#top-psychologists > .relative > [appDragScroll]')).not.toBeNull();
-    expect(root.querySelector('input[type="search"]')).toBeNull();
+    expect(root.querySelector('input[type="search"]')).not.toBeNull();
     expect(root.querySelector<HTMLButtonElement>('[aria-pressed="false"]')?.textContent).toContain('View all');
+  });
+
+  it('sorts experts alphabetically by name, ignoring honorifics', () => {
+    const component = fixture.componentInstance;
+    const root = fixture.nativeElement as HTMLElement;
+    const key = (name: string) => name.replace(/^(dr|mr|mrs|ms)\.?\s+/i, '');
+    const expected = THERAPISTS.map((therapist) => therapist.name)
+      .sort((a, b) => key(a).localeCompare(key(b), 'en', { sensitivity: 'base' }));
+
+    expect(component.psychologists().map((therapist) => therapist.name)).toEqual(expected);
+    expect(expected[0]).toBe('Anisha Gugale');
+    // Dr. Chandana Reddy sorts under "C", not "D".
+    expect(expected.indexOf('Dr. Chandana Reddy')).toBeLessThan(expected.indexOf('Divyanshi Tolani'));
+    const carouselCards = root.querySelectorAll('[appDragScroll] app-psychologist-card');
+    expect(carouselCards).toHaveLength(THERAPISTS.length);
+    expect(carouselCards[0]?.textContent).toContain('Anisha Gugale');
+  });
+
+  it('filters the carousel by search and keeps dots aligned with visible experts', () => {
+    const component = fixture.componentInstance;
+    const root = fixture.nativeElement as HTMLElement;
+    const search = root.querySelector<HTMLInputElement>('input[type="search"]')!;
+    search.value = 'Punjabi';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const expectedIds = component.psychologists()
+      .filter((therapist) => therapist.languages.includes('Punjabi'))
+      .map((therapist) => therapist.id);
+    expect(expectedIds).toEqual(['manheer-kaur', 'pavneet-kaur']);
+    expect(component.visiblePsychologists().map((therapist) => therapist.id)).toEqual(expectedIds);
+    expect(root.querySelectorAll('[appDragScroll] app-psychologist-card')).toHaveLength(expectedIds.length);
+    expect(root.querySelectorAll('[aria-label^="Go to slide"]')).toHaveLength(expectedIds.length);
+    expect(root.querySelector('[aria-live="polite"]')?.textContent?.trim()).toBe('2 experts match these filters');
+  });
+
+  it('shows no-match message in carousel mode when search finds nothing', () => {
+    const component = fixture.componentInstance;
+    const root = fixture.nativeElement as HTMLElement;
+    component.setSearchQuery('zzz-no-such-expert');
+    fixture.detectChanges();
+
+    expect(component.visiblePsychologists()).toEqual([]);
+    expect(root.querySelector('[appDragScroll]')).toBeNull();
+    expect(root.textContent).toContain('No experts match your search');
+    expect(root.querySelector('input[type="search"]')).not.toBeNull();
   });
 
   it('shows searchable expert grid and hides carousel controls when View all is clicked', () => {
@@ -136,7 +182,7 @@ describe('TherapyComponent', () => {
     expect(root.querySelector('[aria-live="polite"]')?.textContent?.trim()).toBe('1 expert match these filters');
   });
 
-  it('filters expert grid by name and restores carousel after Show less', () => {
+  it('filters expert grid by name and keeps search across Show less', () => {
     const component = fixture.componentInstance;
     const root = fixture.nativeElement as HTMLElement;
     Array.from(root.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent?.trim() === 'View all')!.click();
@@ -154,9 +200,10 @@ describe('TherapyComponent', () => {
     Array.from(root.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent?.trim() === 'Show less')!.click();
     fixture.detectChanges();
 
-    expect(component.searchQuery()).toBe('');
+    expect(component.searchQuery()).toBe(THERAPISTS[0]!.name);
     expect(root.querySelector('#top-psychologists > .relative > [appDragScroll]')).not.toBeNull();
-    expect(root.querySelector('input[type="search"]')).toBeNull();
+    expect(root.querySelectorAll('[appDragScroll] app-psychologist-card')).toHaveLength(1);
+    expect(root.querySelector('input[type="search"]')).not.toBeNull();
   });
 
   it('closes an open dropdown on outside click', () => {
@@ -252,7 +299,7 @@ describe('TherapyComponent', () => {
     await Promise.resolve();
     expect(component.criteria().availability).toBe('week');
     expect(component.psychologists().map((therapist) => therapist.id)).toEqual(
-      filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, availability: 'week' }).map((therapist) => therapist.id),
+      filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, availability: 'week' }).map((therapist) => therapist.id).sort(),
     );
     expect(document.activeElement).toBe(availabilityTrigger);
 
@@ -266,7 +313,7 @@ describe('TherapyComponent', () => {
     component.toggleLanguage('Punjabi');
     component.toggleLanguage('Kannada');
     fixture.detectChanges();
-    expect(component.psychologists().map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'chandana-reddy', 'manheer-kaur']);
+    expect(component.psychologists().map((therapist) => therapist.id)).toEqual(['chandana-reddy', 'manheer-kaur', 'pavneet-kaur']);
   });
 
   it('keeps all-filter edits as draft until Apply and normalizes price ranges', () => {

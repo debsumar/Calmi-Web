@@ -29,6 +29,12 @@ type NumberCriterion = 'priceMin' | 'priceMax';
 
 const CARD_STRIDE = 284;
 
+/** Alphabetical by name, ignoring honorifics so "Dr. Chandana Reddy" sorts under C. */
+function sortByName<T extends { name: string }>(list: readonly T[]): T[] {
+  const key = (name: string) => name.replace(/^(dr|mr|mrs|ms)\.?\s+/i, '');
+  return [...list].sort((a, b) => key(a.name).localeCompare(key(b.name), 'en', { sensitivity: 'base' }));
+}
+
 @Component({
   selector: 'app-therapy',
   imports: [LucideDynamicIcon, AnimateOnScrollDirective, DragScrollDirective, PsychologistCardComponent, SelectMenuComponent, FaqAccordionComponent],
@@ -72,7 +78,7 @@ export class TherapyComponent {
   readonly openFilter = signal<FilterId | null>(null);
   readonly criteria = this.filterStore.criteria;
   readonly allFiltersDraft = signal<TherapistFilterCriteria>(this.cloneCriteria(DEFAULT_FILTER_CRITERIA));
-  readonly psychologists = computed(() => filterTherapists(THERAPISTS, this.criteria()));
+  readonly psychologists = computed(() => sortByName(filterTherapists(THERAPISTS, this.criteria())));
   readonly viewAll = signal(false);
   readonly searchQuery = signal('');
   readonly visiblePsychologists = computed(() => {
@@ -97,26 +103,26 @@ export class TherapyComponent {
     afterNextRender(() => this.checkShadows(), { injector: this.injector });
   }
 
-  readonly slideDots = computed(() => this.psychologists().map((_, index) => index));
+  readonly slideDots = computed(() => this.visiblePsychologists().map((_, index) => index));
   readonly availableTherapistIds = computed(() => new Set(
     this.psychologists().filter((therapist) => firstAvailableDay(therapist) !== undefined).map((therapist) => therapist.id),
   ));
   readonly resultAnnouncement = computed(() => {
-    const count = this.viewAll() ? this.visiblePsychologists().length : this.psychologists().length;
+    const count = this.visiblePsychologists().length;
     if (count === 0) return 'No experts match these filters';
     return `${count} expert${count === 1 ? '' : 's'} match these filters`;
   });
 
   toggleViewAll(): void {
     this.viewAll.update((viewAll) => !viewAll);
-    if (!this.viewAll()) {
-      this.searchQuery.set('');
-      this.resetCarousel();
-    }
+    // Search is permanent, so the query survives switching between carousel and grid.
+    if (!this.viewAll()) this.resetCarousel();
   }
 
   setSearchQuery(value: string): void {
     this.searchQuery.set(value);
+    // Carousel content changed; snap back to the first card so dots stay in sync.
+    if (!this.viewAll()) this.resetCarousel();
   }
 
   toggleFilter(id: FilterId): void {
