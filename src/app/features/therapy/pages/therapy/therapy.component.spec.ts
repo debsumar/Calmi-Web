@@ -11,7 +11,8 @@ import {
   provideLucideIcons,
 } from '@lucide/angular';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { DEFAULT_FILTER_CRITERIA, THERAPISTS } from '@/features/therapy/data/therapist.data';
+import { DEFAULT_FILTER_CRITERIA, filterTherapists, THERAPISTS } from '@/features/therapy/data/therapist.data';
+
 import { THERAPIST_FILTER_STORAGE_KEY } from '@/features/therapy/services/therapist-filter.store';
 import { TherapyComponent } from './therapy.component';
 
@@ -44,18 +45,26 @@ describe('TherapyComponent', () => {
     icons.forEach((icon) => expect(icon.querySelector('path, line, circle, polyline, rect')).not.toBeNull());
   });
 
-  it('filters, shows active count, and clear restores full list', () => {
+  it('filters, renders empty gender state, and clear restores full list', () => {
     const component = fixture.componentInstance;
-    component.toggleGender('non-binary');
+    const root = fixture.nativeElement as HTMLElement;
+    component.toggleGender('female');
     fixture.detectChanges();
 
-    expect(component.psychologists().every((therapist) => therapist.gender === 'non-binary')).toBe(true);
-    expect((fixture.nativeElement as HTMLElement).querySelector('#all-filter-trigger')?.textContent).toContain('1');
+    expect(component.psychologists()).toHaveLength(THERAPISTS.length);
+    expect(component.psychologists().every((therapist) => therapist.gender === 'female')).toBe(true);
+    expect(root.querySelector('#all-filter-trigger')?.textContent).toContain('1');
+
+    component.clearAllFilters();
+    component.toggleGender('non-binary');
+    fixture.detectChanges();
+    expect(component.psychologists()).toEqual([]);
+    expect(root.textContent).toContain('No experts match these filters');
 
     component.clearAllFilters();
     fixture.detectChanges();
     expect(component.psychologists()).toHaveLength(THERAPISTS.length);
-    expect((fixture.nativeElement as HTMLElement).querySelector('#all-filter-trigger')?.textContent).not.toContain('1');
+    expect(root.querySelector('#all-filter-trigger')?.textContent).not.toContain('1');
   });
 
   it('applies all-filter numeric and categorical criteria without sharing draft arrays', () => {
@@ -64,12 +73,12 @@ describe('TherapyComponent', () => {
     component.setDraftNumber('priceMin', '1500');
     component.setDraftNumber('priceMax', '2000');
     component.setDraftValue('minExperience', 4);
-    component.setDraftValue('specialty', 'Burnout');
-    component.setDraftValue('sessionMode', 'Chat');
+    component.setDraftValue('specialty', 'Relationships');
+    component.setDraftValue('sessionMode', 'Video');
     component.applyAllFilters();
     fixture.detectChanges();
 
-    expect(component.psychologists().map((therapist) => therapist.id)).toEqual(['rahul-menon']);
+    expect(component.psychologists().map((therapist) => therapist.id)).toEqual(['rini-rao', 'heena-pahuja']);
     component.toggleFilter('all');
     component.toggleDraftGender('female');
     component.applyAllFilters();
@@ -83,11 +92,15 @@ describe('TherapyComponent', () => {
   it('keeps dots aligned with filtered list and resets active slide', () => {
     const component = fixture.componentInstance;
     component.activeSlide.set(2);
-    component.toggleGender('non-binary');
+    component.toggleFilter('all');
+    component.setDraftValue('sessionMode', 'Audio');
+    component.applyAllFilters();
     fixture.detectChanges();
 
     expect(component.activeSlide()).toBe(0);
+    expect(component.psychologists().map((therapist) => therapist.id)).toEqual(['gargi-yadav', 'yukta-bansal']);
     expect((fixture.nativeElement as HTMLElement).querySelectorAll('[aria-label^="Go to slide"]')).toHaveLength(component.psychologists().length);
+    expect(component.psychologists().length).toBeLessThan(THERAPISTS.length);
   });
 
   it('renders carousel by default without expert search', () => {
@@ -182,22 +195,22 @@ describe('TherapyComponent', () => {
     component.toggleFilter('all');
     component.setDraftNumber('priceMin', '21');
     component.setDraftNumber('priceMax', '999999');
-    component.setDraftValue('sessionMode', 'Chat');
+    component.setDraftValue('sessionMode', 'Audio');
     component.applyAllFilters();
     fixture.detectChanges();
 
     expect(component.criteria().priceMin).toBe(component.priceBounds.min);
     expect(component.criteria().priceMax).toBe(component.priceBounds.max);
     // The rest of the applied criteria survived the out-of-range entry.
-    expect(component.criteria().sessionMode).toBe('Chat');
-    expect(component.psychologists().length).toBeGreaterThan(0);
-    expect(component.psychologists().every((therapist) => therapist.sessionModes.includes('Chat'))).toBe(true);
+    expect(component.criteria().sessionMode).toBe('Audio');
+    expect(component.psychologists().map((therapist) => therapist.id)).toEqual(['gargi-yadav', 'yukta-bansal']);
+    expect(component.psychologists().every((therapist) => therapist.sessionModes.includes('Audio'))).toBe(true);
   });
 
   it('renders empty state instead of an empty carousel', () => {
     const component = fixture.componentInstance;
     component.setDraftValue('minRating', 4.9);
-    component.setDraftValue('specialty', 'Burnout');
+    component.setDraftValue('specialty', 'Addiction');
     component.applyAllFilters();
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
@@ -238,7 +251,9 @@ describe('TherapyComponent', () => {
     fixture.detectChanges();
     await Promise.resolve();
     expect(component.criteria().availability).toBe('week');
-    expect(component.psychologists().length).toBeLessThan(THERAPISTS.length);
+    expect(component.psychologists().map((therapist) => therapist.id)).toEqual(
+      filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, availability: 'week' }).map((therapist) => therapist.id),
+    );
     expect(document.activeElement).toBe(availabilityTrigger);
 
     component.toggleFilter('availability');
@@ -248,10 +263,10 @@ describe('TherapyComponent', () => {
     expect(component.psychologists().length).toBeGreaterThan(0);
 
     component.clearAllFilters();
-    component.toggleLanguage('Bengali');
+    component.toggleLanguage('Punjabi');
     component.toggleLanguage('Kannada');
     fixture.detectChanges();
-    expect(component.psychologists().every((therapist) => therapist.languages.includes('Bengali') || therapist.languages.includes('Kannada'))).toBe(true);
+    expect(component.psychologists().map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'chandana-reddy', 'manheer-kaur']);
   });
 
   it('keeps all-filter edits as draft until Apply and normalizes price ranges', () => {
@@ -271,36 +286,36 @@ describe('TherapyComponent', () => {
     component.setDraftNumber('priceMax', '900');
     component.applyAllFilters();
     expect(component.criteria().priceMin).toBe(900);
-    expect(component.criteria().priceMax).toBe(3000);
+    expect(component.criteria().priceMax).toBe(component.priceBounds.max);
   });
 
   it('restores applied themed select labels when reopening all filters', () => {
     const component = fixture.componentInstance;
     component.toggleFilter('all');
-    component.setDraftValue('minRating', 4.8);
+    component.setDraftValue('minRating', 4.9);
     component.setDraftValue('minExperience', 3);
-    component.setDraftValue('specialty', 'Burnout');
-    component.setDraftValue('sessionMode', 'Chat');
+    component.setDraftValue('specialty', 'Relationships');
+    component.setDraftValue('sessionMode', 'Video');
     component.applyAllFilters();
     component.toggleFilter('all');
     fixture.detectChanges();
 
     const labels = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('app-select-menu button'))
       .map((trigger) => trigger.textContent?.trim());
-    expect(labels).toEqual(expect.arrayContaining(['4.8+', '3+ years', 'Burnout', 'Chat']));
+    expect(labels).toEqual(expect.arrayContaining(['4.9+', '3+ years', 'Relationships', 'Video']));
     expect(component.activeFilterCount()).toBe(4);
   });
 
   it('persists applied criteria through a new root injector and clears stored criteria', async () => {
     const component = fixture.componentInstance;
     component.toggleFilter('all');
-    component.setDraftValue('minRating', 4.8);
+    component.setDraftValue('minRating', 4.9);
     component.setDraftValue('minExperience', 3);
-    component.setDraftValue('specialty', 'Burnout');
-    component.setDraftValue('sessionMode', 'Chat');
+    component.setDraftValue('specialty', 'Relationships');
+    component.setDraftValue('sessionMode', 'Video');
     component.applyAllFilters();
 
-    expect(sessionStorage.getItem(THERAPIST_FILTER_STORAGE_KEY)).toContain('Burnout');
+    expect(sessionStorage.getItem(THERAPIST_FILTER_STORAGE_KEY)).toContain('Relationships');
     fixture.destroy();
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
@@ -313,14 +328,14 @@ describe('TherapyComponent', () => {
     const freshFixture = TestBed.createComponent(TherapyComponent);
     freshFixture.detectChanges();
     const fresh = freshFixture.componentInstance;
-    expect(fresh.criteria()).toMatchObject({ minRating: 4.8, minExperience: 3, specialty: 'Burnout', sessionMode: 'Chat' });
+    expect(fresh.criteria()).toMatchObject({ minRating: 4.9, minExperience: 3, specialty: 'Relationships', sessionMode: 'Video' });
     expect(fresh.activeFilterCount()).toBe(4);
 
     fresh.toggleFilter('all');
     freshFixture.detectChanges();
     const labels = Array.from((freshFixture.nativeElement as HTMLElement).querySelectorAll('app-select-menu > button'))
       .map((trigger) => trigger.textContent?.trim());
-    expect(labels).toEqual(expect.arrayContaining(['4.8+', '3+ years', 'Burnout', 'Chat']));
+    expect(labels).toEqual(expect.arrayContaining(['4.9+', '3+ years', 'Relationships', 'Video']));
 
     fresh.clearAllFilters();
     expect(fresh.criteria()).toEqual(DEFAULT_FILTER_CRITERIA);
@@ -331,7 +346,7 @@ describe('TherapyComponent', () => {
   it('keeps all-filters dialog and unapplied draft open when a nested select receives Escape', () => {
     const component = fixture.componentInstance;
     component.toggleFilter('all');
-    component.setDraftValue('specialty', 'Burnout');
+    component.setDraftValue('specialty', 'Relationships');
     fixture.detectChanges();
 
     const selectTrigger = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('app-select-menu > button')!;
@@ -341,7 +356,7 @@ describe('TherapyComponent', () => {
     fixture.detectChanges();
 
     expect(component.openFilter()).toBe('all');
-    expect(component.allFiltersDraft().specialty).toBe('Burnout');
+    expect(component.allFiltersDraft().specialty).toBe('Relationships');
   });
 
   it('uses semantic color utilities without forbidden color literals', () => {

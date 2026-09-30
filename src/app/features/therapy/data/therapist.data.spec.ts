@@ -17,7 +17,6 @@ describe('therapist filtering data', () => {
       expect(therapist.sessionModes.length).toBeGreaterThan(0);
       expect(firstAvailableDay(therapist)).toBeDefined();
     });
-    expect(LANGUAGE_OPTIONS).toContain('Bengali');
     expect(LANGUAGE_OPTIONS).toContain('Tamil');
     expect(LANGUAGE_OPTIONS).toContain('Kannada');
     expect(LANGUAGE_OPTIONS).toContain('Punjabi');
@@ -27,27 +26,35 @@ describe('therapist filtering data', () => {
   it('narrows by availability, gender, and language', () => {
     const today = new Date();
     const availability = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, availability: 'today' }, today);
-    const gender = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, genders: ['non-binary'] }, today);
-    const language = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, languages: ['Kannada'] }, today);
+    const nonBinary = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, genders: ['non-binary'] }, today);
+    const female = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, genders: ['female'] }, today);
+    const language = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, languages: ['Punjabi'] }, today);
 
     expect(availability.length).toBeGreaterThan(0);
     expect(availability.length).toBeLessThan(THERAPISTS.length);
     expect(availability.every((therapist) => hasAvailability(therapist, 'today', today))).toBe(true);
-    expect(gender.length).toBeGreaterThan(0);
-    expect(gender.length).toBeLessThan(THERAPISTS.length);
-    expect(gender.every((therapist) => therapist.gender === 'non-binary')).toBe(true);
-    expect(language.map((therapist) => therapist.id)).toEqual(['chandana-reddy', 'vishal-naik', 'kavya-reddy']);
+    expect(nonBinary).toEqual([]);
+    expect(female).toHaveLength(THERAPISTS.length);
+    expect(female.every((therapist) => therapist.gender === 'female')).toBe(true);
+    expect(language.map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'manheer-kaur']);
   });
 
-  it('normalizes supplied dates and narrows week and weekend availability', () => {
+  it('normalizes supplied dates and excludes therapists without week slots', () => {
     const todayWithTime = new Date();
     todayWithTime.setHours(18, 45, 0, 0);
+    const noWeekSlots = {
+      ...THERAPISTS[0]!,
+      id: 'no-week-slots',
+      availability: THERAPISTS[0]!.availability.map((day) => ({ ...day, state: 'unavailable' as const, slots: [] })),
+    };
+    const therapistsWithNoWeekSlots = [...THERAPISTS, noWeekSlots];
     const today = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, availability: 'today' }, todayWithTime);
-    const week = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, availability: 'week' }, todayWithTime);
+    const week = filterTherapists(therapistsWithNoWeekSlots, { ...DEFAULT_FILTER_CRITERIA, availability: 'week' }, todayWithTime);
     const weekend = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, availability: 'weekend' }, todayWithTime);
 
     expect(today.map((therapist) => therapist.id)).toContain('gargi-yadav');
-    expect(week.length).toBeLessThan(THERAPISTS.length);
+    expect(week.map((therapist) => therapist.id)).toEqual(THERAPISTS.map((therapist) => therapist.id));
+    expect(week.map((therapist) => therapist.id)).not.toContain('no-week-slots');
     expect(week.every((therapist) => hasAvailability(therapist, 'week', todayWithTime))).toBe(true);
     expect(weekend.length).toBeGreaterThan(0);
     expect(weekend.length).toBeLessThan(THERAPISTS.length);
@@ -187,19 +194,18 @@ describe('therapist filtering data', () => {
   });
 
   it('uses OR logic for selected languages and AND logic across criteria', () => {
-    const languages = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, languages: ['Bengali', 'Kannada'] });
+    const languages = filterTherapists(THERAPISTS, { ...DEFAULT_FILTER_CRITERIA, languages: ['Punjabi', 'Kannada'] });
     const combined = filterTherapists(THERAPISTS, {
       ...DEFAULT_FILTER_CRITERIA,
       genders: ['female'],
-      languages: ['Bengali'],
+      languages: ['Punjabi'],
       minRating: 4.5,
-      sessionMode: 'Chat',
+      sessionMode: 'Video',
     });
 
-    expect(languages.map((therapist) => therapist.id)).toEqual(expect.arrayContaining(['meera-sen', 'vishal-naik', 'kavya-reddy']));
+    expect(languages.map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'chandana-reddy', 'manheer-kaur']);
     expect(languages.map((therapist) => therapist.id)).not.toContain('yukta-bansal');
-    // Yukta does not speak Bengali, so the language must be absent at the source too.
     expect(THERAPISTS.find((therapist) => therapist.id === 'yukta-bansal')?.languages).toEqual(['English', 'Hindi']);
-    expect(combined.map((therapist) => therapist.id)).toEqual(['meera-sen']);
+    expect(combined.map((therapist) => therapist.id)).toEqual(['pavneet-kaur', 'manheer-kaur']);
   });
 });

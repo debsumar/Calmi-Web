@@ -233,11 +233,11 @@ describe('ProfileComponent', () => {
         ...snapshot,
         sessions: [
           // Same day as the 10:00 AM booking below, and later in the day.
-          { id: 'today-afternoon', therapistId: 'meera-sen', therapistName: 'Meera Sen', date: dayKey(0), time: '1:00 PM', duration: '45 mins', mode: 'Chat' },
-          { id: 'past', therapistId: 'meera-sen', therapistName: 'Meera Sen', date: dayKey(-3), time: '4:00 PM', duration: '45 mins', mode: 'Chat' },
+          { id: 'today-afternoon', therapistId: 'rini-rao', therapistName: 'Rini Rao', date: dayKey(0), time: '1:00 PM', duration: '45 mins', mode: 'Chat' },
+          { id: 'past', therapistId: 'rini-rao', therapistName: 'Rini Rao', date: dayKey(-3), time: '4:00 PM', duration: '45 mins', mode: 'Chat' },
           { id: 'tomorrow', therapistId: 'gargi-yadav', therapistName: 'Gargi Yadav', date: dayKey(1), time: '5:30 PM', duration: '50 mins', mode: 'Audio' },
           { id: 'today-morning', therapistId: 'gargi-yadav', therapistName: 'Gargi Yadav', date: dayKey(0), time: '10:00 AM', duration: '50 mins', mode: 'Video' },
-          { id: 'far', therapistId: 'vishal-naik', therapistName: 'Vishal Naik', date: dayKey(30), time: '9:00 AM', duration: '60 mins', mode: 'Video' },
+          { id: 'far', therapistId: 'manheer-kaur', therapistName: 'Manheer Kaur', date: dayKey(30), time: '9:00 AM', duration: '60 mins', mode: 'Video' },
         ],
       };
 
