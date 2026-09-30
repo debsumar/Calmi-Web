@@ -133,10 +133,18 @@
       }
     </div>
     @if (psychologists().length > 0) {
-      @if (!viewAll()) {
+      <!-- Search stays visible in both carousel and View all modes. -->
+      <label class="sr-only" for="expert-search">Search experts</label>
+      <div class="relative mb-6 w-full">
+        <svg [lucideIcon]="'search'" [size]="18" aria-hidden="true" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted"></svg>
+        <input id="expert-search" type="search" placeholder="Search by name, specialty or language" [value]="searchQuery()" (input)="setSearchQuery($any($event.target).value)" class="rounded-full border border-hairline bg-surface pl-12 pr-4 min-h-11 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand w-full">
+      </div>
+      @if (visiblePsychologists().length === 0) {
+        <p class="text-center text-lg font-bold text-ink">No experts match your search</p>
+      } @else if (!viewAll()) {
         <div class="relative">
           <div #carousel appDragScroll (scroll)="onScroll($event)" class="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            @for (psychologist of psychologists(); track psychologist.id) {
+            @for (psychologist of visiblePsychologists(); track psychologist.id) {
               <app-psychologist-card appAnimateOnScroll class="w-[70vw] shrink-0 snap-start transition-all duration-300 hover:-translate-y-1 hover:shadow-card md:w-[260px]" [name]="psychologist.name" [profileId]="psychologist.id" [image]="psychologist.image" [price]="psychologist.price" [duration]="psychologist.duration" [rating]="psychologist.rating" [reviews]="psychologist.reviews" [specialties]="psychologist.specialties" [languages]="psychologist.languages" [available]="hasAvailability(psychologist)" />
             }
           </div>
@@ -149,20 +157,11 @@
           }
         </div>
       } @else {
-        <label class="sr-only" for="expert-search">Search experts</label>
-        <div class="relative w-full">
-          <svg [lucideIcon]="'search'" [size]="18" aria-hidden="true" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted"></svg>
-          <input id="expert-search" type="search" placeholder="Search by name, specialty or language" [value]="searchQuery()" (input)="setSearchQuery($any($event.target).value)" class="rounded-full border border-hairline bg-surface pl-12 pr-4 min-h-11 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand w-full">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          @for (psychologist of visiblePsychologists(); track psychologist.id) {
+            <app-psychologist-card appAnimateOnScroll class="w-full transition-all duration-300 hover:-translate-y-1 hover:shadow-card" [name]="psychologist.name" [profileId]="psychologist.id" [image]="psychologist.image" [price]="psychologist.price" [duration]="psychologist.duration" [rating]="psychologist.rating" [reviews]="psychologist.reviews" [specialties]="psychologist.specialties" [languages]="psychologist.languages" [available]="hasAvailability(psychologist)" />
+          }
         </div>
-        @if (visiblePsychologists().length > 0) {
-          <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            @for (psychologist of visiblePsychologists(); track psychologist.id) {
-              <app-psychologist-card appAnimateOnScroll class="w-full transition-all duration-300 hover:-translate-y-1 hover:shadow-card" [name]="psychologist.name" [profileId]="psychologist.id" [image]="psychologist.image" [price]="psychologist.price" [duration]="psychologist.duration" [rating]="psychologist.rating" [reviews]="psychologist.reviews" [specialties]="psychologist.specialties" [languages]="psychologist.languages" [available]="hasAvailability(psychologist)" />
-            }
-          </div>
-        } @else {
-          <p class="mt-6 text-center text-lg font-bold text-ink">No experts match your search</p>
-        }
       }
     } @else {
       <div class="rounded-2xl border border-hairline bg-surface p-8 text-center">
