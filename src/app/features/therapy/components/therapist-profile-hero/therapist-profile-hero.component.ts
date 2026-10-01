@@ -57,7 +57,9 @@ import { Therapist } from '@/features/therapy/data/therapist.data';
               </span>
               <h2 appAnimateOnScroll style="--index:3" id="expertise-heading" class="font-sans text-3xl font-bold leading-tight text-ink md:text-4xl">Areas of Expertise</h2>
             </div>
-            <div class="mt-6 flex flex-wrap gap-3">
+            <!-- Cap height (~2.5 rows) so long lists scroll vertically inside instead of stretching the card. -->
+            <div class="mt-6 flex max-h-28 flex-wrap content-start gap-3 overflow-y-auto overscroll-contain pr-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-deep"
+                 role="region" aria-label="Areas of expertise list" tabindex="0">
               @for (specialty of profile().specialties; track specialty) {
                 <span class="rounded-full border border-brand-light bg-surface px-4 py-2 text-xs text-ink">{{ specialty }}</span>
               }
