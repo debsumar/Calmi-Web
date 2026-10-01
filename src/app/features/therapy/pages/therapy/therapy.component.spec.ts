@@ -329,7 +329,7 @@ describe('TherapyComponent', () => {
     expect(component.criteria().genders).toEqual(['female']);
     expect(component.allFiltersDraft()).toEqual(DEFAULT_FILTER_CRITERIA);
 
-    component.setDraftNumber('priceMin', '3000');
+    component.setDraftNumber('priceMin', String(component.priceBounds.max + 1000));
     component.setDraftNumber('priceMax', '900');
     component.applyAllFilters();
     expect(component.criteria().priceMin).toBe(900);

@@ -129,7 +129,7 @@ const RUMI_REPLY_OFFSET_MS = 75_000;
               </span>
               <div class="min-w-0 flex-1">
                 <div
-                  class="rounded-2xl rounded-br-md border border-hairline bg-brand px-4 py-2.5 text-base text-on-brand"
+                  class="rounded-2xl rounded-br-md border border-hairline bg-brand-deep px-4 py-2.5 text-base text-on-brand-deep"
                 >
                   <p class="whitespace-pre-wrap break-words">
                     {{ message.text }}
