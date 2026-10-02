@@ -186,7 +186,7 @@ describe('therapist filtering data', () => {
       experienceYears: 2,
       duration: '45 mins',
       sessionModes: ['Video'],
-      specialties: ['Anxiety', 'Depression', 'Trauma & PTSD', 'Relationships', 'Stress Management'],
+      specialties: ['Cognitive Behaviour Therapy', 'Anxiety', 'Depression', 'Trauma & PTSD', 'Relationships', 'Stress Management'],
       languages: ['English', 'Hindi'],
     });
     expect(mitali?.bio.startsWith('I’m Mitali, and I help young adults overcome stress, anxiety, and relationship problems.')).toBe(true);
