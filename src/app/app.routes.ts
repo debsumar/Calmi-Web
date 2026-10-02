@@ -29,23 +29,26 @@ export const appRoutes: Routes = [
         path: 'rumi-ai',
         loadComponent: () => import('@/features/rumi-ai/pages/rumi-ai/rumi-ai.component').then((m) => m.RumiAiComponent),
       },
+      { path: 'therapy/wellness-quiz', redirectTo: 'experts/wellness-quiz', pathMatch: 'full' },
+      { path: 'therapy/:id', redirectTo: 'experts/:id', pathMatch: 'full' },
+      { path: 'therapy', redirectTo: 'experts', pathMatch: 'full' },
       {
-        path: 'therapy/wellness-quiz',
-        loadComponent: () => import('@/features/therapy/pages/wellness-quiz/wellness-quiz.component').then((m) => m.WellnessQuizComponent),
+        path: 'experts/wellness-quiz',
+        loadComponent: () => import('@/features/experts/pages/wellness-quiz/wellness-quiz.component').then((m) => m.WellnessQuizComponent),
       },
       {
-        path: 'therapy/:id',
-        loadComponent: () => import('@/features/therapy/pages/therapist-profile/therapist-profile.component').then((m) => m.TherapistProfileComponent),
+        path: 'experts/:id',
+        loadComponent: () => import('@/features/experts/pages/expert-profile/expert-profile.component').then((m) => m.ExpertProfileComponent),
       },
       {
-        path: 'therapy',
-        loadComponent: () => import('@/features/therapy/pages/therapy/therapy.component').then((m) => m.TherapyComponent),
+        path: 'experts',
+        loadComponent: () => import('@/features/experts/pages/experts/experts.component').then((m) => m.ExpertsComponent),
       },
       {
         path: 'sleep',
         loadComponent: () => import('@/features/sleep/pages/sleep/sleep.component').then((m) => m.SleepComponent),
       },
-      { path: 'sessions', redirectTo: 'therapy', pathMatch: 'full' },
+      { path: 'sessions', redirectTo: 'experts', pathMatch: 'full' },
       { path: 'sounds', redirectTo: 'sleep', pathMatch: 'full' },
       {
         path: 'about',

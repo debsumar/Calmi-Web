@@ -1,0 +1,24 @@
+<!-- AppLayout supplies the <main> landmark; a nested <main> would be invalid. -->
+<div class="min-h-screen bg-canvas font-sans text-ink">
+  @if (expert(); as profile) {
+    <app-expert-profile-hero [profile]="profile" />
+    <div class="mx-auto grid max-w-6xl min-w-0 grid-cols-1 gap-8 px-4 pb-16 md:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)] lg:gap-10">
+      <div class="min-w-0 space-y-8">
+        <app-expert-profile-about [profile]="profile" />
+        <app-expert-why-choose-us [benefits]="profile.whyChooseUs" />
+        <app-expert-testimonials [testimonials]="profile.testimonials" />
+      </div>
+      <app-expert-booking-sidebar [expert]="profile" />
+    </div>
+    <app-faq-accordion
+      class="block pt-16 md:pt-20"
+      [faqs]="profileFaqs()"
+      heading="Before Your First Session"
+      subtitle="Find answers to common questions about expert sessions, experts, and getting started with Calmi."
+      sectionId="profile-faq"
+      idPrefix="profile-faq" />
+  } @else {
+    <app-expert-profile-empty-state />
+  }
+</div>
+

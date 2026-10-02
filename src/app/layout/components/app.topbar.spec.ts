@@ -81,7 +81,7 @@ describe('AppTopbar', () => {
   it('renders one nav link per configured route plus the ink indicator', () => {
     expect(links().length).toBe(6);
     expect(links().map((a) => a.getAttribute('data-nav-path'))).toEqual([
-      '/home', '/rumi-ai', '/therapy', '/sleep', '/about', '/pricing',
+      '/home', '/rumi-ai', '/experts', '/sleep', '/about', '/pricing',
     ]);
     expect(indicator()).not.toBeNull();
   });

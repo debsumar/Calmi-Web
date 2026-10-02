@@ -17,7 +17,7 @@ function runGuard(guard: typeof authGuard, auth: Partial<AuthService>, router: P
 describe('auth guards', () => {
   beforeEach(() => TestBed.resetTestingModule());
 
-  it.each(['/home', '/therapy', '/therapy/123', '/sleep', '/about', '/pricing', '/sounds'])
+  it.each(['/home', '/experts', '/experts/123', '/sleep', '/about', '/pricing', '/sounds'])
     ('redirects unauthenticated users from %s to identify with a safe return URL', async (url) => {
       const auth = { restoreSession: vi.fn().mockResolvedValue(undefined), isAuthenticated: () => false } as any;
       const createUrlTree = vi.fn((commands, extras) => ({ commands, extras }));

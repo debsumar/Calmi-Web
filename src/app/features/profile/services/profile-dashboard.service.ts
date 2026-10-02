@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { JournalService } from '@/features/journal/services/journal.service';
-import type { SessionMode } from '@/features/therapy/data/therapist.data';
+import type { SessionMode } from '@/features/experts/data/expert.data';
 
 export interface PreviewSource {
   readonly kind: 'mock';
@@ -98,8 +98,8 @@ export interface SecurityRecord {
 /** One session the member has actually booked. Empty until booking is live. */
 export interface BookedSessionRecord {
   readonly id: string;
-  readonly therapistId: string;
-  readonly therapistName: string;
+  readonly expertId: string;
+  readonly expertName: string;
   /** Date key, YYYY-MM-DD. */
   readonly date: string;
   /** Start time as shown, e.g. "10:00 AM". */

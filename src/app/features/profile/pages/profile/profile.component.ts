@@ -34,8 +34,8 @@ interface BookedSessionView {
   readonly dayNumber: number;
   readonly weekday: string;
   readonly relativeLabel: string;
-  readonly therapistId: string;
-  readonly therapistName: string;
+  readonly expertId: string;
+  readonly expertName: string;
   readonly time: string;
   readonly detail: string;
 }
@@ -320,7 +320,7 @@ export class ProfileComponent {
   /**
    * Upcoming sessions the member has booked, soonest first and capped so the tile
    * cannot outgrow the bento grid. Nothing is booked yet, so the card holds an
-   * empty state rather than borrowing therapist availability data.
+   * empty state rather than borrowing expert availability data.
    */
   readonly bookedSessions = computed<readonly BookedSessionView[]>(() => {
     const now = new Date();
@@ -336,8 +336,8 @@ export class ProfileComponent {
         dayNumber: date.getDate(),
         weekday: date.toLocaleDateString(undefined, { weekday: 'short' }),
         relativeLabel: this.relativeDayLabel(date, today),
-        therapistId: session.therapistId,
-        therapistName: session.therapistName,
+        expertId: session.expertId,
+        expertName: session.expertName,
         time: session.time,
         detail: `${session.duration} · ${session.mode}`,
       }));
