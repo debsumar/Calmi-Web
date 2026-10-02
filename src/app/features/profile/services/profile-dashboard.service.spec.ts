@@ -56,7 +56,7 @@ describe('ProfileDashboardService', () => {
   });
 
   it('ships no booked sessions until the booking service is connected', () => {
-    // The profile must not fabricate bookings from therapist availability data.
+    // The profile must not fabricate bookings from expert availability data.
     expect(service().dashboard().sessions).toEqual([]);
   });
 

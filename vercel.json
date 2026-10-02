@@ -1,4 +1,8 @@
 {
+  "redirects": [
+    { "source": "/therapy", "destination": "/experts", "permanent": true },
+    { "source": "/therapy/:path*", "destination": "/experts/:path*", "permanent": true }
+  ],
   "rewrites": [
     {
       "source": "/calmi-api/(.*)",

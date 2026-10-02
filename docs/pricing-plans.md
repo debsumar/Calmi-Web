@@ -44,7 +44,7 @@ The Student Premium card retains its `Recommended` ribbon and `Student Plan` bad
 2. Higher Rumi AI limits — 100–150 conversations/month
 3. Deeper Mood Insights
 4. Premium Sleep Journeys
-5. Therapist Session Discounts
+5. Expert Session Discounts
 6. Exclusive Weekly Content
 7. Priority Support
 

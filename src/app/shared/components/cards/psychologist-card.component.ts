@@ -109,7 +109,7 @@ export class PsychologistCardComponent {
   );
 
   /** Real href so the card stays a link: shareable, middle-clickable, crawlable. */
-  profileUrl = computed(() => `/therapy/${this.profileId()}`);
+  profileUrl = computed(() => `/experts/${this.profileId()}`);
 
   onPointerDown(event: PointerEvent): void {
     this.pointerStartX = event.clientX;
@@ -131,6 +131,6 @@ export class PsychologistCardComponent {
       && (movedX > DRAG_TOLERANCE_PX || movedY > DRAG_TOLERANCE_PX);
     if (isDrag) return;
 
-    void this.router.navigate(['/therapy', this.profileId()]);
+    void this.router.navigate(['/experts', this.profileId()]);
   }
 }

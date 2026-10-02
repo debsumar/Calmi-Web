@@ -58,7 +58,7 @@ src/app/
 │
 ├── features/              # Feature modules (lazy-loaded)
 │   ├── home/pages/home/        # Landing page
-│   ├──     therapy/pages/therapy/  # Therapy page
+│   ├──     experts/pages/experts/  # Experts page
     sleep/pages/sleep/      # Sleep sounds browser
 │   ├── about/pages/about/      # About Us
 │   ├── pricing/pages/pricing/  # Pricing plans
@@ -79,9 +79,9 @@ All feature pages are children of `AppLayout` (which provides the sticky topbar)
 
 ```
 /home        → HomeComponent
-/therapy     -> TherapyComponent
+/experts     -> ExpertsComponent
 /sleep       -> SleepComponent
-/sessions    -> redirects to /therapy
+/sessions    -> redirects to /experts
 /sounds      -> redirects to /sleep
 /about       → AboutComponent
 /pricing     → PricingComponent

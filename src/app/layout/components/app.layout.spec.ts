@@ -35,7 +35,7 @@ const routes: Routes = [
       { path: 'about', component: TestPage },
       { path: 'pricing', component: TestPage },
       { path: 'download', component: TestPage },
-      { path: 'therapy', component: TestPage },
+      { path: 'experts', component: TestPage },
       { path: 'notfound', component: TestPage },
     ],
   },
@@ -106,7 +106,7 @@ describe('AppLayout Download App banner', () => {
   });
 
   it('hides banner on every non-Home/About route while layout persists', async () => {
-    for (const url of ['/pricing', '/download', '/therapy']) {
+    for (const url of ['/pricing', '/download', '/experts']) {
       await harness.navigateByUrl(url);
       await harness.fixture.whenStable();
       expect(banners(), url).toHaveLength(0);

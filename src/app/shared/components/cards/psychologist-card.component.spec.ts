@@ -39,13 +39,13 @@ describe('PsychologistCardComponent', () => {
     expect(text).toContain('Speaks: English, Hindi');
     const profileLink = fixture.nativeElement.querySelector('a[aria-label="View Gargi Yadav profile"]') as HTMLAnchorElement;
     expect(profileLink).not.toBeNull();
-    expect(profileLink.getAttribute('href')).toBe('/therapy/gargi-yadav');
+    expect(profileLink.getAttribute('href')).toBe('/experts/gargi-yadav');
     expect(fixture.nativeElement.querySelector('[aria-hidden="true"]').textContent).toContain('GY');
   });
 
   it('exposes the whole card and the Book Session control as profile links', () => {
     const links = Array.from(
-      fixture.nativeElement.querySelectorAll('a[href="/therapy/gargi-yadav"]')
+      fixture.nativeElement.querySelectorAll('a[href="/experts/gargi-yadav"]')
     ) as HTMLAnchorElement[];
 
     expect(links.length).toBe(2);
@@ -66,7 +66,7 @@ describe('PsychologistCardComponent', () => {
     overlay.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 100, bubbles: true }));
     overlay.dispatchEvent(new MouseEvent('click', { clientX: 102, clientY: 101, bubbles: true, cancelable: true }));
 
-    expect(navigate).toHaveBeenCalledWith(['/therapy', 'gargi-yadav']);
+    expect(navigate).toHaveBeenCalledWith(['/experts', 'gargi-yadav']);
   });
 
   it('routes to the profile from the Book Session control', () => {
@@ -77,6 +77,6 @@ describe('PsychologistCardComponent', () => {
     book.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 50, bubbles: true }));
     book.dispatchEvent(new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true, cancelable: true }));
 
-    expect(navigate).toHaveBeenCalledWith(['/therapy', 'gargi-yadav']);
+    expect(navigate).toHaveBeenCalledWith(['/experts', 'gargi-yadav']);
   });
 });

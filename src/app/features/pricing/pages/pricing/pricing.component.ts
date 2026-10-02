@@ -117,7 +117,7 @@ export class PricingComponent {
         'Higher Rumi AI limits — 100–150 conversations/month',
         'Deeper Mood Insights',
         'Premium Sleep Journeys',
-        'Therapist Session Discounts',
+        'Expert Session Discounts',
         'Exclusive Weekly Content',
         'Priority Support'
       ],

@@ -20,7 +20,7 @@ import {
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideRouter } from '@angular/router';
 import { AuthService } from '@/core/services/auth.service';
-import { THERAPISTS } from '@/features/therapy/data/therapist.data';
+import { EXPERTS } from '@/features/experts/data/expert.data';
 import { JournalService } from '@/features/journal/services/journal.service';
 import { ProfileDashboardService, type ProfileDashboardSnapshot } from '../../services/profile-dashboard.service';
 import { ProfileComponent } from './profile.component';
@@ -199,15 +199,15 @@ describe('ProfileComponent', () => {
     expect(tile?.textContent).toContain('Sessions');
     expect(tile?.textContent).toContain("You haven't booked a session yet");
 
-    // No booked rows, and no therapist availability is borrowed to fill the card.
+    // No booked rows, and no expert availability is borrowed to fill the card.
     expect(tile!.querySelectorAll('li')).toHaveLength(0);
-    expect(tile?.textContent).not.toContain(THERAPISTS[0].name);
+    expect(tile?.textContent).not.toContain(EXPERTS[0].name);
     expect(tile?.textContent).not.toContain('open days remain');
 
-    // The empty state routes to the therapist directory instead of a fake booking.
+    // The empty state routes to the expert directory instead of a fake booking.
     const cta = tile!.querySelector<HTMLAnchorElement>('a');
-    expect(cta?.getAttribute('href')).toBe('/therapy');
-    expect(cta?.textContent).toContain('Find a therapist');
+    expect(cta?.getAttribute('href')).toBe('/experts');
+    expect(cta?.textContent).toContain('Find an expert');
 
     // The guided-sessions dial is gone and the rail does not carry it either.
     expect(root.querySelector('[aria-labelledby="sessions-quota-title"]')).toBeNull();
@@ -233,11 +233,11 @@ describe('ProfileComponent', () => {
         ...snapshot,
         sessions: [
           // Same day as the 10:00 AM booking below, and later in the day.
-          { id: 'today-afternoon', therapistId: 'rini-rao', therapistName: 'Rini Rao', date: dayKey(0), time: '1:00 PM', duration: '45 mins', mode: 'Chat' },
-          { id: 'past', therapistId: 'rini-rao', therapistName: 'Rini Rao', date: dayKey(-3), time: '4:00 PM', duration: '45 mins', mode: 'Chat' },
-          { id: 'tomorrow', therapistId: 'gargi-yadav', therapistName: 'Gargi Yadav', date: dayKey(1), time: '5:30 PM', duration: '50 mins', mode: 'Audio' },
-          { id: 'today-morning', therapistId: 'gargi-yadav', therapistName: 'Gargi Yadav', date: dayKey(0), time: '10:00 AM', duration: '50 mins', mode: 'Video' },
-          { id: 'far', therapistId: 'manheer-kaur', therapistName: 'Manheer Kaur', date: dayKey(30), time: '9:00 AM', duration: '60 mins', mode: 'Video' },
+          { id: 'today-afternoon', expertId: 'rini-rao', expertName: 'Rini Rao', date: dayKey(0), time: '1:00 PM', duration: '45 mins', mode: 'Chat' },
+          { id: 'past', expertId: 'rini-rao', expertName: 'Rini Rao', date: dayKey(-3), time: '4:00 PM', duration: '45 mins', mode: 'Chat' },
+          { id: 'tomorrow', expertId: 'gargi-yadav', expertName: 'Gargi Yadav', date: dayKey(1), time: '5:30 PM', duration: '50 mins', mode: 'Audio' },
+          { id: 'today-morning', expertId: 'gargi-yadav', expertName: 'Gargi Yadav', date: dayKey(0), time: '10:00 AM', duration: '50 mins', mode: 'Video' },
+          { id: 'far', expertId: 'manheer-kaur', expertName: 'Manheer Kaur', date: dayKey(30), time: '9:00 AM', duration: '60 mins', mode: 'Video' },
         ],
       };
 
@@ -269,15 +269,15 @@ describe('ProfileComponent', () => {
       expect(tile.textContent).not.toContain('4:00 PM');
       expect(tile.textContent).not.toContain('9:00 AM');
 
-      // Each row carries the therapist and the session shape, and links to that therapist.
+      // Each row carries the expert and the session shape, and links to that expert.
       expect(rows[0].textContent).toContain('Gargi Yadav · 50 mins · Video');
       const link = rows[0].querySelector<HTMLAnchorElement>('a');
-      expect(link?.getAttribute('href')).toBe('/therapy/gargi-yadav');
+      expect(link?.getAttribute('href')).toBe('/experts/gargi-yadav');
       expect(link?.getAttribute('aria-label')).toContain('Open the profile of Gargi Yadav');
       // Populated rows stagger, and the empty state is gone.
       expect(tile.querySelectorAll('li[appanimateonscroll]')).toHaveLength(3);
       expect(tile.textContent).not.toContain("You haven't booked a session yet");
-      expect(tile.textContent).not.toContain('Find a therapist');
+      expect(tile.textContent).not.toContain('Find an expert');
     } finally {
       vi.useRealTimers();
     }

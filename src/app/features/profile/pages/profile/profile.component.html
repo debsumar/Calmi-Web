@@ -239,15 +239,15 @@
                 <span class="min-w-0 flex-1">
                   <span class="block text-base font-bold text-ink">{{ day.relativeLabel }} · {{ day.time }}</span>
                   <span class="mt-1 block break-words text-sm text-ink-soft">
-                    {{ day.therapistName }} · {{ day.detail }}
+                    {{ day.expertName }} · {{ day.detail }}
                   </span>
                 </span>
 
                 <a
-                  [routerLink]="['/therapy', day.therapistId]"
+                  [routerLink]="['/experts', day.expertId]"
                   class="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-brand bg-surface dark:border-brand-light px-4 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:w-auto"
-                  [attr.aria-label]="'Open the profile of ' + day.therapistName + ', your session on ' + day.relativeLabel + ' at ' + day.time">
-                  Therapist
+                  [attr.aria-label]="'Open the profile of ' + day.expertName + ', your session on ' + day.relativeLabel + ' at ' + day.time">
+                  Expert
                   <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
                 </a>
               </li>
@@ -262,9 +262,9 @@
               You haven't booked a session yet. Once you do, it will appear here with the date and time.
             </p>
             <a
-              routerLink="/therapy"
+              routerLink="/experts"
               class="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-brand bg-surface dark:border-brand-light px-4 py-2 text-base font-semibold text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-sunken sm:w-auto">
-              Find a therapist
+              Find an expert
               <svg lucideArrowRight class="h-4 w-4" aria-hidden="true" />
             </a>
           </div>
