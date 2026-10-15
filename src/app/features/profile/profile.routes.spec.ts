@@ -69,7 +69,7 @@ describe('profileRoutes', () => {
 
     await harness.navigateByUrl('/', SpecialistProfileComponent);
 
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent?.trim()).toBe('Specialist Profile');
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent?.trim()).toBe('Dr. Garima Adhikari');
   });
 
   it.each<AuthRole | null>(['user', null])('renders ProfileComponent for role %s', async (role) => {
