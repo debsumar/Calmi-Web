@@ -1,13 +1,518 @@
-<div class="flex min-h-[60vh] items-center bg-canvas px-4 py-10 text-ink sm:px-6 md:px-8 md:py-14">
-  <section
-    aria-labelledby="specialist-profile-title"
-    class="mx-auto w-full max-w-xl rounded-3xl border border-hairline bg-surface p-8 text-center shadow-card sm:p-10">
-    <span class="inline-flex rounded-full bg-sunken px-3 py-1 text-xs font-semibold text-ink-muted">Coming soon</span>
-    <h1 id="specialist-profile-title" class="mt-5 font-sans text-3xl font-bold leading-tight text-ink md:text-5xl">
-      Specialist Profile
-    </h1>
-    <p class="mt-4 text-base leading-relaxed text-ink-muted">
-      We're building a dedicated profile experience for wellness specialists. Stay tuned.
-    </p>
-  </section>
+<ng-template #avatar let-name let-src="src">
+  @if (src) {
+    <img
+      [src]="src"
+      [alt]="'Photo of ' + name"
+      width="40"
+      height="40"
+      loading="lazy"
+      class="h-10 w-10 shrink-0 rounded-full border border-hairline object-cover" />
+  } @else {
+    <span
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-xs font-bold text-on-brand-deep"
+      aria-hidden="true">
+      {{ initials(name) }}
+    </span>
+  }
+</ng-template>
+
+<div class="bg-canvas px-4 py-8 text-ink sm:px-6 md:px-8 md:py-12">
+  <div class="mx-auto flex w-full max-w-7xl flex-col gap-6">
+    <!-- 1. Header -->
+    <section appAnimateOnScroll [style.--index]="0" aria-labelledby="specialist-title" class="grid gap-6 lg:grid-cols-12 lg:items-center">
+      <div class="flex flex-col items-start gap-5 sm:flex-row sm:items-center lg:col-span-7">
+        <div class="relative shrink-0 pb-3">
+          @if (showAvatarImage()) {
+            <img
+              [src]="avatarUrl()"
+              [alt]="'Portrait of ' + displayName()"
+              referrerpolicy="no-referrer"
+              decoding="async"
+              width="128"
+              height="128"
+              class="h-32 w-32 rounded-full border border-hairline bg-sunken object-cover shadow-card"
+              (error)="onAvatarError()" />
+          } @else {
+            <div
+              class="flex h-32 w-32 items-center justify-center rounded-full border border-hairline bg-brand-deep text-4xl font-bold text-on-brand-deep shadow-card"
+              aria-hidden="true">
+              {{ initials(displayName()) }}
+            </div>
+          }
+          @if (header.online) {
+            <span
+              class="absolute bottom-0 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-ink shadow-card">
+              <span class="h-2 w-2 rounded-full bg-success" aria-hidden="true"></span>
+              Online
+            </span>
+          }
+        </div>
+        <div class="min-w-0">
+          <p appAnimateOnScroll [style.--index]="0" class="text-xs font-semibold text-ink-muted">Expert Space</p>
+          <div class="mt-1 flex flex-wrap items-center gap-2">
+            <h1 id="specialist-title" appAnimateOnScroll [style.--index]="1" class="font-sans text-3xl font-bold leading-tight text-ink md:text-5xl">{{ displayName() }}</h1>
+            @if (header.verified) {
+              <svg lucideBadgeCheck [size]="28" class="shrink-0 text-brand" role="img" aria-label="Verified specialist"></svg>
+            }
+          </div>
+          @if (header.title) {
+            <p appAnimateOnScroll [style.--index]="2" class="mt-1 text-base text-ink-muted">
+              {{ header.title }}
+            </p>
+          }
+          <ul class="mt-3 flex flex-wrap gap-2" aria-label="Specialties">
+            @for (specialty of header.specialties; track specialty) {
+              <li appAnimateOnScroll [style.--index]="$index" class="rounded-full bg-sunken px-3 py-1 text-xs text-ink">{{ specialty }}</li>
+            } @empty {
+              <li appAnimateOnScroll [style.--index]="0" class="rounded-full bg-sunken px-3 py-1 text-xs text-ink-muted">Add your specialties</li>
+            }
+            @if (header.extraSpecialties > 0) {
+              <li appAnimateOnScroll [style.--index]="header.specialties.length" class="rounded-full bg-sunken px-3 py-1 text-xs font-semibold text-ink">+{{ header.extraSpecialties }}</li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-hairline bg-sunken p-5 lg:col-span-5">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-on-brand-deep" aria-hidden="true">
+          <svg lucideCalendarDays [size]="24"></svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <p appAnimateOnScroll [style.--index]="0" class="text-xs text-ink-muted">Next session</p>
+          @if (nextSession; as next) {
+            <p appAnimateOnScroll [style.--index]="1" class="text-base font-bold text-ink">{{ next.startsIn }}</p>
+            <p appAnimateOnScroll [style.--index]="2" class="text-xs text-ink-muted">{{ next.timeRange }} with {{ next.clientName }}</p>
+          } @else {
+            <p appAnimateOnScroll [style.--index]="1" class="text-base font-bold text-ink">No upcoming sessions</p>
+            <p appAnimateOnScroll [style.--index]="2" class="text-xs text-ink-soft">New bookings will appear here.</p>
+          }
+        </div>
+        @if (nextSession) {
+          <button
+            type="button"
+            appAnimateOnScroll [style.--index]="3"
+            class="inline-flex min-h-11 items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-xs font-semibold text-brand-dark shadow-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+            <svg lucideVideo [size]="16" aria-hidden="true"></svg>
+            Join Meet
+          </button>
+        }
+      </div>
+    </section>
+
+    <!-- 2. Summary row -->
+    <div class="grid gap-6 lg:grid-cols-3">
+      <section appAnimateOnScroll [style.--index]="1" aria-labelledby="clients-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-on-brand-deep" aria-hidden="true">
+              <svg lucideUsers [size]="20"></svg>
+            </span>
+            <h2 id="clients-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Today's Clients</h2>
+          </div>
+          <button type="button" class="inline-flex min-h-11 items-center gap-1 rounded-md text-xs font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+            View schedule <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
+          </button>
+        </div>
+        <div class="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
+          <div class="flex items-center gap-4">
+            <div class="relative h-24 w-24 shrink-0">
+              <svg viewBox="0 0 100 100" class="h-24 w-24" role="img" [attr.aria-label]="donutLabel">
+                <circle cx="50" cy="50" [attr.r]="donutRadius" fill="none" stroke-width="10" class="stroke-sunken-alt"></circle>
+                @if (donutHasData) {
+                  <circle
+                    cx="50"
+                    cy="50"
+                    [attr.r]="donutRadius"
+                    fill="none"
+                    stroke-width="10"
+                    stroke-linecap="round"
+                    transform="rotate(-90 50 50)"
+                    class="ring-arc stroke-brand"
+                    appDrawOnScroll
+                    [style.--ring-full]="donutCircumference"
+                    [style.--ring-offset]="donutOffset"
+                    [attr.stroke-dasharray]="donutCircumference"
+                    [attr.stroke-dashoffset]="donutOffset"></circle>
+                }
+              </svg>
+              <span class="absolute inset-0 flex items-center justify-center text-lg font-bold text-ink" aria-hidden="true">
+                {{ sessionsToday.completed }}/{{ sessionsToday.total }}
+              </span>
+            </div>
+            <p appAnimateOnScroll [style.--index]="1" class="max-w-24 text-xs text-ink-muted">sessions completed</p>
+          </div>
+          <ul class="flex flex-1 flex-col gap-3 border-t border-hairline pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+            <li appAnimateOnScroll [style.--index]="0" class="flex items-baseline gap-2"><span class="text-lg font-bold text-ink">{{ sessionsToday.upcoming }}</span><span class="text-xs text-ink-muted">Upcoming</span></li>
+            <li appAnimateOnScroll [style.--index]="1" class="flex items-baseline gap-2"><span class="text-lg font-bold text-ink">{{ sessionsToday.rescheduled }}</span><span class="text-xs text-ink-muted">Rescheduled</span></li>
+            <li appAnimateOnScroll [style.--index]="2" class="flex items-baseline gap-2"><span class="text-lg font-bold text-ink">{{ sessionsToday.cancelled }}</span><span class="text-xs text-ink-muted">Cancelled</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <section appAnimateOnScroll [style.--index]="2" aria-labelledby="earnings-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-on-brand-deep" aria-hidden="true">
+              <svg lucideIndianRupee [size]="20"></svg>
+            </span>
+            <h2 id="earnings-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Earnings</h2>
+          </div>
+          <button type="button" class="inline-flex min-h-11 items-center gap-1 rounded-md text-xs font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+            View earnings <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
+          </button>
+        </div>
+        <div class="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
+          <div class="flex-1">
+            <p appAnimateOnScroll [style.--index]="1" class="text-3xl font-bold text-ink">{{ todayEarnings }}</p>
+            <p appAnimateOnScroll [style.--index]="2" class="mt-1 text-xs text-ink-muted">Today's earnings</p>
+            @if (earnings.weeklyChangePercent) {
+              <p appAnimateOnScroll [style.--index]="3" class="mt-3 inline-flex items-center gap-1 rounded-full bg-success/15 px-3 py-1 text-xs font-semibold text-success">
+                <svg lucideArrowUp [size]="14" aria-hidden="true"></svg>
+                {{ earnings.weeklyChangePercent }}% vs last week
+              </p>
+            }
+          </div>
+          <ul class="flex flex-1 flex-col gap-3 border-t border-hairline pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+            <li appAnimateOnScroll [style.--index]="0"><p class="text-lg font-bold text-ink">{{ monthEarnings }}</p><p class="text-xs text-ink-muted">This month</p></li>
+            <li appAnimateOnScroll [style.--index]="1"><p class="text-lg font-bold text-ink">{{ totalEarnings }}</p><p class="text-xs text-ink-muted">Total earnings</p></li>
+          </ul>
+        </div>
+      </section>
+
+      <section appAnimateOnScroll [style.--index]="3" aria-labelledby="insights-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-on-brand-deep" aria-hidden="true">
+              <svg lucideFileText [size]="20"></svg>
+            </span>
+            <h2 id="insights-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Client insights shared</h2>
+          </div>
+          <button type="button" class="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-xs font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+            View all <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
+          </button>
+        </div>
+        <div class="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
+          <div class="flex-1">
+            <p appAnimateOnScroll [style.--index]="1" class="text-3xl font-bold text-ink">{{ insights.sharedThisMonth }}</p>
+            <p appAnimateOnScroll [style.--index]="2" class="mt-1 text-xs text-ink-muted">reports shared this month</p>
+          </div>
+          <ul class="flex flex-1 flex-col gap-3 border-t border-hairline pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+            @for (item of insights.breakdown; track item.id) {
+              <li appAnimateOnScroll [style.--index]="$index" class="flex items-center gap-2 text-xs text-ink-muted">
+                <span class="text-brand-dark dark:text-brand-light" aria-hidden="true">
+                  @switch (item.id) {
+                    @case ('mood') { <svg lucideChartLine [size]="16"></svg> }
+                    @case ('summary') { <svg lucideClipboardList [size]="16"></svg> }
+                    @default { <svg lucideHeartHandshake [size]="16"></svg> }
+                  }
+                </span>
+                <span class="flex-1">{{ item.label }}</span>
+                <span class="text-base font-bold text-ink">{{ item.count }}</span>
+              </li>
+            } @empty {
+              <li appAnimateOnScroll [style.--index]="0" class="text-xs text-ink-soft">No reports shared yet.</li>
+            }
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <!-- 3. Sessions + practice overview -->
+    <div class="grid gap-6 lg:grid-cols-2">
+      <section appAnimateOnScroll [style.--index]="4" aria-labelledby="sessions-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-on-brand-deep" aria-hidden="true">
+              <svg lucideCalendarDays [size]="20"></svg>
+            </span>
+            <h2 id="sessions-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Today's Sessions</h2>
+          </div>
+          <button type="button" class="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-xs font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+            View full schedule <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
+          </button>
+        </div>
+        @if (sessions.length) {
+        <ul class="mt-4 divide-y divide-hairline" aria-label="Today's sessions">
+          @for (session of sessions; track session.id) {
+            <li appAnimateOnScroll [style.--index]="$index" class="flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
+              <ng-container *ngTemplateOutlet="avatar; context: { $implicit: session.clientName, src: session.avatar }" />
+              <div class="min-w-32">
+                <p class="text-base font-bold text-ink">{{ session.timeRange }}</p>
+                <p class="text-xs text-ink-muted">
+                  <span class="font-bold text-ink">{{ session.clientName }}</span> · {{ session.age }}, {{ session.gender }}
+                </p>
+              </div>
+              <div class="flex flex-1 flex-wrap items-center gap-2 sm:justify-end">
+                <span class="rounded-full bg-sunken px-3 py-1 text-xs text-ink">{{ session.sessionType }}</span>
+                @switch (session.status) {
+                  @case ('Completed') {
+                    <span class="inline-flex items-center gap-1 rounded-full bg-success/15 px-3 py-1 text-xs font-semibold text-success">
+                      <svg lucideCircleCheck [size]="14" aria-hidden="true"></svg> Completed
+                    </span>
+                  }
+                  @case ('Starts in 2 hrs') {
+                    <span class="inline-flex items-center gap-1 rounded-full bg-brand/15 px-3 py-1 text-xs font-semibold text-brand-dark dark:text-brand-light">
+                      <svg lucideClock [size]="14" aria-hidden="true"></svg> Starts in 2 hrs
+                    </span>
+                  }
+                  @case ('Cancelled') {
+                    <span class="inline-flex items-center gap-1 rounded-full bg-sunken px-3 py-1 text-xs text-ink-muted line-through">
+                      <svg lucideX [size]="14" aria-hidden="true"></svg> Cancelled
+                    </span>
+                  }
+                  @default {
+                    <span class="rounded-full border border-hairline bg-sunken px-3 py-1 text-xs text-ink-muted">{{ session.status }}</span>
+                  }
+                }
+                @if (session.therapyType === 'Couple Therapy') {
+                  <span class="rounded-full bg-accent-gold/25 px-3 py-1 text-xs font-semibold text-ink">{{ session.therapyType }}</span>
+                } @else {
+                  <span class="rounded-full bg-brand/15 px-3 py-1 text-xs font-semibold text-brand-dark dark:text-brand-light">{{ session.therapyType }}</span>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+        } @else {
+          <p appAnimateOnScroll [style.--index]="0" class="mt-4 rounded-2xl bg-sunken p-4 text-base text-ink-soft">No sessions scheduled for today.</p>
+        }
+      </section>
+
+      <section appAnimateOnScroll [style.--index]="4" aria-labelledby="practice-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-on-brand-deep" aria-hidden="true">
+              <svg lucideChartColumn [size]="20"></svg>
+            </span>
+            <h2 id="practice-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Practice Overview</h2>
+          </div>
+          <button type="button" class="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-xs font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+            View analytics <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
+          </button>
+        </div>
+        <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          @for (stat of practiceStats; track stat.id) {
+            <li appAnimateOnScroll [style.--index]="$index" class="rounded-xl bg-sunken p-4">
+              <p class="text-3xl font-bold text-ink">{{ stat.value }}</p>
+              <p class="mt-1 text-xs text-ink-muted">{{ stat.label }}</p>
+              @if (stat.change) {
+                <p class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-success">
+                  <svg lucideArrowUp [size]="12" aria-hidden="true"></svg>
+                  <span class="sr-only">Up</span>{{ stat.change }}
+                </p>
+              }
+            </li>
+          } @empty {
+            <li appAnimateOnScroll [style.--index]="0" class="col-span-full text-xs text-ink-soft">No practice stats yet.</li>
+          }
+        </ul>
+        <h3 appAnimateOnScroll [style.--index]="4" class="mt-6 text-base font-bold text-ink">Sessions (last 4 weeks)</h3>
+        @if (chartHasData) {
+          <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" class="mt-2 h-auto w-full" role="img" [attr.aria-label]="chartLabel">
+            @for (line of chartGrid; track line.label) {
+              <line [attr.x1]="chartLeft" [attr.x2]="chartRight" [attr.y1]="line.y" [attr.y2]="line.y" stroke-width="1" class="stroke-hairline"></line>
+              <text [attr.x]="chartLeft - 8" [attr.y]="line.y + 4" text-anchor="end" class="fill-ink-muted text-xs">{{ line.label }}</text>
+            }
+            <path
+              [attr.d]="chartPath"
+              pathLength="1"
+              stroke-dasharray="1"
+              appDrawOnScroll="scroll"
+              fill="none"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="spark-line stroke-brand"></path>
+            @for (point of chartPoints; track point.label) {
+              <circle
+                [attr.cx]="point.x"
+                [attr.cy]="point.y"
+                r="5"
+                stroke-width="2"
+                appDrawOnScroll="scroll"
+                [style.--index]="$index"
+                class="chart-dot fill-brand stroke-surface"></circle>
+              <text [attr.x]="point.x" [attr.y]="chartHeight - 10" text-anchor="middle" class="fill-ink-muted text-xs">{{ point.label }}</text>
+            }
+          </svg>
+        } @else {
+          <p appAnimateOnScroll [style.--index]="5" class="mt-2 rounded-2xl bg-sunken p-4 text-base text-ink-soft">Not enough sessions to chart yet.</p>
+        }
+      </section>
+    </div>
+
+    <!-- 4. Messages + reports -->
+    <div class="grid gap-6 lg:grid-cols-2">
+      <section appAnimateOnScroll [style.--index]="5" aria-labelledby="messages-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-on-brand-deep" aria-hidden="true">
+              <svg lucideMessageSquare [size]="20"></svg>
+            </span>
+            <h2 id="messages-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Client Message (Pre-session)</h2>
+          </div>
+          <button type="button" class="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-xs font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+            View all <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
+          </button>
+        </div>
+        @if (messages.length) {
+        <ul class="mt-4 flex flex-col gap-5">
+          @for (message of messages; track message.id; let first = $first) {
+            <li appAnimateOnScroll [style.--index]="$index">
+              <div class="flex items-center gap-3">
+                <ng-container *ngTemplateOutlet="avatar; context: { $implicit: message.clientName, src: message.avatar }" />
+                <p class="min-w-0 flex-1 text-base font-bold text-ink">
+                  {{ message.clientName }}
+                  <span class="ml-2 rounded-full bg-sunken px-3 py-1 text-xs font-normal text-ink">{{ message.sessionType }}</span>
+                </p>
+                <p class="text-xs text-ink-muted">{{ message.timestamp }}</p>
+                <button
+                  type="button"
+                  [attr.aria-label]="'Open message from ' + message.clientName"
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                  <svg lucideChevronRight [size]="18" aria-hidden="true"></svg>
+                </button>
+              </div>
+              <p class="mt-3 rounded-2xl p-4 text-base leading-relaxed text-ink" [class]="first ? 'bg-brand/15' : 'bg-sunken'">
+                “{{ message.text }}”
+              </p>
+            </li>
+          }
+        </ul>
+        } @else {
+          <p appAnimateOnScroll [style.--index]="0" class="mt-4 rounded-2xl bg-sunken p-4 text-base text-ink-soft">No messages from clients yet. Pre-session notes will show up here.</p>
+        }
+      </section>
+
+      <section appAnimateOnScroll [style.--index]="5" aria-labelledby="reports-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-on-brand-deep" aria-hidden="true">
+              <svg lucideFileText [size]="20"></svg>
+            </span>
+            <h2 id="reports-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Shared Reports</h2>
+          </div>
+          <button type="button" class="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-xs font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+            View all <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
+          </button>
+        </div>
+        @if (reports.length) {
+        <ul class="mt-4 divide-y divide-hairline" aria-label="Shared reports">
+          @for (report of reports; track report.id) {
+            <li appAnimateOnScroll [style.--index]="$index" class="flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
+              @if (report.kind === 'mood') {
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-coral/20 text-ink" aria-hidden="true">
+                  <svg lucideChartLine [size]="20"></svg>
+                </span>
+              } @else {
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand/15 text-brand-dark dark:text-brand-light" aria-hidden="true">
+                  <svg lucideFileText [size]="20"></svg>
+                </span>
+              }
+              <div class="min-w-40 flex-1">
+                <p class="text-base font-bold text-ink">{{ report.title }}</p>
+                <p class="text-xs text-ink-muted">{{ report.subtitle }}</p>
+              </div>
+              <p class="text-xs text-ink-muted">{{ report.date }}</p>
+              <div class="flex items-center gap-1">
+                <button
+                  type="button"
+                  [attr.aria-label]="'Download ' + report.title"
+                  class="inline-flex min-h-11 items-center gap-1 rounded-lg border border-brand bg-surface px-3 py-1.5 text-xs font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+                  <svg lucideDownload [size]="14" aria-hidden="true"></svg>
+                  Download
+                </button>
+                <button
+                  type="button"
+                  [attr.aria-label]="'More options for ' + report.title"
+                  class="flex h-11 w-11 items-center justify-center rounded-full text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                  <svg lucideEllipsisVertical [size]="18" aria-hidden="true"></svg>
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+        } @else {
+          <p appAnimateOnScroll [style.--index]="0" class="mt-4 rounded-2xl bg-sunken p-4 text-base text-ink-soft">No reports shared yet.</p>
+        }
+      </section>
+
+    </div>
+
+    <!-- 5. Info + security -->
+    <div class="grid gap-6 lg:grid-cols-2">
+      <section appAnimateOnScroll [style.--index]="5" aria-labelledby="info-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-on-brand-deep" aria-hidden="true">
+              <svg lucideUser [size]="20"></svg>
+            </span>
+            <h2 id="info-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Professional Information</h2>
+          </div>
+          <button type="button" class="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-xs font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+            Edit profile <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
+          </button>
+        </div>
+        <dl class="mt-4 grid gap-x-8 sm:grid-cols-2">
+          @for (row of professionalInfo(); track row.label) {
+            <div appAnimateOnScroll [style.--index]="$index" class="border-b border-hairline py-3">
+              <dt class="text-xs text-ink-muted">{{ row.label }}</dt>
+              @if (row.value) {
+                <dd class="mt-1 break-words text-base font-semibold text-ink">{{ row.value }}</dd>
+              } @else {
+                <dd class="mt-1 text-base text-ink-muted">Not added yet</dd>
+              }
+            </div>
+          }
+        </dl>
+      </section>
+
+      <section appAnimateOnScroll [style.--index]="5" aria-labelledby="security-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
+        <div class="flex items-center gap-3">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-on-brand-deep" aria-hidden="true">
+            <svg lucideShieldCheck [size]="20"></svg>
+          </span>
+          <h2 id="security-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Account &amp; Security</h2>
+        </div>
+        <ul class="mt-4 divide-y divide-hairline">
+          @for (row of securityRows(); track row.id) {
+            <li appAnimateOnScroll [style.--index]="$index">
+              <button
+                type="button"
+                class="flex w-full items-center gap-4 rounded-lg py-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sunken text-brand-dark dark:text-brand-light" aria-hidden="true">
+                  @switch (row.id) {
+                    @case ('sign-in') { <svg lucideShieldCheck [size]="20"></svg> }
+                    @case ('payout') { <svg lucideLandmark [size]="20"></svg> }
+                    @default { <svg lucideSettings [size]="20"></svg> }
+                  }
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-base font-bold text-ink">{{ row.title }}</span>
+                  <span class="flex items-center gap-2 text-xs text-ink-muted">
+                    @if (row.id === 'sign-in' && signInIsGoogle()) {
+                      <svg viewBox="0 0 48 48" width="16" height="16" aria-hidden="true">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                      </svg>
+                    }
+                    {{ row.subtitle }}
+                  </span>
+                </span>
+                @if (row.badge) {
+                  <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-success">
+                    <span class="h-2 w-2 rounded-full bg-success" aria-hidden="true"></span>
+                    {{ row.badge }}
+                  </span>
+                }
+                <svg lucideChevronRight [size]="18" class="shrink-0 text-ink-muted" aria-hidden="true"></svg>
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+  </div>
 </div>
