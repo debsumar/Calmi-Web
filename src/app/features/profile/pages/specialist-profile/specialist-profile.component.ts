@@ -42,6 +42,8 @@ import {
   SPECIALIST_HEADER,
   TODAY_SESSIONS,
   WEEKLY_SESSIONS,
+  type SecurityRow,
+  type WeeklyPoint,
 } from './specialist-dashboard.data';
 
 const CHART_WIDTH = 320;
@@ -63,6 +65,63 @@ function formatInr(amount: number): string {
 function chartY(value: number): number {
   return CHART_BOTTOM - (value / CHART_MAX) * (CHART_BOTTOM - CHART_TOP);
 }
+
+export interface DonutGeometry {
+  /** False when there are no sessions today: render the empty track only. */
+  hasData: boolean;
+  label: string;
+  /** Arc length left undrawn; always a finite number. */
+  offset: number;
+}
+
+/** Donut arc for `completed` of `total`. Zero or invalid totals yield an empty ring, never NaN. */
+export function buildDonut(completed: number, total: number, circumference: number): DonutGeometry {
+  if (!Number.isFinite(completed) || !Number.isFinite(total) || total <= 0) {
+    return { hasData: false, label: 'No sessions today', offset: circumference };
+  }
+  const ratio = Math.min(Math.max(completed / total, 0), 1);
+  return {
+    hasData: true,
+    label: `${completed} of ${total} sessions completed`,
+    offset: Math.round(circumference * (1 - ratio) * 100) / 100,
+  };
+}
+
+export interface ChartPoint {
+  label: string;
+  value: number;
+  x: number;
+  y: number;
+}
+
+export interface ChartGeometry {
+  hasData: boolean;
+  points: ChartPoint[];
+  path: string;
+  label: string;
+}
+
+/** Line chart geometry. Empty input yields no points and no path; a single point sits mid-chart. */
+export function buildChart(data: readonly WeeklyPoint[]): ChartGeometry {
+  const valid = data.filter((point) => Number.isFinite(point.value));
+  if (valid.length === 0) {
+    return { hasData: false, points: [], path: '', label: 'No session data yet' };
+  }
+  const span = CHART_RIGHT - CHART_LEFT;
+  const points = valid.map((point, index) => ({
+    label: point.label,
+    value: point.value,
+    x: valid.length === 1 ? CHART_LEFT + span / 2 : CHART_LEFT + index * (span / (valid.length - 1)),
+    y: chartY(point.value),
+  }));
+  return {
+    hasData: true,
+    points,
+    path: points.map((point, index) => `${index === 0 ? 'M' : 'L'}${point.x} ${point.y}`).join(' '),
+    label: `Line chart of sessions over the last 4 weeks: ${points.map((point) => `${point.label} ${point.value}`).join(', ')}`,
+  };
+}
+
 
 @Component({
   selector: 'app-specialist-profile',
@@ -177,7 +236,7 @@ export class SpecialistProfileComponent {
 
   readonly showAvatarImage = computed(() => this.avatarUrl() !== null && !this.avatarFailed());
 
-  /** The expert's Google sign-in name, read the same way as the member profile; mock name only as fallback. */
+  /** The expert's Google sign-in name, read the same way as the member profile; generic name only as fallback. */
   readonly displayName = computed(() => {
     const user = this.authService.currentUser();
     const sources: Record<string, unknown>[] = [
@@ -201,15 +260,34 @@ export class SpecialistProfileComponent {
     return SPECIALIST_HEADER.name;
   });
 
-  /** Name and email rows track the signed-in expert; the rest stays dummy data for now. */
+  /** Name and email rows track the signed-in expert; the rest stays empty until a backend exists. */
   readonly professionalInfo = computed(() => {
-    const email = this.authService.currentUser()?.email;
+    const email = this.authService.currentUser()?.email ?? '';
     return PROFESSIONAL_INFO.map((row) => {
       if (row.label === 'Name') return { ...row, value: this.displayName() };
-      if (row.label === 'Email' && email) return { ...row, value: email };
+      if (row.label === 'Email') return { ...row, value: email };
       return row;
     });
   });
+
+  /** Sign-in provider from auth metadata; Google gets the Connected badge and the G mark. */
+  readonly signInProvider = computed(() => {
+    const provider = this.authService.currentUser()?.app_metadata?.['provider'];
+    return typeof provider === 'string' && provider.trim() ? provider.trim().toLowerCase() : 'email';
+  });
+  readonly signInIsGoogle = computed(() => this.signInProvider() === 'google');
+
+  readonly securityRows = computed<SecurityRow[]>(() => {
+    const provider = this.signInProvider();
+    const isGoogle = provider === 'google';
+    const providerLabel = provider.charAt(0).toUpperCase() + provider.slice(1);
+    return SECURITY_ROWS.map((row) =>
+      row.id === 'sign-in'
+        ? { ...row, subtitle: providerLabel, badge: isGoogle ? 'Connected' : null }
+        : row,
+    );
+  });
+
   readonly nextSession = NEXT_SESSION;
   readonly sessionsToday = SESSIONS_TODAY;
   readonly earnings = EARNINGS;
@@ -218,7 +296,6 @@ export class SpecialistProfileComponent {
   readonly practiceStats = PRACTICE_STATS;
   readonly messages = CLIENT_MESSAGES;
   readonly reports = SHARED_REPORTS;
-  readonly securityRows = SECURITY_ROWS;
 
   readonly todayEarnings = formatInr(EARNINGS.today);
   readonly monthEarnings = formatInr(EARNINGS.month);
@@ -226,28 +303,22 @@ export class SpecialistProfileComponent {
 
   readonly donutRadius = DONUT_RADIUS;
   readonly donutCircumference = 2 * Math.PI * DONUT_RADIUS;
-  readonly donutLabel = `${SESSIONS_TODAY.completed} of ${SESSIONS_TODAY.total} sessions completed`;
+  private readonly donut = buildDonut(SESSIONS_TODAY.completed, SESSIONS_TODAY.total, this.donutCircumference);
+  readonly donutHasData = this.donut.hasData;
+  readonly donutLabel = this.donut.label;
   /** Arc length left undrawn: the ring is dashed once at full circumference and offset to the value. */
-  readonly donutOffset =
-    Math.round(this.donutCircumference * (1 - SESSIONS_TODAY.completed / SESSIONS_TODAY.total) * 100) / 100;
+  readonly donutOffset = this.donut.offset;
 
   readonly chartWidth = CHART_WIDTH;
   readonly chartHeight = CHART_HEIGHT;
   readonly chartLeft = CHART_LEFT;
   readonly chartRight = CHART_RIGHT;
   readonly chartGrid = CHART_TICKS.map((tick) => ({ label: String(tick), y: chartY(tick) }));
-  readonly chartPoints = WEEKLY_SESSIONS.map((point, index) => ({
-    label: point.label,
-    value: point.value,
-    x: CHART_LEFT + index * ((CHART_RIGHT - CHART_LEFT) / (WEEKLY_SESSIONS.length - 1)),
-    y: chartY(point.value),
-  }));
-  readonly chartPath = this.chartPoints
-    .map((point, index) => `${index === 0 ? 'M' : 'L'}${point.x} ${point.y}`)
-    .join(' ');
-  readonly chartLabel = `Line chart of sessions over the last 4 weeks: ${this.chartPoints
-    .map((point) => `${point.label} ${point.value}`)
-    .join(', ')}`;
+  private readonly chart = buildChart(WEEKLY_SESSIONS);
+  readonly chartHasData = this.chart.hasData;
+  readonly chartPoints = this.chart.points;
+  readonly chartPath = this.chart.path;
+  readonly chartLabel = this.chart.label;
 
   onAvatarError(): void {
     this.avatarFailed.set(true);

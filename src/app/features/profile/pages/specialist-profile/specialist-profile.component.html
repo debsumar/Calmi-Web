@@ -39,26 +39,36 @@
               {{ initials(displayName()) }}
             </div>
           }
-          <span
-            class="absolute bottom-0 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-ink shadow-card">
-            <span class="h-2 w-2 rounded-full bg-success" aria-hidden="true"></span>
-            Online
-          </span>
+          @if (header.online) {
+            <span
+              class="absolute bottom-0 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-ink shadow-card">
+              <span class="h-2 w-2 rounded-full bg-success" aria-hidden="true"></span>
+              Online
+            </span>
+          }
         </div>
         <div class="min-w-0">
           <p appAnimateOnScroll [style.--index]="0" class="text-xs font-semibold text-ink-muted">Expert Space</p>
           <div class="mt-1 flex flex-wrap items-center gap-2">
             <h1 id="specialist-title" appAnimateOnScroll [style.--index]="1" class="font-sans text-3xl font-bold leading-tight text-ink md:text-5xl">{{ displayName() }}</h1>
-            <svg lucideBadgeCheck [size]="28" class="shrink-0 text-brand" role="img" aria-label="Verified specialist"></svg>
+            @if (header.verified) {
+              <svg lucideBadgeCheck [size]="28" class="shrink-0 text-brand" role="img" aria-label="Verified specialist"></svg>
+            }
           </div>
-          <p appAnimateOnScroll [style.--index]="2" class="mt-1 text-base text-ink-muted">
-            {{ header.title }}
-          </p>
+          @if (header.title) {
+            <p appAnimateOnScroll [style.--index]="2" class="mt-1 text-base text-ink-muted">
+              {{ header.title }}
+            </p>
+          }
           <ul class="mt-3 flex flex-wrap gap-2" aria-label="Specialties">
             @for (specialty of header.specialties; track specialty) {
               <li appAnimateOnScroll [style.--index]="$index" class="rounded-full bg-sunken px-3 py-1 text-xs text-ink">{{ specialty }}</li>
+            } @empty {
+              <li appAnimateOnScroll [style.--index]="0" class="rounded-full bg-sunken px-3 py-1 text-xs text-ink-muted">Add your specialties</li>
             }
-            <li appAnimateOnScroll [style.--index]="header.specialties.length" class="rounded-full bg-sunken px-3 py-1 text-xs font-semibold text-ink">+{{ header.extraSpecialties }}</li>
+            @if (header.extraSpecialties > 0) {
+              <li appAnimateOnScroll [style.--index]="header.specialties.length" class="rounded-full bg-sunken px-3 py-1 text-xs font-semibold text-ink">+{{ header.extraSpecialties }}</li>
+            }
           </ul>
         </div>
       </div>
@@ -69,16 +79,23 @@
         </span>
         <div class="min-w-0 flex-1">
           <p appAnimateOnScroll [style.--index]="0" class="text-xs text-ink-muted">Next session</p>
-          <p appAnimateOnScroll [style.--index]="1" class="text-base font-bold text-ink">{{ nextSession.startsIn }}</p>
-          <p appAnimateOnScroll [style.--index]="2" class="text-xs text-ink-muted">{{ nextSession.timeRange }} with {{ nextSession.clientName }}</p>
+          @if (nextSession; as next) {
+            <p appAnimateOnScroll [style.--index]="1" class="text-base font-bold text-ink">{{ next.startsIn }}</p>
+            <p appAnimateOnScroll [style.--index]="2" class="text-xs text-ink-muted">{{ next.timeRange }} with {{ next.clientName }}</p>
+          } @else {
+            <p appAnimateOnScroll [style.--index]="1" class="text-base font-bold text-ink">No upcoming sessions</p>
+            <p appAnimateOnScroll [style.--index]="2" class="text-xs text-ink-soft">New bookings will appear here.</p>
+          }
         </div>
-        <button
-          type="button"
-          appAnimateOnScroll [style.--index]="3"
-          class="inline-flex min-h-11 items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-xs font-semibold text-brand-dark shadow-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
-          <svg lucideVideo [size]="16" aria-hidden="true"></svg>
-          Join Meet
-        </button>
+        @if (nextSession) {
+          <button
+            type="button"
+            appAnimateOnScroll [style.--index]="3"
+            class="inline-flex min-h-11 items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-xs font-semibold text-brand-dark shadow-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-brand-light">
+            <svg lucideVideo [size]="16" aria-hidden="true"></svg>
+            Join Meet
+          </button>
+        }
       </div>
     </section>
 
@@ -101,20 +118,22 @@
             <div class="relative h-24 w-24 shrink-0">
               <svg viewBox="0 0 100 100" class="h-24 w-24" role="img" [attr.aria-label]="donutLabel">
                 <circle cx="50" cy="50" [attr.r]="donutRadius" fill="none" stroke-width="10" class="stroke-sunken-alt"></circle>
-                <circle
-                  cx="50"
-                  cy="50"
-                  [attr.r]="donutRadius"
-                  fill="none"
-                  stroke-width="10"
-                  stroke-linecap="round"
-                  transform="rotate(-90 50 50)"
-                  class="ring-arc stroke-brand"
-                  appDrawOnScroll
-                  [style.--ring-full]="donutCircumference"
-                  [style.--ring-offset]="donutOffset"
-                  [attr.stroke-dasharray]="donutCircumference"
-                  [attr.stroke-dashoffset]="donutOffset"></circle>
+                @if (donutHasData) {
+                  <circle
+                    cx="50"
+                    cy="50"
+                    [attr.r]="donutRadius"
+                    fill="none"
+                    stroke-width="10"
+                    stroke-linecap="round"
+                    transform="rotate(-90 50 50)"
+                    class="ring-arc stroke-brand"
+                    appDrawOnScroll
+                    [style.--ring-full]="donutCircumference"
+                    [style.--ring-offset]="donutOffset"
+                    [attr.stroke-dasharray]="donutCircumference"
+                    [attr.stroke-dashoffset]="donutOffset"></circle>
+                }
               </svg>
               <span class="absolute inset-0 flex items-center justify-center text-lg font-bold text-ink" aria-hidden="true">
                 {{ sessionsToday.completed }}/{{ sessionsToday.total }}
@@ -146,10 +165,12 @@
           <div class="flex-1">
             <p appAnimateOnScroll [style.--index]="1" class="text-3xl font-bold text-ink">{{ todayEarnings }}</p>
             <p appAnimateOnScroll [style.--index]="2" class="mt-1 text-xs text-ink-muted">Today's earnings</p>
-            <p appAnimateOnScroll [style.--index]="3" class="mt-3 inline-flex items-center gap-1 rounded-full bg-success/15 px-3 py-1 text-xs font-semibold text-success">
-              <svg lucideArrowUp [size]="14" aria-hidden="true"></svg>
-              {{ earnings.weeklyChangePercent }}% vs last week
-            </p>
+            @if (earnings.weeklyChangePercent) {
+              <p appAnimateOnScroll [style.--index]="3" class="mt-3 inline-flex items-center gap-1 rounded-full bg-success/15 px-3 py-1 text-xs font-semibold text-success">
+                <svg lucideArrowUp [size]="14" aria-hidden="true"></svg>
+                {{ earnings.weeklyChangePercent }}% vs last week
+              </p>
+            }
           </div>
           <ul class="flex flex-1 flex-col gap-3 border-t border-hairline pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
             <li appAnimateOnScroll [style.--index]="0"><p class="text-lg font-bold text-ink">{{ monthEarnings }}</p><p class="text-xs text-ink-muted">This month</p></li>
@@ -188,6 +209,8 @@
                 <span class="flex-1">{{ item.label }}</span>
                 <span class="text-base font-bold text-ink">{{ item.count }}</span>
               </li>
+            } @empty {
+              <li appAnimateOnScroll [style.--index]="0" class="text-xs text-ink-soft">No reports shared yet.</li>
             }
           </ul>
         </div>
@@ -208,6 +231,7 @@
             View full schedule <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
           </button>
         </div>
+        @if (sessions.length) {
         <ul class="mt-4 divide-y divide-hairline" aria-label="Today's sessions">
           @for (session of sessions; track session.id) {
             <li appAnimateOnScroll [style.--index]="$index" class="flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
@@ -249,6 +273,9 @@
             </li>
           }
         </ul>
+        } @else {
+          <p appAnimateOnScroll [style.--index]="0" class="mt-4 rounded-2xl bg-sunken p-4 text-base text-ink-soft">No sessions scheduled for today.</p>
+        }
       </section>
 
       <section appAnimateOnScroll [style.--index]="4" aria-labelledby="practice-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
@@ -268,41 +295,49 @@
             <li appAnimateOnScroll [style.--index]="$index" class="rounded-xl bg-sunken p-4">
               <p class="text-3xl font-bold text-ink">{{ stat.value }}</p>
               <p class="mt-1 text-xs text-ink-muted">{{ stat.label }}</p>
-              <p class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-success">
-                <svg lucideArrowUp [size]="12" aria-hidden="true"></svg>
-                <span class="sr-only">Up</span>{{ stat.change }}
-              </p>
+              @if (stat.change) {
+                <p class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-success">
+                  <svg lucideArrowUp [size]="12" aria-hidden="true"></svg>
+                  <span class="sr-only">Up</span>{{ stat.change }}
+                </p>
+              }
             </li>
+          } @empty {
+            <li appAnimateOnScroll [style.--index]="0" class="col-span-full text-xs text-ink-soft">No practice stats yet.</li>
           }
         </ul>
         <h3 appAnimateOnScroll [style.--index]="4" class="mt-6 text-base font-bold text-ink">Sessions (last 4 weeks)</h3>
-        <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" class="mt-2 h-auto w-full" role="img" [attr.aria-label]="chartLabel">
-          @for (line of chartGrid; track line.label) {
-            <line [attr.x1]="chartLeft" [attr.x2]="chartRight" [attr.y1]="line.y" [attr.y2]="line.y" stroke-width="1" class="stroke-hairline"></line>
-            <text [attr.x]="chartLeft - 8" [attr.y]="line.y + 4" text-anchor="end" class="fill-ink-muted text-xs">{{ line.label }}</text>
-          }
-          <path
-            [attr.d]="chartPath"
-            pathLength="1"
-            stroke-dasharray="1"
-            appDrawOnScroll="scroll"
-            fill="none"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="spark-line stroke-brand"></path>
-          @for (point of chartPoints; track point.label) {
-            <circle
-              [attr.cx]="point.x"
-              [attr.cy]="point.y"
-              r="5"
-              stroke-width="2"
+        @if (chartHasData) {
+          <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" class="mt-2 h-auto w-full" role="img" [attr.aria-label]="chartLabel">
+            @for (line of chartGrid; track line.label) {
+              <line [attr.x1]="chartLeft" [attr.x2]="chartRight" [attr.y1]="line.y" [attr.y2]="line.y" stroke-width="1" class="stroke-hairline"></line>
+              <text [attr.x]="chartLeft - 8" [attr.y]="line.y + 4" text-anchor="end" class="fill-ink-muted text-xs">{{ line.label }}</text>
+            }
+            <path
+              [attr.d]="chartPath"
+              pathLength="1"
+              stroke-dasharray="1"
               appDrawOnScroll="scroll"
-              [style.--index]="$index"
-              class="chart-dot fill-brand stroke-surface"></circle>
-            <text [attr.x]="point.x" [attr.y]="chartHeight - 10" text-anchor="middle" class="fill-ink-muted text-xs">{{ point.label }}</text>
-          }
-        </svg>
+              fill="none"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="spark-line stroke-brand"></path>
+            @for (point of chartPoints; track point.label) {
+              <circle
+                [attr.cx]="point.x"
+                [attr.cy]="point.y"
+                r="5"
+                stroke-width="2"
+                appDrawOnScroll="scroll"
+                [style.--index]="$index"
+                class="chart-dot fill-brand stroke-surface"></circle>
+              <text [attr.x]="point.x" [attr.y]="chartHeight - 10" text-anchor="middle" class="fill-ink-muted text-xs">{{ point.label }}</text>
+            }
+          </svg>
+        } @else {
+          <p appAnimateOnScroll [style.--index]="5" class="mt-2 rounded-2xl bg-sunken p-4 text-base text-ink-soft">Not enough sessions to chart yet.</p>
+        }
       </section>
     </div>
 
@@ -320,6 +355,7 @@
             View all <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
           </button>
         </div>
+        @if (messages.length) {
         <ul class="mt-4 flex flex-col gap-5">
           @for (message of messages; track message.id; let first = $first) {
             <li appAnimateOnScroll [style.--index]="$index">
@@ -343,6 +379,9 @@
             </li>
           }
         </ul>
+        } @else {
+          <p appAnimateOnScroll [style.--index]="0" class="mt-4 rounded-2xl bg-sunken p-4 text-base text-ink-soft">No messages from clients yet. Pre-session notes will show up here.</p>
+        }
       </section>
 
       <section appAnimateOnScroll [style.--index]="5" aria-labelledby="reports-title" class="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
@@ -357,6 +396,7 @@
             View all <svg lucideArrowRight [size]="14" aria-hidden="true"></svg>
           </button>
         </div>
+        @if (reports.length) {
         <ul class="mt-4 divide-y divide-hairline" aria-label="Shared reports">
           @for (report of reports; track report.id) {
             <li appAnimateOnScroll [style.--index]="$index" class="flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
@@ -392,7 +432,11 @@
             </li>
           }
         </ul>
+        } @else {
+          <p appAnimateOnScroll [style.--index]="0" class="mt-4 rounded-2xl bg-sunken p-4 text-base text-ink-soft">No reports shared yet.</p>
+        }
       </section>
+
     </div>
 
     <!-- 5. Info + security -->
@@ -413,7 +457,11 @@
           @for (row of professionalInfo(); track row.label) {
             <div appAnimateOnScroll [style.--index]="$index" class="border-b border-hairline py-3">
               <dt class="text-xs text-ink-muted">{{ row.label }}</dt>
-              <dd class="mt-1 text-base font-semibold text-ink">{{ row.value }}</dd>
+              @if (row.value) {
+                <dd class="mt-1 break-words text-base font-semibold text-ink">{{ row.value }}</dd>
+              } @else {
+                <dd class="mt-1 text-base text-ink-muted">Not added yet</dd>
+              }
             </div>
           }
         </dl>
@@ -427,7 +475,7 @@
           <h2 id="security-title" appAnimateOnScroll [style.--index]="0" class="text-lg font-bold text-ink">Account &amp; Security</h2>
         </div>
         <ul class="mt-4 divide-y divide-hairline">
-          @for (row of securityRows; track row.id) {
+          @for (row of securityRows(); track row.id) {
             <li appAnimateOnScroll [style.--index]="$index">
               <button
                 type="button"
@@ -442,7 +490,7 @@
                 <span class="min-w-0 flex-1">
                   <span class="block text-base font-bold text-ink">{{ row.title }}</span>
                   <span class="flex items-center gap-2 text-xs text-ink-muted">
-                    @if (row.id === 'sign-in') {
+                    @if (row.id === 'sign-in' && signInIsGoogle()) {
                       <svg viewBox="0 0 48 48" width="16" height="16" aria-hidden="true">
                         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
                         <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>

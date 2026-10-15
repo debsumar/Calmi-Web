@@ -2,21 +2,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeEach } from 'vitest';
 import { AuthService } from '@/core/services/auth.service';
-import { SpecialistProfileComponent } from './specialist-profile.component';
+import { buildChart, buildDonut, SpecialistProfileComponent } from './specialist-profile.component';
 
 const GOOGLE_AVATAR = 'https://lh3.googleusercontent.com/a/expert-photo.jpg';
 
-function authStub(userMetadata: Record<string, unknown> | null) {
+function authStub(userMetadata: Record<string, unknown> | null, appMetadata: Record<string, unknown> = {}) {
   return {
-    currentUser: () => (userMetadata ? { email: 'expert@example.com', user_metadata: userMetadata } : null),
+    currentUser: () =>
+      userMetadata
+        ? { email: 'expert@example.com', user_metadata: userMetadata, app_metadata: appMetadata }
+        : null,
   };
 }
 
-async function render(userMetadata: Record<string, unknown> | null) {
+async function render(userMetadata: Record<string, unknown> | null, appMetadata: Record<string, unknown> = {}) {
   TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
     imports: [SpecialistProfileComponent],
-    providers: [{ provide: AuthService, useValue: authStub(userMetadata) }],
+    providers: [{ provide: AuthService, useValue: authStub(userMetadata, appMetadata) }],
   }).compileComponents();
   const fixture = TestBed.createComponent(SpecialistProfileComponent);
   fixture.detectChanges();
@@ -28,13 +31,18 @@ describe('SpecialistProfileComponent', () => {
   let root: HTMLElement;
 
   beforeEach(async () => {
-    fixture = await render({ avatar_url: GOOGLE_AVATAR });
+    fixture = await render({ avatar_url: GOOGLE_AVATAR }, { provider: 'google' });
     root = fixture.nativeElement as HTMLElement;
   });
 
-  it('renders the specialist name as the page heading and no placeholder', () => {
-    expect(root.querySelector('h1')?.textContent).toContain('Dr. Garima Adhikari');
+  it('renders the fallback name as the page heading when the sign-in has no name, and no placeholder', () => {
+    expect(root.querySelector('h1')?.textContent?.trim()).toBe('Calmi expert');
     expect(root.textContent).not.toContain('Coming soon');
+  });
+
+  it('never renders the old dummy expert name or email', () => {
+    expect(root.textContent).not.toMatch(/garima/i);
+    expect(root.innerHTML).not.toMatch(/garima/i);
   });
 
   it('uses the expert Google sign-in name and email for heading, alt, initials and info rows', async () => {
@@ -45,7 +53,7 @@ describe('SpecialistProfileComponent', () => {
     expect(el.querySelector('img[referrerpolicy="no-referrer"]')?.getAttribute('alt')).toBe('Portrait of Asha Rao');
     expect(el.querySelector('dl')?.textContent).toContain('Asha Rao');
     expect(el.querySelector('dl')?.textContent).toContain('expert@example.com');
-    expect(el.textContent).not.toContain('Garima');
+    expect(el.textContent).not.toMatch(/garima/i);
 
     const noPhoto = await render({ name: 'Asha Rao' });
     expect((noPhoto.nativeElement as HTMLElement).querySelector('[aria-hidden="true"].h-32')?.textContent?.trim()).toBe('AR');
@@ -67,20 +75,168 @@ describe('SpecialistProfileComponent', () => {
     ]);
   });
 
-  it('renders 5 session rows and 4 report download buttons', () => {
-    expect(root.querySelectorAll('ul[aria-label="Today\'s sessions"] > li')).toHaveLength(5);
-    expect(root.querySelectorAll('button[aria-label^="Download "]')).toHaveLength(4);
+  describe('empty baseline', () => {
+    it('shows the next-session empty state and no Join Meet button', () => {
+      expect(root.textContent).toContain('No upcoming sessions');
+      expect(root.textContent).toContain('New bookings will appear here.');
+      expect(root.textContent).not.toContain('Join Meet');
+    });
+
+    it('shows an empty donut with no NaN or Infinity anywhere', () => {
+      const donut = root.querySelector('svg[role="img"][aria-label="No sessions today"]');
+      expect(donut).not.toBeNull();
+      expect(donut?.getAttribute('aria-label')).not.toContain('NaN');
+      expect(donut?.querySelector('.ring-arc')).toBeNull();
+      expect(donut?.parentElement?.textContent?.replace(/\s+/g, '')).toContain('0/0');
+
+      expect(root.textContent).not.toMatch(/NaN|Infinity/);
+      expect(root.innerHTML).not.toMatch(/NaN|Infinity/);
+    });
+
+    it('shows zero session stats', () => {
+      const stats = Array.from(root.querySelectorAll('section[aria-labelledby="clients-title"] ul li')).map((li) =>
+        li.textContent?.replace(/\s+/g, ' ').trim(),
+      );
+      expect(stats).toEqual(['0Upcoming', '0Rescheduled', '0Cancelled']);
+    });
+
+    it('shows zero earnings and no trend pill', () => {
+      const earnings = root.querySelector('section[aria-labelledby="earnings-title"]')!.textContent!;
+      expect(earnings.match(/₹0/g)).toHaveLength(3);
+      expect(earnings).not.toContain('vs last week');
+    });
+
+    it('shows zero insights with all three categories', () => {
+      const insights = root.querySelector('section[aria-labelledby="insights-title"]')!;
+      expect(insights.textContent).toContain('reports shared this month');
+      const rows = Array.from(insights.querySelectorAll('ul li')).map((li) => li.textContent?.replace(/\s+/g, ' ').trim());
+      expect(rows).toEqual(['Mood insights0', 'Session summary0', 'Care recommendations0']);
+    });
+
+    it('shows empty states for sessions, chart, messages and reports', () => {
+      expect(root.textContent).toContain('No sessions scheduled for today.');
+      expect(root.textContent).toContain('Not enough sessions to chart yet.');
+      expect(root.textContent).toContain('No messages from clients yet. Pre-session notes will show up here.');
+      expect(root.textContent).toContain('No reports shared yet.');
+
+      expect(root.querySelector('ul[aria-label="Today\'s sessions"]')).toBeNull();
+      expect(root.querySelector('ul[aria-label="Shared reports"]')).toBeNull();
+      expect(root.querySelector('button[aria-label^="Download "]')).toBeNull();
+      expect(root.querySelector('svg[aria-label^="Line chart of sessions"]')).toBeNull();
+      expect(root.querySelector('.spark-line')).toBeNull();
+      expect(root.querySelector('.chart-dot')).toBeNull();
+    });
+
+    it('shows zeroed practice stats without a trend line', () => {
+      const stats = Array.from(root.querySelectorAll('section[aria-labelledby="practice-title"] ul.grid > li')).map((li) =>
+        li.textContent?.replace(/\s+/g, ' ').trim(),
+      );
+      expect(stats).toEqual([
+        '0Sessions this month',
+        '0%Completion rate',
+        '0New clients',
+        '0Returning clients',
+      ]);
+      expect(root.querySelector('section[aria-labelledby="practice-title"] .sr-only')).toBeNull();
+    });
+
+    it('renders empty-state blocks with the stagger directive', () => {
+      const copy = [
+        'No upcoming sessions',
+        'No sessions scheduled for today.',
+        'Not enough sessions to chart yet.',
+        'No messages from clients yet. Pre-session notes will show up here.',
+        'No reports shared yet.',
+      ];
+      for (const text of copy) {
+        const node = Array.from(root.querySelectorAll<HTMLElement>('p')).find((p) => p.textContent?.trim() === text);
+        expect(node, text).toBeDefined();
+        expect(node?.hasAttribute('appAnimateOnScroll'), text).toBe(true);
+      }
+    });
+
+    it('hides the title line and shows the specialties prompt without a "+0" chip', () => {
+      const header = root.querySelector<HTMLElement>('[aria-labelledby="specialist-title"]')!;
+      expect(header.textContent).toContain('Add your specialties');
+      expect(header.textContent).not.toContain('+0');
+      expect(header.textContent).not.toContain('Clinical Psychologist');
+    });
+
+    it('shows "Not added yet" for unset professional information rows', () => {
+      const rows = Array.from(root.querySelectorAll('section[aria-labelledby="info-title"] dl > div')).map((row) => ({
+        label: row.querySelector('dt')?.textContent?.trim(),
+        value: row.querySelector('dd')?.textContent?.trim(),
+      }));
+      expect(rows).toEqual([
+        { label: 'Name', value: 'Calmi expert' },
+        { label: 'Email', value: 'expert@example.com' },
+        { label: 'Experience', value: 'Not added yet' },
+        { label: 'Languages', value: 'Not added yet' },
+        { label: 'Consultation modes', value: 'Not added yet' },
+        { label: 'Availability', value: 'Not added yet' },
+      ]);
+    });
+
+    it('shows "Not added yet" for the email row when the sign-in has no email', async () => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [SpecialistProfileComponent],
+        providers: [
+          { provide: AuthService, useValue: { currentUser: () => ({ user_metadata: {}, app_metadata: {} }) } },
+        ],
+      }).compileComponents();
+      const noEmail = TestBed.createComponent(SpecialistProfileComponent);
+      noEmail.detectChanges();
+      const emailRow = Array.from(
+        (noEmail.nativeElement as HTMLElement).querySelectorAll('section[aria-labelledby="info-title"] dl > div'),
+      ).find((row) => row.querySelector('dt')?.textContent?.trim() === 'Email');
+      expect(emailRow?.querySelector('dd')?.textContent?.trim()).toBe('Not added yet');
+    });
   });
 
-  it('formats earnings with Indian digit grouping', () => {
-    expect(root.textContent).toContain('₹4,800');
-    expect(root.textContent).toContain('₹28,800');
-    expect(root.textContent).toContain('₹1,12,600');
+  describe('account & security', () => {
+    const rowsOf = (host: HTMLElement) =>
+      Array.from(host.querySelectorAll('section[aria-labelledby="security-title"] ul > li')).map((li) =>
+        li.textContent?.replace(/\s+/g, ' ').trim(),
+      );
+
+    it('shows Google and Connected for a google sign-in, with the Google mark', () => {
+      const [signIn] = rowsOf(root);
+      expect(signIn).toContain('Google');
+      expect(signIn).toContain('Connected');
+      expect(root.querySelector('section[aria-labelledby="security-title"] svg[viewBox="0 0 48 48"]')).not.toBeNull();
+    });
+
+    it('does not show Connected or the Google mark for a non-google sign-in', async () => {
+      const github = await render({ full_name: 'Asha Rao' }, { provider: 'github' });
+      const host = github.nativeElement as HTMLElement;
+      const [signIn] = rowsOf(host);
+      expect(signIn).toContain('Github');
+      expect(signIn).not.toContain('Google');
+      expect(signIn).not.toContain('Connected');
+      expect(host.querySelector('section[aria-labelledby="security-title"] svg[viewBox="0 0 48 48"]')).toBeNull();
+
+      const email = await render({ full_name: 'Asha Rao' }, { provider: 'email' });
+      const [emailRow] = rowsOf(email.nativeElement as HTMLElement);
+      expect(emailRow).toContain('Email');
+      expect(emailRow).not.toContain('Connected');
+    });
+
+    it('never claims payout details are verified', () => {
+      const payout = rowsOf(root)[1];
+      expect(payout).toContain('Payout details');
+      expect(payout).toContain('Not added yet');
+      expect(payout).not.toContain('Verified');
+      expect(root.textContent).not.toContain('HDFC');
+    });
+
+    it('keeps account settings unchanged', () => {
+      expect(rowsOf(root)[2]).toBe('Account settings Profile, notifications, availability');
+    });
   });
 
-  it('exposes accessible donut and chart labels', () => {
-    expect(root.querySelector('svg[aria-label="1 of 5 sessions completed"]')).not.toBeNull();
-    expect(root.querySelector('svg[role="img"][aria-label^="Line chart of sessions"]')).not.toBeNull();
+  it('exposes an accessible donut label', () => {
+    expect(root.querySelector('svg[role="img"][aria-label="No sessions today"]')).not.toBeNull();
   });
 
   it('applies capped stagger to every dashboard section', () => {
@@ -94,7 +250,7 @@ describe('SpecialistProfileComponent', () => {
     ]);
   });
 
-  it('staggers header text, specialty chips and card headings with local indexes', () => {
+  it('staggers header text, the specialties prompt and card headings with local indexes', () => {
     const header = root.querySelector<HTMLElement>('[aria-labelledby="specialist-title"]')!;
     const h1 = header.querySelector<HTMLElement>('h1');
     expect(h1?.hasAttribute('appAnimateOnScroll')).toBe(true);
@@ -102,55 +258,10 @@ describe('SpecialistProfileComponent', () => {
 
     const chips = Array.from(header.querySelectorAll<HTMLElement>('ul[aria-label="Specialties"] > li'));
     expect(chips.every((chip) => chip.hasAttribute('appAnimateOnScroll'))).toBe(true);
-    expect(chips.map((chip) => chip.style.getPropertyValue('--index'))).toEqual(['0', '1', '2', '3', '4']);
+    expect(chips.map((chip) => chip.style.getPropertyValue('--index'))).toEqual(['0']);
 
     const headings = Array.from(root.querySelectorAll<HTMLElement>('section[aria-labelledby] h2'));
     expect(headings.every((heading) => heading.hasAttribute('appAnimateOnScroll'))).toBe(true);
-  });
-
-  it('staggers session and report rows by their position in the list', () => {
-    const indexes = (selector: string) =>
-      Array.from(root.querySelectorAll<HTMLElement>(selector)).map((row) => row.style.getPropertyValue('--index'));
-
-    expect(root.querySelectorAll('ul[aria-label="Today\'s sessions"] > li[appanimateonscroll]')).toHaveLength(5);
-    expect(indexes('ul[aria-label="Today\'s sessions"] > li')).toEqual(['0', '1', '2', '3', '4']);
-    expect(root.querySelectorAll('ul[aria-label="Shared reports"] > li[appanimateonscroll]')).toHaveLength(4);
-    expect(indexes('ul[aria-label="Shared reports"] > li')).toEqual(['0', '1', '2', '3']);
-  });
-
-  it('draws the donut ring and the practice line in, with static final values in the markup', () => {
-    // SVG attribute names are case-sensitive, so these queries use the authored case.
-    const arc = root.querySelector('svg[aria-label="1 of 5 sessions completed"] .ring-arc');
-    expect(arc).not.toBeNull();
-    expect(arc?.hasAttribute('appDrawOnScroll')).toBe(true);
-    expect(arc?.getAttribute('stroke-dasharray')).toBe(String(fixture.componentInstance.donutCircumference));
-    expect(arc?.getAttribute('stroke-dashoffset')).toBe(String(fixture.componentInstance.donutOffset));
-
-    const chart = root.querySelector('svg[aria-label^="Line chart of sessions"]');
-    const line = chart?.querySelector('.spark-line');
-    expect(line?.hasAttribute('appDrawOnScroll')).toBe(true);
-    expect(line?.getAttribute('pathLength')).toBe('1');
-
-    const dots = Array.from(chart!.querySelectorAll('.chart-dot'));
-    expect(dots).toHaveLength(4);
-    expect(dots.every((dot) => dot.hasAttribute('appDrawOnScroll'))).toBe(true);
-    expect(dots.map((dot) => (dot as SVGElement).style.getPropertyValue('--index'))).toEqual(['0', '1', '2', '3']);
-  });
-
-  it('dates the September mood report in September', () => {
-    expect(root.textContent).toContain('Mood Insights Report – September 2026');
-    expect(root.textContent).toContain('Sep 12, 2026');
-    expect(root.textContent).not.toContain('Aug 12, 2026');
-  });
-
-  it('lists shared reports newest first', () => {
-    const dates = Array.from(root.querySelectorAll('ul[aria-label="Shared reports"] > li > p'))
-      .map((node) => Date.parse(node.textContent!.trim()));
-    expect(dates).toHaveLength(4);
-    expect(dates.every((time) => Number.isFinite(time))).toBe(true);
-    expect(dates).toEqual([...dates].sort((a, b) => b - a));
-    expect(root.textContent).toContain('Sep 02, 2026');
-    expect(root.textContent).not.toContain('Jul 28, 2026');
   });
 
   describe('header avatar', () => {
@@ -167,8 +278,16 @@ describe('SpecialistProfileComponent', () => {
       const bare = await render({});
       const header = headerOf(bare.nativeElement as HTMLElement);
       expect(header.querySelector('img')).toBeNull();
-      expect(header.textContent).toContain('DG');
-      expect(header.textContent).toContain('Online');
+      expect(header.textContent).toContain('CE');
+    });
+
+    it('shows no Online pill by default', () => {
+      expect(headerOf(root).textContent).not.toContain('Online');
+      expect(root.textContent).not.toContain('Online');
+    });
+
+    it('shows no Verified specialist badge by default', () => {
+      expect(root.querySelector('[aria-label="Verified specialist"]')).toBeNull();
     });
 
     it('falls back to initials when the image fails to load', () => {
@@ -177,7 +296,57 @@ describe('SpecialistProfileComponent', () => {
 
       const header = headerOf(root);
       expect(header.querySelector('img')).toBeNull();
-      expect(header.textContent).toContain('DG');
+      expect(header.textContent).toContain('CE');
     });
+  });
+});
+
+describe('buildDonut', () => {
+  const circumference = 2 * Math.PI * 40;
+
+  it('returns an empty ring with finite numbers for zero, negative or invalid totals', () => {
+    for (const [completed, total] of [[0, 0], [3, 0], [1, -2], [Number.NaN, 5], [1, Number.POSITIVE_INFINITY]]) {
+      const donut = buildDonut(completed, total, circumference);
+      expect(donut.hasData).toBe(false);
+      expect(donut.label).toBe('No sessions today');
+      expect(donut.offset).toBe(circumference);
+      expect(Number.isFinite(donut.offset)).toBe(true);
+    }
+  });
+
+  it('offsets the arc by the undrawn share', () => {
+    const donut = buildDonut(1, 5, circumference);
+    expect(donut.hasData).toBe(true);
+    expect(donut.label).toBe('1 of 5 sessions completed');
+    expect(donut.offset).toBe(Math.round(circumference * 0.8 * 100) / 100);
+    expect(buildDonut(9, 5, circumference).offset).toBe(0);
+  });
+});
+
+describe('buildChart', () => {
+  it('returns no points and no path for empty data', () => {
+    const chart = buildChart([]);
+    expect(chart).toEqual({ hasData: false, points: [], path: '', label: 'No session data yet' });
+  });
+
+  it('places a single point mid-chart without dividing by zero', () => {
+    const chart = buildChart([{ label: 'W1', value: 6 }]);
+    expect(chart.hasData).toBe(true);
+    expect(chart.points).toHaveLength(1);
+    expect(Number.isFinite(chart.points[0].x)).toBe(true);
+    expect(chart.path).toMatch(/^M\d+(\.\d+)? \d+(\.\d+)?$/);
+    expect(chart.path).not.toMatch(/NaN|Infinity/);
+  });
+
+  it('draws a path through several points', () => {
+    const chart = buildChart([
+      { label: 'W1', value: 6 },
+      { label: 'W2', value: 9 },
+      { label: 'W3', value: 12 },
+    ]);
+    expect(chart.points.map((point) => point.x)).toEqual([36, 170, 304]);
+    expect(chart.path.startsWith('M36 ')).toBe(true);
+    expect(chart.path.match(/L/g)).toHaveLength(2);
+    expect(chart.label).toBe('Line chart of sessions over the last 4 weeks: W1 6, W2 9, W3 12');
   });
 });
