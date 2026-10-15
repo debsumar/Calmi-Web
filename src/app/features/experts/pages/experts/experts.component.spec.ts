@@ -78,7 +78,7 @@ describe('ExpertsComponent', () => {
     component.applyAllFilters();
     fixture.detectChanges();
 
-    expect(component.psychologists().map((expert) => expert.id)).toEqual(['heena-pahuja', 'rini-rao']);
+    expect(component.psychologists().map((expert) => expert.id)).toEqual(['aaliya-kausar', 'heena-pahuja', 'rini-rao']);
     component.toggleFilter('all');
     component.toggleDraftGender('female');
     component.applyAllFilters();
@@ -119,12 +119,12 @@ describe('ExpertsComponent', () => {
       .sort((a, b) => key(a).localeCompare(key(b), 'en', { sensitivity: 'base' }));
 
     expect(component.psychologists().map((expert) => expert.name)).toEqual(expected);
-    expect(expected[0]).toBe('Anisha Gugale');
+    expect(expected[0]).toBe('Aaliya Kausar');
     // Dr. Chandana Reddy sorts under "C", not "D".
     expect(expected.indexOf('Dr. Chandana Reddy')).toBeLessThan(expected.indexOf('Divyanshi Tolani'));
     const carouselCards = root.querySelectorAll('[appDragScroll] app-psychologist-card');
     expect(carouselCards).toHaveLength(EXPERTS.length);
-    expect(carouselCards[0]?.textContent).toContain('Anisha Gugale');
+    expect(carouselCards[0]?.textContent).toContain('Aaliya Kausar');
   });
 
   it('filters the carousel by search and keeps dots aligned with visible experts', () => {
