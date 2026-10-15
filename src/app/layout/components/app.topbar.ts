@@ -98,11 +98,13 @@ const RIPPLE_DURATION_MS = 420;
                   <svg [lucideIcon]="'circle-user'" [size]="16" aria-hidden="true"></svg>
                   View Profile
                 </button>
-                <button type="button" (click)="viewJournal()" aria-label="My Journals"
-                        class="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-sunken rounded-lg transition-colors text-left">
-                  <svg [lucideIcon]="'notebook-pen'" [size]="16" aria-hidden="true"></svg>
-                  My Journals
-                </button>
+                @if (authService.selectedRole() !== 'specialist') {
+                  <button type="button" (click)="viewJournal()" aria-label="My Journals"
+                          class="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-sunken rounded-lg transition-colors text-left">
+                    <svg [lucideIcon]="'notebook-pen'" [size]="16" aria-hidden="true"></svg>
+                    My Journals
+                  </button>
+                }
                 <button type="button" (click)="requestLogout($event)"
                         class="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-sunken rounded-lg transition-colors text-left">
                   <svg [lucideIcon]="'log-out'" [size]="16" aria-hidden="true"></svg>
