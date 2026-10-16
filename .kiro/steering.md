@@ -205,6 +205,7 @@ PrimeNG 22 requires a license key (free Community tier or Commercial). Without o
 
 1. **Angular development (MANDATORY):** Before creating, editing, or reviewing Angular code, load and follow [`angular-developer`](skills/angular-developer/SKILL.md). It is the authoritative source for Angular architecture, Signals reactivity, forms, dependency injection, routing, accessibility, animations, styling, testing, and Angular CLI tooling.
 2. **Typography + color (MANDATORY):** Before creating, editing, or reviewing visible UI, load and follow [`angular-apply-typography-color-system`](skills/angular-apply-typography-color-system/SKILL.md). It is the authoritative source for font roles, type scale, emphasis, accessibility, semantic color tokens, PrimeNG tokens, and light/dark behavior.
+3. **Parallax + scroll motion (MANDATORY):** Before adding, tuning, or reviewing parallax or any scroll-linked animation, load and follow [`calmi-parallax`](skills/calmi-parallax/SKILL.md) (path: `.kiro/skills/calmi-parallax/SKILL.md`). Pure-CSS `animation-timeline` only, transform-only, classes defined in `src/tailwind.css`; no JS scroll listeners or animation libraries.
 
 ## References
 
