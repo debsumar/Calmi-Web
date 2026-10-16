@@ -282,6 +282,94 @@
   }
 }
 
+/* Home hero (more intense than .parallax-slow/.parallax-fast, home only): root-scroll driven,
+   transform-only => compositor, 0 JS. Unsupported browsers or reduced motion => static. */
+@keyframes parallax-deep { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 300px, 0); } }
+@keyframes parallax-deeper { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 520px, 0); } }
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not(.reduce-motion) .parallax-deep,
+    :root:not(.reduce-motion) .parallax-deeper {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 700px;
+    }
+    :root:not(.reduce-motion) .parallax-deep { animation-name: parallax-deep; }
+    :root:not(.reduce-motion) .parallax-deeper { animation-name: parallax-deeper; }
+  }
+}
+
+/* Home parallax layers: scroll/view-driven, transform-only (no opacity) => compositor, 0 JS.
+   md+ only; unsupported browsers or reduced motion => static.
+   Continuous tiers (depth-*, sink) must never nest in another continuous tier.
+   Entry-only effects (pop, lag-*) settle to identity, so they may nest and sit in the footer. */
+@keyframes parallax-rise-1 { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, -40px, 0); } }
+@keyframes parallax-rise-2 { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, -80px, 0); } }
+@keyframes parallax-rise-3 { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, -120px, 0); } }
+@keyframes parallax-depth-1 { from { transform: translate3d(0, 45px, 0); } to { transform: translate3d(0, -45px, 0); } }
+@keyframes parallax-depth-3 { from { transform: translate3d(0, 130px, 0); } to { transform: translate3d(0, -130px, 0); } }
+@keyframes parallax-sink { from { transform: translate3d(0, -70px, 0); } to { transform: translate3d(0, 70px, 0); } }
+@keyframes parallax-pop { from { transform: translate3d(0, 90px, 0) scale(0.9); } to { transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes parallax-lag { from { transform: translate3d(0, 40px, 0); } to { transform: translate3d(0, 0, 0); } }
+
+/* Hero text spread: rises faster than scroll, each tier further than the one below it. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+    :root:not(.reduce-motion) .parallax-rise-1,
+    :root:not(.reduce-motion) .parallax-rise-2,
+    :root:not(.reduce-motion) .parallax-rise-3 {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 600px;
+    }
+    :root:not(.reduce-motion) .parallax-rise-1 { animation-name: parallax-rise-1; }
+    :root:not(.reduce-motion) .parallax-rise-2 { animation-name: parallax-rise-2; }
+    :root:not(.reduce-motion) .parallax-rise-3 { animation-name: parallax-rise-3; }
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+    /* Depth tiers: counter-motion across the element's whole view range. */
+    :root:not(.reduce-motion) .parallax-depth-1,
+    :root:not(.reduce-motion) .parallax-depth-3,
+    :root:not(.reduce-motion) .parallax-sink {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view(block);
+      animation-range: cover 0% cover 100%;
+    }
+    :root:not(.reduce-motion) .parallax-depth-1 { animation-name: parallax-depth-1; }
+    :root:not(.reduce-motion) .parallax-depth-3 { animation-name: parallax-depth-3; }
+    :root:not(.reduce-motion) .parallax-sink { animation-name: parallax-sink; }
+
+    /* Entry-only: rise + scale into place while entering the viewport, settle at identity. */
+    :root:not(.reduce-motion) .parallax-pop {
+      animation-name: parallax-pop;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view(block);
+      animation-range: entry 0% entry 100%;
+    }
+
+    /* Entry-only staggered lag for sub-elements. */
+    :root:not(.reduce-motion) .parallax-lag-1,
+    :root:not(.reduce-motion) .parallax-lag-2,
+    :root:not(.reduce-motion) .parallax-lag-3 {
+      animation-name: parallax-lag;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view(block);
+    }
+    :root:not(.reduce-motion) .parallax-lag-1 { animation-range: entry 0% entry 60%; }
+    :root:not(.reduce-motion) .parallax-lag-2 { animation-range: entry 10% entry 80%; }
+    :root:not(.reduce-motion) .parallax-lag-3 { animation-range: entry 20% entry 100%; }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation: none !important;
