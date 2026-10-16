@@ -209,6 +209,15 @@ describe('AppTopbar', () => {
     expect(fixture.nativeElement.textContent).not.toContain('My Journals');
   });
 
+  it('hides My Journals in the profile menu for specialists', () => {
+    authenticate().selectedRole.set('specialist');
+    (fixture.nativeElement.querySelector('button.overflow-hidden') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('View Profile');
+    expect(fixture.nativeElement.textContent).not.toContain('My Journals');
+  });
+
   it('opens the desktop logout confirmation without signing out', () => {    const auth = openDesktopLogout();
 
     expect(dialog()).not.toBeNull();
