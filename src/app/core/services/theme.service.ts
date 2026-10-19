@@ -16,9 +16,11 @@ interface ForegroundChoice {
   replaced: boolean;
 }
 
-const THEME_STORAGE_KEY = 'calmi-theme';
-const THEME_MODES: readonly ThemeMode[] = ['light', 'dark', 'auto'];
-
+/**
+ * Keep in sync with the inline pre-paint script in src/index.html, which reads
+ * the same key and applies the same 20:00-06:00 `auto` rule before first paint.
+ */
+export const THEME_STORAGE_KEY = 'calmi-theme';
 /** `auto` follows the user's local clock, not the OS preference. */
 const LIGHT_START_HOUR = 6;
 const LIGHT_END_HOUR = 20;
@@ -31,10 +33,40 @@ export function isDarkHour(hour: number): boolean {
   return hour < LIGHT_START_HOUR || hour >= LIGHT_END_HOUR;
 }
 
+/** Storage can throw (blocked cookies, Safari private mode, sandboxed iframes). */
+function readStored(): string | null {
+  try {
+    return typeof localStorage === 'undefined' ? null : localStorage.getItem(THEME_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(mode: ThemeMode): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    // `auto` is the default, not a choice: store nothing so it keeps tracking the clock.
+    if (mode === 'auto') localStorage.removeItem(THEME_STORAGE_KEY);
+    else localStorage.setItem(THEME_STORAGE_KEY, mode);
+  } catch {
+    // Persistence is best-effort; the in-memory mode still applies.
+  }
+}
+
 /** Falls back to the clock-driven `auto` mode until the user picks a mode. */
 function storedMode(): ThemeMode {
-  const stored = localStorage.getItem(THEME_STORAGE_KEY);
-  return THEME_MODES.includes(stored as ThemeMode) ? (stored as ThemeMode) : 'auto';
+  const stored = readStored();
+  return stored === 'light' || stored === 'dark' ? stored : 'auto';
+}
+
+function prefersReducedMotion(): boolean {
+  try {
+    return typeof window !== 'undefined'
+      && typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch {
+    return false;
+  }
 }
 
 @Injectable({ providedIn: 'root' })
@@ -58,8 +90,8 @@ export class ThemeService {
       this.applyDarkMode(isDark);
     });
 
-    // Persist the user's explicit choice.
-    effect(() => localStorage.setItem(THEME_STORAGE_KEY, this.mode()));
+    // Persist the user's explicit choice (never `auto`).
+    effect(() => writeStored(this.mode()));
 
     // Apply primary color on startup
     this.applyTheme();
@@ -78,16 +110,23 @@ export class ThemeService {
     this.applyTheme(hex);
   }
 
+  private firstApply = true;
+
   private applyDarkMode(isDark: boolean): void {
+    if (typeof document === 'undefined') return;
     const el = document.documentElement;
-    if ('startViewTransition' in document) {
-      const documentWithViewTransition = document as Document & {
-        startViewTransition: (callback: () => void) => unknown;
-      };
-      documentWithViewTransition.startViewTransition(() => el.classList.toggle('app-dark', isDark));
-    } else {
-      el.classList.toggle('app-dark', isDark);
+    const isFirst = this.firstApply;
+    this.firstApply = false;
+    const apply = () => el.classList.toggle('app-dark', isDark);
+
+    // No cross-fade on the initial apply (it would flash) or for reduced-motion users.
+    if (isFirst || el.classList.contains('app-dark') === isDark || prefersReducedMotion()
+      || !('startViewTransition' in document)) {
+      apply();
+      return;
     }
+    (document as Document & { startViewTransition: (callback: () => void) => unknown })
+      .startViewTransition(apply);
   }
 
   private applyTheme(seed: string = SEED_PRIMARY): void {

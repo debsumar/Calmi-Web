@@ -37,10 +37,10 @@ const GREETING_TEXT = 'Hi there, I’m Rumi. How are you feeling today?';
 const USER_REPLY_TEXT = 'Honestly, a bit anxious. Work has been piling up and I can’t switch off at night.';
 const RUMI_REPLY_TEXT = 'That sounds exhausting — carrying the day into the night leaves no room to rest. Let’s take one thing at a time: what feels heaviest right now?';
 
-/** Minutes each scripted line sits after the cycle's start, so the clock reads naturally. */
-const GREETING_OFFSET_MS = 0;
-const USER_REPLY_OFFSET_MS = 60_000;
-const RUMI_REPLY_OFFSET_MS = 75_000;
+/** How far BEFORE the cycle's start (now) each scripted line is stamped, so the clock reads naturally and never shows a future time. */
+const GREETING_OFFSET_MS = -135_000;
+const USER_REPLY_OFFSET_MS = -75_000;
+const RUMI_REPLY_OFFSET_MS = -60_000;
 
 /**
  * Non-interactive, scripted design preview for the Rumi AI landing page.

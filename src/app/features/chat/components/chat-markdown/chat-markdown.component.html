@@ -1,45 +1,41 @@
+<ng-template #inline let-segments>
+  @for (segment of segments; track $index) {
+    @switch (segment.kind) {
+      @case ('text') {<ng-container>{{ segment.text }}</ng-container>}
+      @case ('strong') {<strong>{{ segment.text }}</strong>}
+      @case ('code') {<code class="rounded bg-sunken px-1 py-0.5 font-mono text-sm">{{ segment.text }}</code>}
+      @case ('link') {<a [href]="segment.href" target="_blank" rel="noopener noreferrer" class="text-brand underline underline-offset-2">{{ segment.text }}</a>}
+      @case ('break') {<br />}
+    }
+  }
+</ng-template>
+
+<ng-template #listTemplate let-list>
+  @if (list.ordered) {
+    <ol class="list-decimal space-y-1 pl-6" [attr.start]="list.start">
+      @for (item of list.items; track $index) {
+        <li dir="auto"><ng-container *ngTemplateOutlet="inline; context: { $implicit: item.segments }" />@for (child of item.children; track $index) {<ng-container *ngTemplateOutlet="listTemplate; context: { $implicit: child }" />}</li>
+      }
+    </ol>
+  } @else {
+    <ul class="list-disc space-y-1 pl-6">
+      @for (item of list.items; track $index) {
+        <li dir="auto"><ng-container *ngTemplateOutlet="inline; context: { $implicit: item.segments }" />@for (child of item.children; track $index) {<ng-container *ngTemplateOutlet="listTemplate; context: { $implicit: child }" />}</li>
+      }
+    </ul>
+  }
+</ng-template>
+
 @for (block of blocks(); track $index) {
   @switch (block.kind) {
     @case ('paragraph') {
-      <p>
-        @for (segment of block.segments; track $index) {
-          @switch (segment.kind) {
-            @case ('text') { {{ segment.text }} }
-            @case ('strong') { <strong>{{ segment.text }}</strong> }
-            @case ('break') { <br /> }
-          }
-        }
-      </p>
+      <p dir="auto"><ng-container *ngTemplateOutlet="inline; context: { $implicit: block.segments }" /></p>
     }
-    @case ('unordered-list') {
-      <ul>
-        @for (item of block.items; track $index) {
-          <li>
-            @for (segment of item; track $index) {
-              @switch (segment.kind) {
-                @case ('text') { {{ segment.text }} }
-                @case ('strong') { <strong>{{ segment.text }}</strong> }
-                @case ('break') { <br /> }
-              }
-            }
-          </li>
-        }
-      </ul>
+    @case ('code-block') {
+      <pre dir="ltr" class="overflow-x-auto rounded-lg bg-sunken px-3 py-2 font-mono text-sm"><code>{{ block.text }}</code></pre>
     }
-    @case ('ordered-list') {
-      <ol>
-        @for (item of block.items; track $index) {
-          <li>
-            @for (segment of item; track $index) {
-              @switch (segment.kind) {
-                @case ('text') { {{ segment.text }} }
-                @case ('strong') { <strong>{{ segment.text }}</strong> }
-                @case ('break') { <br /> }
-              }
-            }
-          </li>
-        }
-      </ol>
+    @case ('list') {
+      <ng-container *ngTemplateOutlet="listTemplate; context: { $implicit: block }" />
     }
   }
 }

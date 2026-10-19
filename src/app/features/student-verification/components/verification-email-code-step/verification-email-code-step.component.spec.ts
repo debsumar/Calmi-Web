@@ -3,6 +3,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { VerificationEmailCodeStepComponent } from './verification-email-code-step.component';
 
+function buttonByText(root: HTMLElement, text: string): HTMLButtonElement {
+  const match = Array.from(root.querySelectorAll('button')).find((button) => button.textContent?.trim() === text);
+  if (!match) throw new Error(`No button with text "${text}"`);
+  return match;
+}
+
 describe('VerificationEmailCodeStepComponent', () => {
   let fixture: ComponentFixture<VerificationEmailCodeStepComponent>;
 
@@ -59,8 +65,8 @@ describe('VerificationEmailCodeStepComponent', () => {
     let changeCount = 0;
     component.resend.subscribe(() => resendCount++);
     component.changeEmail.subscribe(() => changeCount++);
-    fixture.nativeElement.querySelector('button:nth-of-type(2)').click();
-    fixture.nativeElement.querySelector('button:nth-of-type(3)').click();
+    buttonByText(fixture.nativeElement, 'Request a new code').click();
+    buttonByText(fixture.nativeElement, 'Change email').click();
     expect(resendCount).toBe(1);
     expect(changeCount).toBe(1);
   });

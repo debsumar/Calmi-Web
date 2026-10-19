@@ -42,7 +42,23 @@ interface PricingPlan {
 type DisplayedPricingPlan = PricingPlan & BillingPrice & {
   ribbonLabel: string | null;
   ariaLabel: string;
+  /** Whole-percent annual saving vs 12 monthly payments; 0 when there is no saving. */
+  annualSavingsPercent: number;
 };
+
+/** Parses display prices such as "₹2,399" into a number. Returns 0 for unparseable input. */
+export function parsePrice(value: string): number {
+  const amount = Number(value.replace(/[^\d.]/g, ''));
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+/** Annual saving as a whole percent, computed from the actual prices (never hard-coded). */
+export function annualSavingsPercent(monthly: string, annual: string): number {
+  const monthlyTotal = parsePrice(monthly) * 12;
+  const annualTotal = parsePrice(annual);
+  if (monthlyTotal <= 0 || annualTotal <= 0 || annualTotal >= monthlyTotal) return 0;
+  return Math.round((1 - annualTotal / monthlyTotal) * 100);
+}
 
 @Component({
   selector: 'app-pricing',
@@ -143,12 +159,17 @@ export class PricingComponent {
         ...plan,
         ...price,
         ribbonLabel,
+        annualSavingsPercent: annualSavingsPercent(plan.monthly.value, plan.annual.value),
         ariaLabel: price.period === 'forever'
           ? `${price.value} forever`
           : `${price.value} per ${price.period}`,
       };
     });
   });
+
+  /** Largest per-plan saving, used for the billing toggle ("Save up to N%"). */
+  readonly maxAnnualSavingsPercent = computed(() =>
+    Math.max(0, ...this.plans.map((plan) => annualSavingsPercent(plan.monthly.value, plan.annual.value))));
 
   setBillingPeriod(period: BillingPeriod): void {
     this.billingPeriod.set(period);

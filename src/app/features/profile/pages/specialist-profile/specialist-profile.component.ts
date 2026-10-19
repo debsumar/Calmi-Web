@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, linkedSignal } from '@angular/core';
 import {
   LucideArrowRight,
   LucideArrowUp,
@@ -26,7 +26,7 @@ import {
   LucideX,
 } from '@lucide/angular';
 import { AuthService } from '@/core/services/auth.service';
-import { resolveHttpsAvatarUrl } from '@/core/identity/avatar-url';
+import { resolveUserAvatarUrl } from '@/core/identity/avatar-url';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { DrawOnScrollDirective } from '@/shared/directives/draw-on-scroll.directive';
 import {
@@ -227,12 +227,14 @@ export class SpecialistProfileComponent {
   private readonly authService = inject(AuthService);
 
   readonly header = SPECIALIST_HEADER;
-  readonly avatarFailed = signal(false);
+  /** A failed image is forgotten as soon as the avatar URL (or user) changes. */
+  readonly avatarFailed = linkedSignal<string | null, boolean>({
+    source: () => this.avatarUrl(),
+    computation: () => false,
+  });
 
   /** The expert's own Google sign-in image. Only https URLs are accepted. */
-  readonly avatarUrl = computed(() =>
-    resolveHttpsAvatarUrl(this.authService.currentUser()?.user_metadata as Record<string, unknown> | undefined),
-  );
+  readonly avatarUrl = computed(() => resolveUserAvatarUrl(this.authService.currentUser()));
 
   readonly showAvatarImage = computed(() => this.avatarUrl() !== null && !this.avatarFailed());
 

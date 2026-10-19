@@ -9,6 +9,16 @@ import {
   EXPERTS,
 } from './expert.data';
 
+/**
+ * The dataset builds its 60-day window from the day the module loaded, so tests use the
+ * window's own first day as "today" instead of the wall clock (which a midnight rollover
+ * between import and assertion would desynchronise).
+ */
+function datasetToday(): Date {
+  const [year, month, day] = EXPERTS[0].availability[0].date.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
 describe('expert filtering data', () => {
   it('provides complete filter-ready data and derived options', () => {
     expect(EXPERTS.length).toBeGreaterThanOrEqual(10);
@@ -24,7 +34,7 @@ describe('expert filtering data', () => {
   });
 
   it('narrows by availability, gender, and language', () => {
-    const today = new Date();
+    const today = datasetToday();
     const availability = filterExperts(EXPERTS, { ...DEFAULT_FILTER_CRITERIA, availability: 'today' }, today);
     const nonBinary = filterExperts(EXPERTS, { ...DEFAULT_FILTER_CRITERIA, genders: ['non-binary'] }, today);
     const female = filterExperts(EXPERTS, { ...DEFAULT_FILTER_CRITERIA, genders: ['female'] }, today);
@@ -40,7 +50,7 @@ describe('expert filtering data', () => {
   });
 
   it('normalizes supplied dates and excludes experts without week slots', () => {
-    const todayWithTime = new Date();
+    const todayWithTime = datasetToday();
     todayWithTime.setHours(18, 45, 0, 0);
     const noWeekSlots = {
       ...EXPERTS[0]!,
@@ -95,7 +105,7 @@ describe('expert filtering data', () => {
   });
 
   it('keeps today bookable for the new experts when today is one of their working days', () => {
-    const today = new Date();
+    const today = datasetToday();
     const todayKey = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
     const workingDays: Record<string, readonly number[]> = {
       'pavneet-kaur': [1, 2, 3, 4, 5],
@@ -108,6 +118,13 @@ describe('expert filtering data', () => {
       const todayEntry = expert.availability.find((day) => day.date === todayKey);
       const expected = workingDays[expert.id]?.includes(today.getDay()) ? 'available' : 'unavailable';
       expect(todayEntry?.state).toBe(expected);
+
+      // Every day in the first fortnight honours the weekly pattern, on any weekday.
+      expert.availability.slice(0, 14).forEach((entry) => {
+        const [year, month, date] = entry.date.split('-').map(Number);
+        const weekday = new Date(year, month - 1, date).getDay();
+        if (!workingDays[expert.id].includes(weekday)) expect(entry.state).toBe('unavailable');
+      });
     });
   });
 

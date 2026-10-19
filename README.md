@@ -2,6 +2,10 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.5.
 
+## Getting started
+
+Requires Node >= 24.15. `src/environments/license.ts` is generated (and gitignored) by `npm run set-license`, which the npm scripts (`start`, `build`, `test`, ...) run automatically. If you call `npx ng ...` directly on a clean clone, run `npm run set-license` first. Without `PRIMEUI_LICENSE_KEY` it still writes an empty key so builds succeed.
+
 ## Development server
 
 To start a local development server, run:

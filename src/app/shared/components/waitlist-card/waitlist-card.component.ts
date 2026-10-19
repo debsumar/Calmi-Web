@@ -15,12 +15,12 @@ const INVALID_EMAIL_ERROR = 'Enter a valid email address, like you@example.com.'
   imports: [LucideDynamicIcon],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <section class="bg-surface border border-hairline rounded-2xl shadow-card p-6 text-center"
+    <section class="relative bg-surface border border-hairline rounded-2xl shadow-card p-6 text-center"
              aria-labelledby="waitlist-title">
       <h2 id="waitlist-title" class="text-lg font-bold text-brand-deep mb-1">
         Join the Waitlist
       </h2>
-      <p class="text-base text-ink-soft mb-5 leading-relaxed sm:whitespace-nowrap">
+      <p class="text-base text-ink-soft mb-5 leading-relaxed text-balance">
         Be the first to experience personalized anxiety and sleep relief.
       </p>
 
@@ -35,15 +35,18 @@ const INVALID_EMAIL_ERROR = 'Enter a valid email address, like you@example.com.'
           <label class="sr-only" for="waitlist-email">Email address</label>
           <!--
             Honeypot: bots fill every field they find, humans never see this one.
-            aria-hidden + tabindex="-1" keep it out of the accessibility tree and
-            tab order. Positioned off-screen rather than display:none, which
-            simple bots detect and skip.
+            inert removes it from focus, the a11y tree and autofill-by-click;
+            tabindex="-1" + aria-hidden are belt and braces. The field name must
+            stay website (api/waitlist.ts rejects non-empty website), so
+            autocomplete="new-password" is what stops browser autofill.
+            Positioned off-screen rather than display:none, which simple bots
+            detect and skip.
           -->
-          <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+          <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true" inert>
             <input type="text"
                    name="website"
                    tabindex="-1"
-                   autocomplete="off"
+                   autocomplete="new-password"
                    [value]="honeypot()"
                    (input)="onHoneypotInput($event)">
           </div>
@@ -70,12 +73,13 @@ const INVALID_EMAIL_ERROR = 'Enter a valid email address, like you@example.com.'
 
         @if (visibleError()) {
           <!--
-            Submit failures assert immediately (role="alert"); the live typing
-            hint is polite so a screen reader is not interrupted per keystroke.
+            One announcement mechanism at a time: submit failures use role="alert";
+            the live typing hint uses aria-live="polite" so a screen reader is not
+            interrupted per keystroke.
           -->
           <p id="waitlist-error"
-             [attr.role]="errorMessage() ? 'alert' : 'status'"
-             aria-live="polite"
+             [attr.role]="errorMessage() ? 'alert' : null"
+             [attr.aria-live]="errorMessage() ? null : 'polite'"
              class="mt-3 inline-flex items-center justify-center gap-2 text-xs font-semibold text-danger">
             <svg [lucideIcon]="'circle-alert'" [size]="16" aria-hidden="true"></svg>
             <span>{{ visibleError() }}</span>

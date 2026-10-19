@@ -1,4 +1,4 @@
-﻿import { ApplicationConfig, inject, provideAppInitializer, provideZonelessChangeDetection } from '@angular/core';
+﻿import { ApplicationConfig, ErrorHandler, inject, provideAppInitializer, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
@@ -30,11 +30,13 @@ import { CalmiPreset } from './core/theme/calmi-preset';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { loaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
+import { GlobalErrorHandler } from './core/handlers/global-error-handler';
 
 export const appConfig: ApplicationConfig = {
 
   providers: [
     provideZonelessChangeDetection(),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideAppInitializer(() => inject(AuthService).restoreSession()),
     provideRouter(appRoutes, withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' })),
     provideHttpClient(withInterceptors([jwtInterceptor, loaderInterceptor])),

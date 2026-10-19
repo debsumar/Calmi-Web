@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -25,8 +25,13 @@ import { provideAuthServiceStub } from '@/core/services/testing/auth.service.stu
 
 describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
+  let getContext: typeof HTMLCanvasElement.prototype.getContext;
 
   beforeEach(async () => {
+    // jsdom has no canvas; the reset player probes getContext. Stub locally and restore in afterEach.
+    getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => null) as unknown as typeof getContext;
+
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
       providers: [
@@ -56,6 +61,10 @@ describe('HomeComponent', () => {
     await fixture.whenStable();
   });
 
+  afterEach(() => {
+    HTMLCanvasElement.prototype.getContext = getContext;
+  });
+
   it('renders the four "What do you need right now?" options', () => {
     const root = fixture.nativeElement as HTMLElement;
     const section = Array.from(root.querySelectorAll('section')).find((s) => s.querySelector('h2')?.textContent?.includes('What do you need'));
@@ -82,10 +91,40 @@ describe('HomeComponent', () => {
     expect(section?.textContent).not.toContain('Coming soon');
   });
 
-  it('does not render a page-local Download App banner', () => {
-    const root = fixture.nativeElement as HTMLElement;
+  it('renders the footer with real routes as links and unshipped pages as non-link "Coming soon"', () => {
+    const footer = (fixture.nativeElement as HTMLElement).querySelector('footer')!;
 
-    expect(root.querySelectorAll('a[aria-label="Download App"]')).toHaveLength(0);
+    const hrefs = Array.from(footer.querySelectorAll('a[href]')).map((a) => a.getAttribute('href'));
+    for (const route of ['/experts', '/sleep', '/pricing', '/about', '/privacy', '/terms']) {
+      expect(hrefs).toContain(route);
+    }
+    for (const missing of ['/features', '/contact', '/blog', '/faq']) {
+      expect(hrefs).not.toContain(missing);
+    }
+    const soon = Array.from(footer.querySelectorAll('[aria-disabled="true"]')).map((el) => el.textContent?.replace(/\s+/g, ' ').trim());
+    expect(soon).toEqual([
+      'Features (Coming soon)',
+      'Follow Us (Coming soon)',
+      'Blog (Coming soon)',
+      'FAQ (Coming soon)',
+    ]);
+    expect(footer.textContent).toContain('© 2026 Calmi');
+  });
+
+  it('greets by first name and tolerates non-string full_name metadata', () => {
+    const home = fixture.componentInstance;
+    const auth = home.authService as unknown as { currentUser: { set(v: unknown): void } };
+
+    auth.currentUser.set({ email: 'jo.doe@example.com', user_metadata: { full_name: 'Jo Marie Doe' } });
+    expect(home.getUserFirstName()).toBe('Jo');
+    auth.currentUser.set({ email: 'jo.doe@example.com', user_metadata: { full_name: 42 } });
+    expect(home.getUserFirstName()).toBe('jo.doe');
+    auth.currentUser.set({ email: 'jo.doe@example.com', user_metadata: { full_name: { first: 'Jo' } } });
+    expect(home.getUserFirstName()).toBe('jo.doe');
+    auth.currentUser.set({ email: 'jo.doe@example.com', user_metadata: {} });
+    expect(home.getUserFirstName()).toBe('jo.doe');
+    auth.currentUser.set(null);
+    expect(home.getUserFirstName()).toBe('');
   });
 
   it('keeps the original One-Minute Reset section content', () => {

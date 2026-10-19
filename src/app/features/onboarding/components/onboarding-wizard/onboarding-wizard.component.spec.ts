@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
+  LucideArrowLeft,
   LucideArrowRight,
   LucideAudioLines,
   LucideBrain,
@@ -17,7 +18,7 @@ import {
   LucideX,
   provideLucideIcons,
 } from '@lucide/angular';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { OnboardingService } from '../../services/onboarding.service';
 import { OnboardingWizardComponent } from './onboarding-wizard.component';
 
@@ -30,6 +31,7 @@ describe('OnboardingWizardComponent', () => {
       imports: [OnboardingWizardComponent],
       providers: [
         provideLucideIcons(
+          LucideArrowLeft,
           LucideArrowRight,
   LucideAudioLines,
   LucideBrain,
@@ -128,5 +130,76 @@ describe('OnboardingWizardComponent', () => {
     expect(first.textContent).toContain('Selected');
     expect(first.className).toContain('bg-selected');
     expect(first.className).toContain('text-ink');
+  });
+
+  describe('dialog semantics', () => {
+    const dialog = () => (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[role="dialog"]')!;
+
+    it('is a labelled modal dialog', () => {
+      expect(dialog().getAttribute('aria-modal')).toBe('true');
+      const labelId = dialog().getAttribute('aria-labelledby')!;
+      expect(dialog().querySelector(`#${labelId}`)?.textContent).toContain('Set up Calmi');
+    });
+
+    it('moves initial focus into the dialog', async () => {
+      await fixture.whenStable();
+      expect(dialog().contains(document.activeElement)).toBe(true);
+    });
+
+    it('closes on Escape', () => {
+      const service = TestBed.inject(OnboardingService);
+      const close = vi.spyOn(service, 'close');
+      dialog().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      expect(close).toHaveBeenCalled();
+      expect(service.isActive()).toBe(false);
+    });
+
+    it('traps Tab: from the last focusable it wraps to the first, and Shift+Tab from first wraps to last', () => {
+      const focusable = Array.from(dialog().querySelectorAll<HTMLElement>('button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      last.focus();
+      const forward = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+      last.dispatchEvent(forward);
+      expect(forward.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(first);
+
+      const backward = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+      first.dispatchEvent(backward);
+      expect(backward.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(last);
+    });
+
+    it('wires the Back button to prevStep()', () => {
+      const service = TestBed.inject(OnboardingService);
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.querySelector('button[aria-label="Back"]')).toBeNull(); // not on step 1
+
+      service.setSelection('goal', 'sleep');
+      service.nextStep();
+      fixture.detectChanges();
+      const back = root.querySelector<HTMLButtonElement>('button[aria-label="Back"]')!;
+      expect(back).not.toBeNull();
+
+      back.click();
+      expect(service.currentStep()).toBe(1);
+    });
+
+    it('disables the ping animation for reduced motion', () => {
+      const service = TestBed.inject(OnboardingService);
+      service.setSelection('goal', 'sleep');
+      service.nextStep();
+      service.setSelection('soundPreference', 'rain');
+      service.nextStep();
+      service.setSelection('duration', '5min');
+      service.finish();
+      fixture.detectChanges();
+
+      const pings = (fixture.nativeElement as HTMLElement).querySelectorAll('.animate-ping');
+      expect(pings.length).toBeGreaterThan(0);
+      pings.forEach((el) => expect(el.className).toContain('motion-reduce:animate-none'));
+      service.close();
+    });
   });
 });

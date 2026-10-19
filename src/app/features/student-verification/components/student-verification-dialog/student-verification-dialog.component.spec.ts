@@ -1,13 +1,22 @@
 // @vitest-environment jsdom
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { FIXTURE_CHECK_DELAY_MS } from '../../services/student-verification.fixtures';
 import { StudentVerificationDialogComponent } from './student-verification-dialog.component';
+
+/** Worst-case fixture check: base delay plus the `% 60` jitter (max 59ms). */
+const FIXTURE_CHECK_WORST_CASE_MS = FIXTURE_CHECK_DELAY_MS + 60;
+
+function stubMatchMedia(matches: boolean): void {
+  vi.stubGlobal('matchMedia', () => ({ matches, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+}
 
 describe('StudentVerificationDialogComponent', () => {
   let fixture: ComponentFixture<StudentVerificationDialogComponent>;
 
   beforeEach(async () => {
-    vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+    // matches:true => prefers-reduced-motion, so close completes synchronously.
+    stubMatchMedia(true);
     await TestBed.configureTestingModule({
       imports: [StudentVerificationDialogComponent],
     }).compileComponents();
@@ -15,6 +24,13 @@ describe('StudentVerificationDialogComponent', () => {
     fixture = TestBed.createComponent(StudentVerificationDialogComponent);
     fixture.componentRef.setInput('open', false);
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    // Reset in afterEach so a failing assertion cannot leak state or fake timers.
+    fixture.componentInstance.service.reset();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('renders an accessible dialog shell and keeps non-active panes inert', async () => {
@@ -54,7 +70,7 @@ describe('StudentVerificationDialogComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const event = new KeyboardEvent('keydown', { key: 'Escape' });
+    const event = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
     let closed = 0;
     fixture.componentInstance.closed.subscribe(() => closed++);
     document.dispatchEvent(event);
@@ -62,10 +78,48 @@ describe('StudentVerificationDialogComponent', () => {
 
     expect(document.activeElement).toBe(opener);
     expect(closed).toBe(1);
+    expect(event.defaultPrevented).toBe(true);
+    expect(fixture.componentInstance.isVisible()).toBe(false);
+    expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
+    opener.remove();
+  });
+
+  it('animates close on Escape when motion is allowed and finishes after the close timer', async () => {
+    vi.useFakeTimers();
+    stubMatchMedia(false);
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+
+    fixture.componentRef.setInput('open', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.isVisible()).toBe(true);
+
+    let closed = 0;
+    fixture.componentInstance.closed.subscribe(() => closed++);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
+    fixture.detectChanges();
+
+    // Closing, not closed: scrim is still mounted and inert until the timer fires.
+    expect(closed).toBe(1);
+    expect(fixture.componentInstance.isClosing()).toBe(true);
+    expect(fixture.componentInstance.isVisible()).toBe(true);
+    expect(fixture.nativeElement.querySelector('[role="dialog"]')?.hasAttribute('inert')).toBe(true);
+    expect(document.activeElement).toBe(opener);
+
+    await vi.advanceTimersByTimeAsync(2_000);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.isClosing()).toBe(false);
+    expect(fixture.componentInstance.isVisible()).toBe(false);
+    expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
     opener.remove();
   });
 
   it('returns failed verification to collecting pane with method selector', async () => {
+    vi.useFakeTimers();
     const service = fixture.componentInstance.service;
     service.simulatedOutcome.set('failed');
     service.submit({
@@ -75,7 +129,7 @@ describe('StudentVerificationDialogComponent', () => {
       documentName: 'enrolment-letter.pdf',
       consentAccepted: true,
     });
-    await new Promise((resolve) => setTimeout(resolve, 320));
+    await vi.advanceTimersByTimeAsync(FIXTURE_CHECK_WORST_CASE_MS);
 
     fixture.componentRef.setInput('open', true);
     fixture.detectChanges();
@@ -130,6 +184,7 @@ describe('StudentVerificationDialogComponent', () => {
 
 
   it('retains approved fixture state after close for pricing unlock', async () => {
+    vi.useFakeTimers();
     const opener = document.createElement('button');
     document.body.appendChild(opener);
     opener.focus();
@@ -141,7 +196,7 @@ describe('StudentVerificationDialogComponent', () => {
       documentName: 'enrolment-letter.pdf',
       consentAccepted: true,
     });
-    await new Promise((resolve) => setTimeout(resolve, 320));
+    await vi.advanceTimersByTimeAsync(FIXTURE_CHECK_WORST_CASE_MS);
     expect(fixture.componentInstance.service.status()).toBe('approved');
     expect(fixture.componentInstance.service.canUseStudentPlan()).toBe(true);
 
@@ -209,6 +264,5 @@ describe('StudentVerificationDialogComponent', () => {
     expect(forward.defaultPrevented).toBe(true);
     expect(service.status()).toBe('emailSent');
     expect(fixture.componentInstance.direction()).toBe('forward');
-    service.reset();
   });
 });

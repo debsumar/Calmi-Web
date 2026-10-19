@@ -301,4 +301,105 @@ describe('ChatStoreService', () => {
     expect(assistant?.meta?.knowledge).toEqual({ mode: 'rag', skipped: 'emotional turn', chunks: 0 });
   });
 
+
+  describe('stopping mid-reply', () => {
+    it('keeps partial AI text as sent and marks the answered user message sent', async () => {
+      service.setDraft('Tell me more');
+      service.send();
+      await settle();
+      emit(0, { type: 'delta', text: 'Partial ' });
+
+      service.stopGeneration();
+
+      const [user, ai] = service.messages();
+      expect(user?.status).toBe('sent');
+      expect(ai).toMatchObject({ role: 'ai', text: 'Partial ', status: 'sent' });
+      expect(service.isStreaming()).toBe(false);
+      expect(service.isTyping()).toBe(false);
+    });
+
+    it('removes an empty streaming AI message', async () => {
+      service.setDraft('Hello');
+      service.send();
+      await settle();
+      emit(0, { type: 'delta', text: '' });
+      expect(service.messages().some((message) => message.role === 'ai')).toBe(true);
+
+      service.stopGeneration();
+
+      expect(service.messages().some((message) => message.role === 'ai')).toBe(false);
+    });
+
+    it('marks an unanswered user message as retryable error and retry works', async () => {
+      service.setDraft('No reply yet');
+      service.send();
+      await settle();
+      expect(service.messages()[0]?.status).toBe('sending');
+
+      service.stopGeneration();
+
+      const user = service.messages()[0];
+      expect(user?.status).toBe('error');
+      service.retry(user?.id ?? '');
+      expect(service.messages()[0]?.status).toBe('sending');
+      expect(service.isStreaming()).toBe(true);
+    });
+
+    it('never leaves sending or streaming messages after close, reset-less close or requestClose', async () => {
+      service.open();
+      service.setDraft('Close me');
+      service.send();
+      await settle();
+      emit(0, { type: 'delta', text: 'Half' });
+
+      service.close();
+
+      expect(service.messages().filter((message) => message.status === 'sending' || message.status === 'streaming')).toEqual([]);
+    });
+
+    it('finalises while the RAG request is still pending', async () => {
+      ragMock.mockImplementationOnce(() => new Promise<RagQueryResponse>(() => undefined));
+      service.setDraft('Pending rag');
+      service.send();
+      await settle();
+
+      service.cancelPendingReply();
+
+      expect(service.messages()[0]?.status).toBe('error');
+      expect(service.isStreaming()).toBe(false);
+    });
+
+    it('does not stay streaming when onEvent handling throws', async () => {
+      service.setDraft('Boom');
+      service.send();
+      await settle();
+      const poisoned = { type: 'delta' } as ChatStreamEvent;
+      Object.defineProperty(poisoned, 'text', { get: () => { throw new Error('boom'); } });
+
+      emit(0, poisoned);
+
+      expect(service.isStreaming()).toBe(false);
+      expect(service.isTyping()).toBe(false);
+      expect(service.messages()[0]?.status).toBe('error');
+    });
+
+    it('does not stay streaming when handle.completed rejects', async () => {
+      streamMock.mockImplementationOnce((): ChatStreamHandle => ({
+        completed: Promise.reject(new Error('completed failed')),
+        cancel: vi.fn(),
+      }));
+      service.setDraft('Reject');
+      service.send();
+      await settle();
+      await settle();
+
+      expect(service.isStreaming()).toBe(false);
+      expect(service.messages()[0]?.status).toBe('error');
+    });
+  });
+
+  it('seeds the welcome message with a real timestamp', () => {
+    service.ensureWelcomeMessage();
+    expect(service.messages()[0]?.timestamp.getTime()).toBeGreaterThan(0);
+  });
 });

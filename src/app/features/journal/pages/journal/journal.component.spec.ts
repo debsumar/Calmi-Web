@@ -24,7 +24,7 @@ import {
   LucideUser,
   provideLucideIcons,
 } from '@lucide/angular';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@/core/services/auth.service';
 import { provideAuthServiceStub } from '@/core/services/testing/auth.service.stub';
 import { JournalService } from '../../services/journal.service';
@@ -642,5 +642,286 @@ describe('JournalComponent', () => {
     await fixture.whenStable();
 
     expect((fixture.nativeElement as HTMLElement).querySelector('#journal-entries-title')?.textContent).toContain('(2)');
+  });
+
+  describe('regressions', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    });
+
+    const root = () => fixture.nativeElement as HTMLElement;
+
+    it('counts words across <br> in the editor', () => {
+      component.content.set('a<br>b');
+      expect(component.wordCount()).toBe(2);
+    });
+
+    it('limits the title input to 120 characters', () => {
+      expect(root().querySelector('#journal-entry-title')?.getAttribute('maxlength')).toBe('120');
+    });
+
+    it('clears the editor, selection, tags and pending switch when the account changes', async () => {
+      signIn();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      component.title.set('Mine');
+      component.content.set('private words');
+      component.selectedTags.set(['Grateful']);
+      component.selectedId.set('some-entry');
+      component.startNewEntry();
+      expect(component.pendingSwitch()).not.toBeNull();
+
+      TestBed.inject(AuthService).currentUser.set({ id: 'user-2', email: 'other@example.com' } as never);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(component.title()).toBe('');
+      expect(component.content()).toBe('');
+      expect(component.selectedTags()).toEqual([]);
+      expect(component.selectedId()).toBeNull();
+      expect(component.pendingSwitch()).toBeNull();
+      expect(component.isDirty()).toBe(false);
+    });
+
+    it('clears the editor on sign-out', async () => {
+      signIn();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      component.content.set('before sign-out');
+
+      TestBed.inject(AuthService).currentUser.set(null);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(component.content()).toBe('');
+      expect(component.isDirty()).toBe(false);
+    });
+
+    it('autosaves a dirty draft after 1500ms of quiet and not before', () => {
+      vi.useFakeTimers();
+      signIn();
+      fixture.detectChanges();
+
+      component.title.set('Evening');
+      component.content.set('first thoughts');
+      fixture.detectChanges();
+      expect(component.isDirty()).toBe(true);
+
+      vi.advanceTimersByTime(1499);
+      expect(journal.count()).toBe(0);
+
+      vi.advanceTimersByTime(1);
+      expect(journal.count()).toBe(1);
+      expect(journal.entries()[0].status).toBe('draft');
+      expect(component.isDirty()).toBe(false);
+      expect(component.selectedId()).toBe(journal.entries()[0].id);
+    });
+
+    it('restarts the autosave debounce on every edit', () => {
+      vi.useFakeTimers();
+      signIn();
+      fixture.detectChanges();
+
+      component.content.set('one');
+      fixture.detectChanges();
+      vi.advanceTimersByTime(1000);
+      component.content.set('one two');
+      fixture.detectChanges();
+      vi.advanceTimersByTime(1000);
+      expect(journal.count()).toBe(0);
+
+      vi.advanceTimersByTime(500);
+      expect(journal.count()).toBe(1);
+    });
+
+    it('flushes a pending autosave when the page is destroyed', () => {
+      vi.useFakeTimers();
+      signIn();
+      fixture.detectChanges();
+      component.content.set('do not lose me');
+      fixture.detectChanges();
+
+      fixture.destroy();
+
+      expect(journal.count()).toBe(1);
+      expect(journal.entries()[0].content).toBe('do not lose me');
+    });
+
+    it('never autosaves for a guest', () => {
+      vi.useFakeTimers();
+      component.content.set('guest words');
+      fixture.detectChanges();
+      vi.advanceTimersByTime(5000);
+      expect(journal.count()).toBe(0);
+      expect(component.signInPromptOpen()).toBe(false);
+    });
+
+    it('keeps the dirty baseline when the write fails, without re-saving in a loop', () => {
+      vi.useFakeTimers();
+      signIn();
+      fixture.detectChanges();
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('QuotaExceededError');
+      });
+
+      component.content.set('stays unsaved');
+      component.save('draft');
+      expect(component.isDirty()).toBe(true);
+      expect(component.lastSaved()).toBeNull();
+      expect(component.storageFailed()).toBe(true);
+
+      // A second save updates the same entry rather than duplicating it.
+      component.save('draft');
+      expect(journal.count()).toBe(1);
+      expect(component.isDirty()).toBe(true);
+    });
+
+    it('warns on beforeunload only while dirty and stops after destroy', () => {
+      const fire = () => {
+        const event = new Event('beforeunload', { cancelable: true });
+        window.dispatchEvent(event);
+        return event.defaultPrevented;
+      };
+      fixture.detectChanges();
+      expect(fire()).toBe(false);
+
+      component.content.set('unsaved');
+      fixture.detectChanges();
+      expect(fire()).toBe(true);
+
+      fixture.destroy();
+      expect(fire()).toBe(false);
+    });
+
+    it('canLeave asks only when work is unsaved', () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      expect(component.canLeave()).toBe(true);
+      expect(confirmSpy).not.toHaveBeenCalled();
+
+      component.content.set('guest draft');
+      expect(component.canLeave()).toBe(false);
+      confirmSpy.mockReturnValue(true);
+      expect(component.canLeave()).toBe(true);
+    });
+
+    it('canLeave saves a signed-in draft instead of asking', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      signIn();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      component.content.set('keep this');
+
+      expect(component.canLeave()).toBe(true);
+      expect(confirmSpy).not.toHaveBeenCalled();
+      expect(journal.count()).toBe(1);
+    });
+
+    it('honours a failed delete and clears the pending switch', () => {
+      const entry = journal.upsert({ id: null, title: 'Gone', content: 'x', status: 'saved' }).entry;
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('blocked');
+      });
+      component.select(entry);
+      component.content.set('edited');
+      component.startNewEntry();
+      expect(component.pendingSwitch()).not.toBeNull();
+
+      component.confirmDelete(entry);
+
+      expect(component.deleteFailed()).toBe(true);
+      expect(component.pendingSwitch()).toBeNull();
+      expect(component.selectedId()).toBeNull();
+      expect(journal.count()).toBe(0);
+    });
+
+    it('shows createdAt as the single date for an entry', () => {
+      const entry = journal.upsert({ id: null, title: 'Dated', content: 'x', status: 'saved' }).entry;
+      component.select(entry);
+      expect(component.startedAt().toISOString()).toBe(entry.createdAt);
+    });
+
+    it('removes the stashed draft when the sign-in dialog is dismissed', () => {
+      sessionStorage.setItem('calmi.journal.pending-entry.v1', '{"title":"t","content":"c","tags":[]}');
+      component.content.set('typed as guest');
+      component.save('saved');
+      expect(component.signInPromptOpen()).toBe(true);
+
+      component.cancelSignIn();
+
+      expect(sessionStorage.getItem('calmi.journal.pending-entry.v1')).toBeNull();
+    });
+
+    it('keeps the stash across destroy once handed to sign-in', async () => {
+      component.content.set('typed as guest');
+      component.save('saved');
+      component.continueToSignIn();
+      await fixture.whenStable();
+
+      fixture.destroy();
+
+      expect(sessionStorage.getItem('calmi.journal.pending-entry.v1')).not.toBeNull();
+    });
+
+    it('drops the stash when the sign-in navigation is refused', async () => {
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(false);
+      component.content.set('typed as guest');
+      component.save('saved');
+      component.continueToSignIn();
+      // The component reacts in the navigation promise's continuation: await that promise itself.
+      await navigate.mock.results[0].value;
+      await fixture.whenStable();
+
+      expect(sessionStorage.getItem('calmi.journal.pending-entry.v1')).toBeNull();
+    });
+
+    it('makes the discard prompt a modal: described, inert background, trapped Tab, Escape', async () => {
+      component.content.set('unsaved');
+      component.startNewEntry();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const dialog = root().querySelector<HTMLElement>('[role="alertdialog"]');
+      expect(dialog).not.toBeNull();
+      expect(dialog?.getAttribute('aria-modal')).toBe('true');
+      const describedBy = dialog?.getAttribute('aria-describedby') ?? '';
+      expect(root().querySelector(`#${describedBy}`)?.textContent).toContain('discard the changes');
+      expect(root().querySelector('.bg-canvas')?.hasAttribute('inert')).toBe(true);
+
+      const buttons = dialog?.querySelectorAll('button') ?? [];
+      const last = buttons[buttons.length - 1];
+      last.focus();
+      const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+      dialog?.dispatchEvent(tab);
+      expect(tab.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(buttons[0]);
+
+      dialog?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      fixture.detectChanges();
+      expect(component.pendingSwitch()).toBeNull();
+      expect(root().querySelector('.bg-canvas')?.hasAttribute('inert')).toBe(false);
+    });
+
+    it('closes the sign-in dialog with Escape and traps Tab inside it', async () => {
+      component.content.set('typed as guest');
+      component.save('saved');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const dialog = root().querySelector<HTMLElement>('[role="dialog"]');
+      expect(dialog?.getAttribute('aria-describedby')).toBe('journal-signin-body');
+      expect(root().querySelector('.bg-canvas')?.hasAttribute('inert')).toBe(true);
+
+      const buttons = dialog?.querySelectorAll('button') ?? [];
+      buttons[buttons.length - 1].focus();
+      const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+      dialog?.dispatchEvent(tab);
+      expect(tab.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(buttons[0]);
+
+      dialog?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      expect(component.signInPromptOpen()).toBe(false);
+    });
   });
 });

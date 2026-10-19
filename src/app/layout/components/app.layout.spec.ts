@@ -4,7 +4,6 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { TestBed } from '@angular/core/testing';
 import { LucideDynamicIcon, LucideSmartphone, provideLucideIcons } from '@lucide/angular';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ScrollPositionService } from '@/core/services/scroll-position.service';
 import { AppLayout } from './app.layout';
 
 @Component({
@@ -52,7 +51,6 @@ describe('AppLayout Download App banner', () => {
         provideZonelessChangeDetection(),
         provideRouter(routes),
         provideLucideIcons(LucideSmartphone),
-        { provide: ScrollPositionService, useValue: {} },
       ],
     });
 

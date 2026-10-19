@@ -2,8 +2,10 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   ElementRef,
+  forwardRef,
   inject,
   Injector,
   input,
@@ -11,6 +13,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LucideDynamicIcon } from '@lucide/angular';
 
 export interface SelectMenuOption<T extends string | number = string | number> {
@@ -26,6 +29,7 @@ let nextSelectMenuId = 0;
   selector: 'app-select-menu',
   imports: [LucideDynamicIcon],
   host: { class: 'relative block' },
+  providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => SelectMenuComponent), multi: true }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button
@@ -38,6 +42,7 @@ let nextSelectMenuId = 0;
       aria-haspopup="listbox"
       [attr.aria-controls]="isOpen() ? listboxId : null"
       [attr.aria-activedescendant]="isOpen() ? activeOptionId() : null"
+      [disabled]="isDisabled()"
       (click)="toggle()"
       (keydown)="onTriggerKeydown($event)"
       class="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border border-hairline bg-sunken px-3 text-left text-xs text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
@@ -62,16 +67,16 @@ let nextSelectMenuId = 0;
             tabindex="-1"
             [id]="optionId(index)"
             [attr.data-select-menu-option-index]="index"
-            [attr.aria-selected]="value() === option.value"
-            (mouseenter)="setActiveIndex(index)"
+            [attr.aria-selected]="currentValue() === option.value"
+            (mouseenter)="setActiveIndex(index, false)"
             (click)="choose(option.value)"
             class="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-left text-xs text-ink transition-colors hover:bg-sunken focus-visible:outline-none"
             [class.bg-sunken]="activeOptionIndex() === index"
             [class.ring-2]="activeOptionIndex() === index"
             [class.ring-brand]="activeOptionIndex() === index"
             [class.ring-inset]="activeOptionIndex() === index"
-            [class.text-brand]="value() === option.value">
-            <span aria-hidden="true" class="w-4 text-center" [class.invisible]="value() !== option.value">✓</span>
+            [class.text-brand]="currentValue() === option.value">
+            <span aria-hidden="true" class="w-4 text-center" [class.invisible]="currentValue() !== option.value">✓</span>
             <span>{{ option.label }}</span>
           </button>
         }
@@ -79,13 +84,25 @@ let nextSelectMenuId = 0;
     }
   `,
 })
-export class SelectMenuComponent {
+export class SelectMenuComponent implements ControlValueAccessor {
   readonly options = input.required<readonly SelectMenuOption[]>();
   readonly value = input<SelectMenuValue>(null);
   readonly placeholder = input('Select an option');
   readonly ariaLabel = input('');
   readonly labelledBy = input('');
   readonly valueChange = output<SelectMenuValue>();
+
+  /** Value written by a form control. `undefined` until a form writes one. */
+  private readonly formValue = signal<SelectMenuValue | undefined>(undefined);
+  private usesForms = false;
+  private onChange: (value: SelectMenuValue) => void = () => {};
+  private onTouched: () => void = () => {};
+  /** Effective value: form-driven when bound to a control, otherwise the `value` input. */
+  readonly currentValue = computed<SelectMenuValue>(() => {
+    const fromForm = this.formValue();
+    return this.usesForms && fromForm !== undefined ? fromForm : this.value();
+  });
+  readonly isDisabled = signal(false);
 
   readonly isOpen = signal(false);
   readonly activeIndex = signal(0);
@@ -114,7 +131,7 @@ export class SelectMenuComponent {
   }
 
   selectedLabel(): string {
-    return this.options().find((option) => option.value === this.value())?.label ?? this.placeholder();
+    return this.options().find((option) => option.value === this.currentValue())?.label ?? this.placeholder();
   }
 
   activeOptionIndex(): number | null {
@@ -133,7 +150,29 @@ export class SelectMenuComponent {
     else this.open();
   }
 
+  writeValue(value: SelectMenuValue | undefined): void {
+    this.formValue.set(value ?? null);
+  }
+
+  registerOnChange(fn: (value: SelectMenuValue) => void): void {
+    this.usesForms = true;
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this.isDisabled.set(isDisabled);
+    if (isDisabled) this.close();
+  }
+
   choose(value: SelectMenuValue): void {
+    if (this.usesForms) {
+      this.formValue.set(value);
+      this.onChange(value);
+    }
     this.valueChange.emit(value);
     this.close(true);
   }
@@ -198,7 +237,8 @@ export class SelectMenuComponent {
   };
 
   private open(): void {
-    const selectedIndex = this.options().findIndex((option) => option.value === this.value());
+    if (this.isDisabled()) return;
+    const selectedIndex = this.options().findIndex((option) => option.value === this.currentValue());
     this.activeIndex.set(selectedIndex >= 0 ? selectedIndex : 0);
     this.opensUpward.set(false);
     this.isOpen.set(true);
@@ -206,6 +246,7 @@ export class SelectMenuComponent {
   }
 
   private close(returnFocus = false): void {
+    if (this.isOpen()) this.onTouched();
     this.isOpen.set(false);
     this.typeahead = '';
     if (this.typeaheadTimer) clearTimeout(this.typeaheadTimer);
@@ -226,9 +267,10 @@ export class SelectMenuComponent {
     this.setActiveIndex((current + change + optionCount) % optionCount);
   }
 
-  setActiveIndex(index: number): void {
+  /** Pointer hover passes `scroll = false`: only keyboard navigation may move the list. */
+  setActiveIndex(index: number, scroll = true): void {
     this.activeIndex.set(index);
-    if (this.isOpen()) this.schedulePanelUpdate();
+    if (scroll && this.isOpen()) this.schedulePanelUpdate();
   }
 
   private findTypeaheadMatch(character: string): void {

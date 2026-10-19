@@ -33,10 +33,11 @@ export class SocialAuthButtonsComponent {
     this.pending.set(true);
     try {
       await this.authService.loginWithGoogle();
+      // Success means the browser is redirecting to the provider: stay pending so the
+      // button cannot be pressed again mid-navigation. Only an error re-enables it.
     } catch {
-      this.failed.emit(SOCIAL_SIGN_IN_ERROR);
-    } finally {
       this.pending.set(false);
+      this.failed.emit(SOCIAL_SIGN_IN_ERROR);
     }
   }
 }

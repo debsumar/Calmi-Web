@@ -1,3 +1,4 @@
+import { formatRupees } from '@/features/experts/data/format-price';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -281,7 +282,7 @@ export class ExpertBookingSidebarComponent {
       { label: 'When', value: this.confirmationSummary() },
       { label: 'Duration', value: profile.duration },
       { label: 'Mode', value: profile.sessionMode },
-      { label: 'Session fee', value: `₹${profile.price}` },
+      { label: 'Session fee', value: formatRupees(profile.price) },
       { label: 'Name', value: this.name().trim() },
       { label: 'Phone', value: this.phone().trim() },
     ];

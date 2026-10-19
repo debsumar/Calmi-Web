@@ -83,7 +83,6 @@
 }
 
 // ─── PrimeNG Dialog Glass Mask Backdrop ─────────────────
-::ng-deep .p-dialog-mask,
 .p-dialog-mask {
   background-color: var(--calmi-scrim) !important;
   backdrop-filter: blur(12px) !important;

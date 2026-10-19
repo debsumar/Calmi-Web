@@ -17,7 +17,7 @@ import {
   LucideTrendingUp,
   LucideUser,
 } from '@lucide/angular';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideRouter } from '@angular/router';
 import { AuthService } from '@/core/services/auth.service';
 import { EXPERTS } from '@/features/experts/data/expert.data';
@@ -609,5 +609,118 @@ describe('ProfileComponent', () => {
     );
     expect(template).not.toMatch(forbiddenViewLiteralPattern);
     expect(template).not.toMatch(/text-\[[^]]+\]|font-(light|medium|bricolage)/i);
+  });
+});
+
+describe('ProfileComponent regressions', () => {
+  const currentUser = signal<Record<string, unknown> | null>(null);
+  let fixture: ComponentFixture<ProfileComponent>;
+
+  async function mount(tracks: readonly { id: string; title: string; plays: number; minutes: number }[] = []) {
+    TestBed.resetTestingModule();
+    localStorage.clear();
+    await TestBed.configureTestingModule({
+      imports: [ProfileComponent],
+      providers: [ProfileDashboardService, { provide: AuthService, useValue: { currentUser } }, icons(), provideRouter([])],
+    }).compileComponents();
+
+    const dashboardService = TestBed.inject(ProfileDashboardService);
+    const base = dashboardService.dashboard();
+    (dashboardService as unknown as { dashboard: unknown }).dashboard = signal({ ...base, audio: { ...base.audio, tracks } });
+    fixture = TestBed.createComponent(ProfileComponent);
+    fixture.detectChanges();
+    return fixture.componentInstance;
+  }
+
+  beforeEach(() => {
+    currentUser.set({ email: 'p@example.com', app_metadata: { provider: 'google' }, user_metadata: { full_name: 'Sam' } });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it.each([
+    [[1, 1, 1], 3],
+    [[1, 1, 1, 1, 1, 1, 1], 7],
+    [[2, 3, 7, 13], 25],
+    [[1, 2], 3],
+    [[5], 5],
+  ])('donut shares for minutes %j sum to exactly 100', async (minutes) => {
+    const tracks = minutes.map((value, index) => ({ id: `t${index}`, title: `Track ${index}`, plays: 1, minutes: value }));
+    const component = await mount(tracks);
+
+    const shares = component.audioDonut().segments.map((segment) => segment.share);
+    expect(shares.reduce((sum, share) => sum + share, 0)).toBe(100);
+    expect(shares.every((share) => Number.isInteger(share))).toBe(true);
+  });
+
+  it('gives an empty donut zero shares', async () => {
+    const component = await mount([]);
+    expect(component.audioDonut().segments).toEqual([]);
+  });
+
+  it('accepts only the exact, case-sensitive CLOSE phrase', async () => {
+    const component = await mount();
+    for (const wrong of ['close', 'Close', 'CLOS', '']) {
+      component.updateClosureConfirmation(wrong);
+      expect(component.closureIsValid()).toBe(false);
+    }
+    component.updateClosureConfirmation(' CLOSE ');
+    expect(component.closureIsValid()).toBe(true);
+  });
+
+  it('renders aria-invalid as "true" or "false", never an empty string, and states nothing is removed', async () => {
+    const component = await mount();
+    component.startClosure();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const input = root.querySelector<HTMLInputElement>('#closure-confirmation');
+
+    expect(input?.getAttribute('aria-invalid')).toBe('false');
+    expect(root.querySelector('#closure-instructions')?.textContent).toContain('nothing is removed');
+
+    component.updateClosureConfirmation('close');
+    component.confirmClosure();
+    fixture.detectChanges();
+    expect(input?.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('falls back from an empty avatar_url to picture, then to an identity avatar', async () => {
+    currentUser.set({
+      user_metadata: { full_name: 'Sam', avatar_url: '', picture: 'https://cdn.example.com/p.png' },
+      app_metadata: { provider: 'google' },
+    });
+    const component = await mount();
+    expect(component.avatarUrl()).toBe('https://cdn.example.com/p.png');
+
+    currentUser.set({
+      user_metadata: { avatar_url: 'javascript:alert(1)' },
+      identities: [{ identity_data: { avatar_url: 'https://cdn.example.com/identity.png' } }],
+    });
+    expect(component.avatarUrl()).toBe('https://cdn.example.com/identity.png');
+  });
+
+  it('forgets a failed avatar when the avatar URL changes', async () => {
+    currentUser.set({ user_metadata: { avatar_url: 'https://cdn.example.com/a.png' } });
+    const component = await mount();
+
+    component.onAvatarError();
+    expect(component.showAvatarImage()).toBe(false);
+
+    currentUser.set({ user_metadata: { avatar_url: 'https://cdn.example.com/b.png' } });
+    expect(component.avatarFailed()).toBe(false);
+    expect(component.showAvatarImage()).toBe(true);
+  });
+
+  it('moves the journal recency label from "today" to "yesterday" across local midnight', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 8, 10, 23, 59, 59));
+    const component = await mount();
+    TestBed.inject(JournalService).upsert({ id: null, title: 'Late', content: 'words here', status: 'saved' });
+    expect(component.journalLastEntryLabel()).toBe('today');
+
+    vi.advanceTimersByTime(2_000);
+    expect(component.journalLastEntryLabel()).toBe('yesterday');
   });
 });

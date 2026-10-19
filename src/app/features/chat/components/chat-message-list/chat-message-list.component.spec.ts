@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { afterEach, describe, expect, it, beforeEach, vi } from 'vitest';
 import { LucideDynamicIcon, LucideArrowDown, provideLucideIcons } from '@lucide/angular';
 import { ChatMessageListComponent } from './chat-message-list.component';
 import { ChatTypingComponent } from '../chat-typing/chat-typing.component';
@@ -44,6 +44,26 @@ const seedMessages = (store: ChatStoreService): void => {
     store.reset();
     fixture.detectChanges();
   });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  const setLayout = (log: HTMLElement, scrollHeight: number, clientHeight: number, scrollTop: number): void => {
+    Object.defineProperties(log, {
+      scrollHeight: { configurable: true, value: scrollHeight },
+      clientHeight: { configurable: true, value: clientHeight },
+      scrollTop: { configurable: true, writable: true, value: scrollTop },
+    });
+  };
+
+  const pushMessage = (role: 'ai' | 'user', id: string): void => {
+    (store as unknown as { _messages: { update: (fn: (messages: ChatMessage[]) => ChatMessage[]) => void } })._messages.update(
+      (messages) => [...messages, { id, role, text: id, timestamp: new Date(), status: 'sent' }],
+    );
+    fixture.detectChanges();
+  };
 
   const renderSeededFixture = (): void => {
     fixture.destroy();
@@ -94,19 +114,84 @@ const seedMessages = (store: ChatStoreService): void => {
     matchMedia.mockRestore();
   });
 
-  it('shows the scroll-to-bottom pill when the user is more than 100px from the bottom', () => {
+  it('shows the scroll-to-bottom pill, outside the log live region, once the user scrolls away from the bottom', () => {
     const log = fixture.nativeElement.querySelector('[role="log"]') as HTMLElement;
-    Object.defineProperties(log, {
-      scrollHeight: { configurable: true, value: 500 },
-      clientHeight: { configurable: true, value: 200 },
-      scrollTop: { configurable: true, writable: true, value: 100 },
-    });
-    fixture.componentInstance.onScroll();
-    fixture.componentInstance.showScrollToBottom.set(true);
+    setLayout(log, 500, 200, 100);
+    expect(fixture.nativeElement.querySelector('[aria-label="Scroll to bottom"]')).toBeNull();
+
+    log.dispatchEvent(new Event('scroll'));
     fixture.detectChanges();
 
+    const pill = fixture.nativeElement.querySelector('[aria-label="Scroll to bottom"]') as HTMLElement;
+    expect(pill).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Scroll to bottom');
+    expect(log.contains(pill)).toBe(false);
+  });
+
+  it('does not force-scroll for an AI message when the user scrolled up', async () => {
+    renderSeededFixture();
+    const log = fixture.nativeElement.querySelector('[role="log"]') as HTMLElement;
+    setLayout(log, 1000, 200, 100);
+    log.dispatchEvent(new Event('scroll'));
+
+    pushMessage('ai', 'incoming-ai');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(log.scrollTop).toBe(100);
     expect(fixture.nativeElement.querySelector('[aria-label="Scroll to bottom"]')).not.toBeNull();
+  });
+
+  it('force-scrolls for the user\'s own new message even when scrolled up', async () => {
+    renderSeededFixture();
+    const log = fixture.nativeElement.querySelector('[role="log"]') as HTMLElement;
+    setLayout(log, 1000, 200, 100);
+    log.dispatchEvent(new Event('scroll'));
+
+    pushMessage('user', 'mine');
+    await fixture.whenStable();
+
+    expect(log.scrollTop).toBe(1000);
+    expect(fixture.nativeElement.querySelector('[aria-label="Scroll to bottom"]')).toBeNull();
+  });
+
+  it('keeps following new AI messages while the user is pinned near the bottom', async () => {
+    renderSeededFixture();
+    const log = fixture.nativeElement.querySelector('[role="log"]') as HTMLElement;
+    setLayout(log, 1000, 200, 790);
+    log.dispatchEvent(new Event('scroll'));
+
+    pushMessage('ai', 'follow-me');
+    await fixture.whenStable();
+
+    expect(log.scrollTop).toBe(1000);
+  });
+
+  it('does not re-show the pill while a programmatic smooth scroll is running', async () => {
+    renderSeededFixture();
+    const log = fixture.nativeElement.querySelector('[role="log"]') as HTMLElement;
+    setLayout(log, 1000, 200, 100);
+    const scrollTo = vi.fn();
+    (log as unknown as { scrollTo: typeof scrollTo }).scrollTo = scrollTo;
+    log.dispatchEvent(new Event('scroll'));
+    fixture.detectChanges();
+
+    (fixture.nativeElement.querySelector('[aria-label="Scroll to bottom"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(scrollTo).toHaveBeenCalledWith({ top: 1000, behavior: 'smooth' });
+
+    // Intermediate frame of the smooth scroll: still far from the bottom.
+    log.scrollTop = 400;
+    log.dispatchEvent(new Event('scroll'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[aria-label="Scroll to bottom"]')).toBeNull();
+
+    log.scrollTop = 800;
+    log.dispatchEvent(new Event('scroll'));
+    log.dispatchEvent(new Event('scrollend'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[aria-label="Scroll to bottom"]')).toBeNull();
   });
 
   it('uses adaptive roles for the empty-state identity treatment', () => {

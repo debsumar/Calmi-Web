@@ -39,7 +39,7 @@ describe('auth guards', () => {
     });
   });
 
-  it('waits for one shared restoration promise before deciding access', async () => {
+  it('waits for restoration to resolve before granting access, calling restoreSession once per guard run', async () => {
     let resolveRestore!: () => void;
     const sharedRestore = new Promise<void>((resolve) => { resolveRestore = resolve; });
     const restoreSession = vi.fn(() => sharedRestore);
@@ -55,6 +55,12 @@ describe('auth guards', () => {
     const first = TestBed.runInInjectionContext(() => authGuard({} as any, { url: '/home' } as any));
     const second = TestBed.runInInjectionContext(() => authGuard({} as any, { url: '/sleep' } as any));
     expect(restoreSession).toHaveBeenCalledTimes(2);
+
+    let settled = false;
+    void Promise.all([first, second]).then(() => { settled = true; });
+    await Promise.resolve();
+    expect(settled).toBe(false); // neither guard decides while restoration is pending
+
     resolveRestore();
     await expect(Promise.all([first, second])).resolves.toEqual([true, true]);
   });

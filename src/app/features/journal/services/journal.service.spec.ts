@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { User } from '@supabase/supabase-js';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@/core/services/auth.service';
 import { provideAuthServiceStub } from '@/core/services/testing/auth.service.stub';
 import { countWords, previewOf } from '../models/journal-entry.model';
@@ -253,5 +253,178 @@ describe('journal entry helpers', () => {
     expect(preview.endsWith('…')).toBe(true);
     expect(preview.length).toBeLessThanOrEqual(31);
     expect(previewOf('short note', 30)).toBe('short note');
+  });
+});
+
+describe('JournalService resilience', () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+    localStorage.clear();
+  });
+
+  it('keeps in-memory entries across a second save when storage is blocked', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError');
+    });
+    const service = configure();
+
+    const first = service.upsert({ id: null, title: 'One', content: 'first', status: 'saved' });
+    const second = service.upsert({ id: null, title: 'Two', content: 'second', status: 'saved' });
+
+    expect(first.persisted).toBe(false);
+    expect(second.persisted).toBe(false);
+    expect(service.storageFailed()).toBe(true);
+    expect(service.count()).toBe(2);
+    expect(service.byId(first.entry.id)?.content).toBe('first');
+
+    expect(service.remove(second.entry.id)).toBe(false);
+    expect(service.count()).toBe(1);
+    expect(service.byId(first.entry.id)).not.toBeNull();
+  });
+
+  it('flags new entries as html and reads old records without the flag', () => {
+    const service = configure();
+    const { entry } = service.upsert({ id: null, title: 'T', content: 'Tom &amp; Jerry', status: 'saved' });
+    expect(entry.contentFormat).toBe('html');
+    expect(JSON.parse(localStorage.getItem(GUEST_KEY) ?? '[]')[0].contentFormat).toBe('html');
+
+    const legacy = { id: 'old', title: 'Old', content: 'plain', status: 'saved', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' };
+    localStorage.setItem(GUEST_KEY, JSON.stringify([legacy]));
+    expect(configure().byId('old')?.contentFormat).toBeUndefined();
+  });
+
+  it('keeps invalid records in a quarantine key instead of deleting them', () => {
+    const valid = { id: 'ok', title: 'Fine', content: 'x', status: 'saved', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' };
+    const bogus = { id: 'bad', title: 'Future shape', body: { blocks: [1, 2] }, status: 'archived' };
+    localStorage.setItem(GUEST_KEY, JSON.stringify([valid, bogus]));
+    const service = configure();
+
+    expect(service.count()).toBe(1);
+    service.upsert({ id: null, title: 'New', content: 'hello', status: 'saved' });
+
+    expect(JSON.parse(localStorage.getItem(GUEST_KEY) ?? '[]')).toHaveLength(2);
+    expect(JSON.parse(localStorage.getItem(`${GUEST_KEY}:invalid`) ?? '[]')).toEqual([bogus]);
+
+    // Re-reading must not duplicate the quarantined record.
+    configure();
+    expect(JSON.parse(localStorage.getItem(`${GUEST_KEY}:invalid`) ?? '[]')).toEqual([bogus]);
+  });
+
+  it('quarantines an unparseable payload verbatim', () => {
+    localStorage.setItem(GUEST_KEY, '{not json');
+    const service = configure();
+    expect(service.count()).toBe(0);
+    service.upsert({ id: null, title: 'New', content: 'hello', status: 'saved' });
+    expect(JSON.parse(localStorage.getItem(`${GUEST_KEY}:invalid`) ?? '[]')).toEqual([{ unparsable: '{not json' }]);
+  });
+
+  it('keeps an unreadable quarantine value as an item instead of replacing it', () => {
+    localStorage.setItem(`${GUEST_KEY}:invalid`, '{broken quarantine');
+    localStorage.setItem(GUEST_KEY, '{not json');
+    const service = configure();
+    expect(service.count()).toBe(0);
+
+    const parked = JSON.parse(localStorage.getItem(`${GUEST_KEY}:invalid`) ?? '[]') as unknown[];
+    expect(parked).toEqual([{ unreadable: '{broken quarantine' }, { unparsable: '{not json' }]);
+  });
+
+  it('keeps a non-array quarantine value as an item instead of replacing it', () => {
+    localStorage.setItem(`${GUEST_KEY}:invalid`, '{"legacy":true}');
+    localStorage.setItem(GUEST_KEY, '{not json');
+    expect(configure().count()).toBe(0);
+
+    const parked = JSON.parse(localStorage.getItem(`${GUEST_KEY}:invalid`) ?? '[]') as unknown[];
+    expect(parked).toEqual([{ unreadable: '{"legacy":true}' }, { unparsable: '{not json' }]);
+  });
+
+  it('does not re-arm the midnight timer when now() is read after destroy', () => {
+    vi.useFakeTimers();
+    const service = configure();
+    expect(vi.getTimerCount()).toBe(0);
+
+    TestBed.resetTestingModule();
+    service.now();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('never overwrites the main payload while quarantine fails, then parks and persists once storage recovers', () => {
+    const rawMain = '{not json';
+    localStorage.setItem(GUEST_KEY, rawMain);
+    const realSetItem = Storage.prototype.setItem;
+    let quotaFull = true;
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key: string, value: string) {
+      if (quotaFull && key.endsWith(':invalid')) throw new Error('QuotaExceededError');
+      realSetItem.call(this, key, value);
+    });
+
+    const service = configure();
+    const first = service.upsert({ id: null, title: 'One', content: 'first', status: 'saved' });
+
+    expect(first.persisted).toBe(false);
+    expect(service.storageFailed()).toBe(true);
+    expect(localStorage.getItem(GUEST_KEY)).toBe(rawMain);
+    expect(localStorage.getItem(`${GUEST_KEY}:invalid`)).toBeNull();
+    expect(service.byId(first.entry.id)?.content).toBe('first');
+
+    // Still failing on the next save: main stays untouched, both entries stay in memory.
+    const second = service.upsert({ id: null, title: 'Two', content: 'second', status: 'saved' });
+    expect(second.persisted).toBe(false);
+    expect(localStorage.getItem(GUEST_KEY)).toBe(rawMain);
+    expect(service.count()).toBe(2);
+
+    quotaFull = false;
+    const third = service.upsert({ id: null, title: 'Three', content: 'third', status: 'saved' });
+
+    expect(third.persisted).toBe(true);
+    expect(service.storageFailed()).toBe(false);
+    expect(JSON.parse(localStorage.getItem(`${GUEST_KEY}:invalid`) ?? '[]')).toEqual([{ unparsable: rawMain }]);
+    expect(JSON.parse(localStorage.getItem(GUEST_KEY) ?? '[]')).toHaveLength(3);
+  });
+
+  it('arms no midnight timer until the date is read, and clears it on destroy', () => {
+    vi.useFakeTimers();
+    const service = configure();
+    expect(vi.getTimerCount()).toBe(0);
+
+    service.now();
+    expect(vi.getTimerCount()).toBe(1);
+
+    TestBed.resetTestingModule();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('crosses local midnight: 23:59:59 to 00:00:01 moves the clock but keeps the grace day', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 8, 10, 23, 59, 59));
+    const service = configure();
+    service.upsert({ id: null, title: 'Late', content: 'one', status: 'saved' });
+
+    expect(service.now().getDate()).toBe(10);
+    expect(service.stats().streakDays).toBe(1);
+
+    vi.advanceTimersByTime(2_000);
+    expect(service.now().getDate()).toBe(11);
+    expect(service.stats().streakDays).toBe(1);
+
+    // A full day with no entry ends the run once the clock crosses the next midnight.
+    vi.advanceTimersByTime(24 * 60 * 60 * 1000);
+    expect(service.now().getDate()).toBe(12);
+    expect(service.stats().streakDays).toBe(0);
+  });
+
+  it('does not extend the streak with drafts', () => {
+    const service = configure();
+    service.upsert({ id: null, title: 'Draft', content: 'wip', status: 'draft' });
+    expect(service.stats().streakDays).toBe(0);
+    expect(service.stats().drafts).toBe(1);
+  });
+
+  it('counts words across line breaks in stored markup', () => {
+    const service = configure();
+    service.upsert({ id: null, title: 'Lines', content: 'one<br>two<div>three</div>', status: 'saved' });
+    expect(service.stats().totalWords).toBe(3);
   });
 });

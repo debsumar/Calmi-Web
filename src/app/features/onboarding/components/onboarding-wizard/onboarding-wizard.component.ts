@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ElementRef, afterNextRender, inject, ChangeDetectionStrategy } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { OnboardingService, type OnboardingSelections } from '../../services/onboarding.service';
 
@@ -33,6 +33,52 @@ import { OnboardingService, type OnboardingSelections } from '../../services/onb
 })
 export class OnboardingWizardComponent {
   onboardingService = inject(OnboardingService);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  constructor() {
+    // Move focus into the dialog on open.
+    afterNextRender(() => this.focusFirst());
+  }
+
+  onDialogKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.onboardingService.close();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const focusable = this.focusableElements();
+    if (focusable.length === 0) {
+      event.preventDefault();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    const inside = active instanceof HTMLElement && this.host.nativeElement.contains(active);
+    if (event.shiftKey && (active === first || !inside)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (active === last || !inside)) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  private focusFirst(): void {
+    const dialog = this.host.nativeElement.querySelector<HTMLElement>('[role="dialog"]');
+    const target = this.host.nativeElement.querySelector<HTMLElement>('[role="radio"][tabindex="0"]')
+      ?? this.focusableElements()[0]
+      ?? dialog;
+    target?.focus();
+  }
+
+  private focusableElements(): HTMLElement[] {
+    return Array.from(this.host.nativeElement.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ));
+  }
 
   goals = [
     { id: 'anxiety', icon: 'face-slightly-frowning', title: 'Reduce anxiety', desc: 'Find calm in stressful moments' },

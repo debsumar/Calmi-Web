@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { DestroyRef, Injectable, signal, computed, inject } from '@angular/core';
 
 export interface OnboardingSelections {
   goal: string | null;
@@ -9,6 +9,10 @@ export interface OnboardingSelections {
 export interface OnboardingStartOptions {
   studentVerification?: boolean;
 }
+
+const COMPLETED_KEY = 'calmi-onboarding-completed';
+const SELECTIONS_KEY = 'calmi-onboarding-selections';
+const AUTO_CLOSE_MS = 1500;
 
 @Injectable({ providedIn: 'root' })
 export class OnboardingService {
@@ -22,36 +26,25 @@ export class OnboardingService {
     duration: null,
   });
   private readonly _studentVerificationRequested = signal(false);
+  private closeTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Public readonly signals
   readonly isActive = this._isActive.asReadonly();
   readonly currentStep = this._currentStep.asReadonly();
   readonly selections = this._selections.asReadonly();
   readonly studentVerificationRequested = this._studentVerificationRequested.asReadonly();
-  
+
   // Computed progress percentage
   readonly progress = computed(() => {
     return ((this._currentStep() - 1) / (this._totalSteps - 1)) * 100;
   });
 
   constructor() {
-    // Check if onboarding was already completed
-    const completed = localStorage.getItem('calmi-onboarding-completed');
-    if (!completed) {
-      // You could automatically start it here if you wanted
-      // this.start();
-    }
-
-    // Effect to persist when finished
-    effect(() => {
-      if (this._currentStep() > this._totalSteps) {
-        localStorage.setItem('calmi-onboarding-completed', 'true');
-        localStorage.setItem('calmi-onboarding-selections', JSON.stringify(this._selections()));
-      }
-    });
+    inject(DestroyRef).onDestroy(() => this.clearCloseTimer());
   }
 
   start(options: OnboardingStartOptions = {}): void {
+    this.clearCloseTimer();
     this._studentVerificationRequested.set(options.studentVerification === true);
     this._currentStep.set(1);
     this._selections.set({ goal: null, soundPreference: null, duration: null });
@@ -59,13 +52,13 @@ export class OnboardingService {
   }
 
   close(): void {
+    this.clearCloseTimer();
     this._isActive.set(false);
   }
 
+  /** Advances at most to the final step (`totalSteps`); never past it. */
   nextStep(): void {
-    if (this._currentStep() <= this._totalSteps) {
-      this._currentStep.update(s => s + 1);
-    }
+    this._currentStep.update(s => Math.min(s + 1, this._totalSteps));
   }
 
   prevStep(): void {
@@ -79,10 +72,29 @@ export class OnboardingService {
   }
 
   finish(): void {
-    this.nextStep(); // Push past the final step to trigger the effect
-    // Automatically close after a short delay
-    setTimeout(() => {
+    this.clearCloseTimer();
+    this._currentStep.set(this._totalSteps);
+    this.persist();
+    // Automatically close after a short delay; cleared by start()/close()/destroy.
+    this.closeTimer = setTimeout(() => {
+      this.closeTimer = null;
       this.close();
-    }, 1500);
+    }, AUTO_CLOSE_MS);
+  }
+
+  private persist(): void {
+    try {
+      localStorage.setItem(COMPLETED_KEY, 'true');
+      localStorage.setItem(SELECTIONS_KEY, JSON.stringify(this._selections()));
+    } catch {
+      // Storage blocked or full: onboarding still completes for this session.
+    }
+  }
+
+  private clearCloseTimer(): void {
+    if (this.closeTimer !== null) {
+      clearTimeout(this.closeTimer);
+      this.closeTimer = null;
+    }
   }
 }

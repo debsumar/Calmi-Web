@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
@@ -15,10 +15,16 @@ class BlankComponent {}
 describe('AppTopbar', () => {
   let fixture: ComponentFixture<AppTopbar>;
   let router: Router;
+  let originalMatchMedia: typeof window.matchMedia | undefined;
 
   const nav = () => fixture.nativeElement.querySelector('nav') as HTMLElement;
   const links = () => Array.from(nav().querySelectorAll('a[data-nav-path]')) as HTMLElement[];
-  const indicator = () => nav().querySelector('span.bg-brand') as HTMLElement;
+  const indicator = () => nav().querySelector('span[aria-hidden="true"]:last-of-type') as HTMLElement;
+  const settle = async () => { fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges(); };
+  const profileTrigger = () => fixture.nativeElement.querySelector('button[aria-label="Open profile menu"]') as HTMLButtonElement;
+  const mobileToggle = () => fixture.nativeElement.querySelector('#mobile-menu-toggle') as HTMLButtonElement;
+  const mobileMenu = () => fixture.nativeElement.querySelector('#mobile-menu') as HTMLElement | null;
+  const pressEscape = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   const dialog = () => fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement | null;
   const authenticate = (): AuthService => {
     const auth = TestBed.inject(AuthService);
@@ -30,7 +36,7 @@ describe('AppTopbar', () => {
     Array.from(root.querySelectorAll('button')).find((button) => button.textContent?.trim() === 'Logout') as HTMLButtonElement;
   const openDesktopLogout = (): AuthService => {
     const auth = authenticate();
-    (fixture.nativeElement.querySelector('button.overflow-hidden') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('button[aria-label="Open profile menu"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     logoutButton(fixture.nativeElement).click();
     fixture.detectChanges();
@@ -38,7 +44,7 @@ describe('AppTopbar', () => {
   };
   const openMobileLogout = (): AuthService => {
     const auth = authenticate();
-    (fixture.nativeElement.querySelector('button[aria-controls="mobile-menu"]') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('#mobile-menu-toggle') as HTMLButtonElement).click();
     fixture.detectChanges();
     logoutButton(fixture.nativeElement.querySelector('#mobile-menu')).click();
     fixture.detectChanges();
@@ -46,6 +52,8 @@ describe('AppTopbar', () => {
   };
 
   beforeEach(async () => {
+    localStorage.removeItem('calmi-theme');
+    originalMatchMedia = window.matchMedia;
     // jsdom here has no matchMedia; ThemeService and the reduced-motion check need it.
     if (typeof window.matchMedia !== 'function') {
       window.matchMedia = ((query: string): MediaQueryList => ({
@@ -78,6 +86,14 @@ describe('AppTopbar', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => {
+    if (originalMatchMedia) window.matchMedia = originalMatchMedia;
+    else delete (window as { matchMedia?: unknown }).matchMedia;
+    localStorage.removeItem('calmi-theme');
+    document.documentElement.classList.remove('app-dark');
+    document.body.style.overflow = '';
+  });
+
   it('renders one nav link per configured route plus the ink indicator', () => {
     expect(links().length).toBe(6);
     expect(links().map((a) => a.getAttribute('data-nav-path'))).toEqual([
@@ -86,52 +102,62 @@ describe('AppTopbar', () => {
     expect(indicator()).not.toBeNull();
   });
 
-  it('marks the active link with aria-current instead of a static border', () => {
-    const classes = links()[0].getAttribute('class') ?? '';
+  it('marks exactly the active link with aria-current instead of a static border', async () => {
+    await router.navigateByUrl('/home');
+    await settle();
 
-    // The old implementation hard-coded border-b-2 on the active link.
-    expect(classes).not.toContain('border-b-2');
-    expect(nav().querySelectorAll('[aria-current="page"]').length).toBeLessThanOrEqual(1);
+    const current = nav().querySelectorAll('[aria-current="page"]');
+    expect(current.length).toBe(1);
+    expect(current[0].getAttribute('data-nav-path')).toBe('/home');
   });
 
-  it('keeps the indicator registered after navigation', async () => {
-    await router.navigateByUrl('/pricing');
-    fixture.detectChanges();
-    await fixture.whenStable();
+  it('moves the indicator to the newly active link', async () => {
+    const rects: Record<string, [number, number]> = {};
+    links().forEach((link, i) => { rects[link.getAttribute('data-nav-path')!] = [100 + i * 100, 80]; });
+    const original = HTMLElement.prototype.getBoundingClientRect;
+    HTMLElement.prototype.getBoundingClientRect = function (this: HTMLElement) {
+      const path = this.getAttribute('data-nav-path');
+      const [left, width] = path ? rects[path] : [0, 0];
+      return { left, width, right: left + width, top: 0, bottom: 0, height: 0, x: left, y: 0, toJSON: () => ({}) } as DOMRect;
+    };
+    try {
+      await router.navigateByUrl('/home');
+      await settle();
+      const before = indicator().style.left;
+      expect(before).toBe('100px');
 
-    expect(router.url).toBe('/pricing');
-    expect(indicator()).not.toBeNull();
-  });
+      await router.navigateByUrl('/pricing');
+      await settle();
 
-  it('renders desktop and mobile Sign In controls with adaptive dark-mode variants', () => {
-    const menuButton = nav().parentElement?.querySelector('button[aria-controls="mobile-menu"]') as HTMLButtonElement;
-    menuButton.click();
-    fixture.detectChanges();
-
-    const signInLinks = fixture.nativeElement.querySelectorAll('a[href="/auth/identify"]') as NodeListOf<HTMLAnchorElement>;
-
-    expect(signInLinks).toHaveLength(2);
-    for (const link of signInLinks) {
-
-      // Near-black on brand-dark measured ~2.9:1, so the filled pill carries a
-      // white foreground per SKILL.md:266. The guard below keeps it from
-      // regressing back into a white *button*.
-
-      expect(link.classList).toContain('text-on-brand-deep');
-      expect(link.classList).toContain('bg-brand-deep');
-      expect(link.classList).toContain('hover:bg-brand-dark');
-      expect(link.classList).not.toContain('bg-white');
+      expect(router.url).toBe('/pricing');
+      expect(indicator().style.left).toBe('600px');
+      expect(indicator().style.left).not.toBe(before);
+      expect(indicator().style.width).toBe('80px');
+    } finally {
+      HTMLElement.prototype.getBoundingClientRect = original;
     }
   });
 
-  it('uses adaptive roles for the profile-avatar fallback', () => {
+  it('renders desktop and mobile Sign In controls pointing at the identify flow', () => {
+    mobileToggle().click();
+    fixture.detectChanges();
+
+    const signInLinks = Array.from(fixture.nativeElement.querySelectorAll('a[href="/auth/identify"]')) as HTMLAnchorElement[];
+
+    expect(signInLinks).toHaveLength(2);
+    for (const link of signInLinks) {
+      expect(link.textContent?.trim()).toBe('Sign In');
+    }
+  });
+
+  it('shows the user initial as the profile-avatar fallback', () => {
     const auth = TestBed.inject(AuthService);
     auth.currentUser.set({ email: 'person@example.com', user_metadata: {} } as never);
     fixture.detectChanges();
 
-    const fallback = fixture.nativeElement.querySelector('button div.bg-sunken-alt') as HTMLElement;
+    const fallback = profileTrigger().querySelector('div[aria-hidden="true"]') as HTMLElement;
     expect(fallback).not.toBeNull();
-    expect(fallback.classList).toContain('text-ink');
+    expect(fallback.textContent?.trim()).toBe('P');
   });
 
   it('renders an https avatar with no referrer so Google serves the photo', () => {
@@ -160,7 +186,7 @@ describe('AppTopbar', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('button img')).toBeNull();
-    const fallback = fixture.nativeElement.querySelector('button div.bg-sunken-alt') as HTMLElement;
+    const fallback = fixture.nativeElement.querySelector('button[aria-label="Open profile menu"] div[aria-hidden="true"]') as HTMLElement;
     expect(fallback.textContent?.trim()).toBe('P');
   });
 
@@ -173,7 +199,7 @@ describe('AppTopbar', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('button img')).toBeNull();
-    expect(fixture.nativeElement.querySelector('button div.bg-sunken-alt')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('button[aria-label="Open profile menu"] div[aria-hidden="true"]')).not.toBeNull();
   });
 
   it('names the profile trigger even though the avatar image is decorative', () => {
@@ -184,7 +210,7 @@ describe('AppTopbar', () => {
     } as never);
     fixture.detectChanges();
 
-    const trigger = fixture.nativeElement.querySelector('button.overflow-hidden') as HTMLButtonElement;
+    const trigger = fixture.nativeElement.querySelector('button[aria-label="Open profile menu"]') as HTMLButtonElement;
     expect(trigger.getAttribute('aria-label')).toBe('Open profile menu');
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect((fixture.nativeElement.querySelector('button img') as HTMLImageElement).getAttribute('alt')).toBe('');
@@ -192,7 +218,7 @@ describe('AppTopbar', () => {
 
   it('offers My Journals in the profile menu and navigates to the journal page', async () => {
     authenticate();
-    (fixture.nativeElement.querySelector('button.overflow-hidden') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('button[aria-label="Open profile menu"]') as HTMLButtonElement).click();
     fixture.detectChanges();
 
     const journalItem = Array.from(fixture.nativeElement.querySelectorAll('button'))
@@ -211,7 +237,7 @@ describe('AppTopbar', () => {
 
   it('hides My Journals in the profile menu for specialists', () => {
     authenticate().selectedRole.set('specialist');
-    (fixture.nativeElement.querySelector('button.overflow-hidden') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('button[aria-label="Open profile menu"]') as HTMLButtonElement).click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('View Profile');
@@ -274,19 +300,30 @@ describe('AppTopbar', () => {
     expect(auth.logout).not.toHaveBeenCalled();
   });
 
-  it('labels the auto theme state with readable text rather than a bare letter', () => {
+  it('labels each theme mode with state and action while keeping the Auto text', () => {
     const theme = TestBed.inject(ThemeService);
-    const toggle = fixture.nativeElement.querySelector('button[title^="Theme:"]') as HTMLButtonElement;
-
-    // toggle() cycles light -> dark -> auto, so advance until auto is showing.
-    for (let i = 0; i < 3 && theme.mode() !== 'auto'; i++) {
-      toggle.click();
-      fixture.detectChanges();
-    }
+    const toggle = () => fixture.nativeElement.querySelector('button[aria-label^="Theme:"]') as HTMLButtonElement;
 
     expect(theme.mode()).toBe('auto');
-    expect(toggle.textContent?.trim()).toBe('Auto');
-    expect(toggle.getAttribute('title')).toBe('Theme: auto');
+    expect(toggle().getAttribute('type')).toBe('button');
+    expect(toggle().getAttribute('aria-label')).toBe('Theme: Auto. Switch to Light');
+    expect(toggle().textContent?.trim()).toBe('Auto');
+
+    toggle().click();
+    fixture.detectChanges();
+    expect(theme.mode()).toBe('light');
+    expect(toggle().getAttribute('aria-label')).toBe('Theme: Light. Switch to Dark');
+
+    toggle().click();
+    fixture.detectChanges();
+    expect(theme.mode()).toBe('dark');
+    expect(toggle().getAttribute('aria-label')).toBe('Theme: Dark. Switch to Auto');
+
+    toggle().click();
+    fixture.detectChanges();
+    expect(theme.mode()).toBe('auto');
+    expect(toggle().getAttribute('aria-label')).toBe('Theme: Auto. Switch to Light');
+    expect(toggle().textContent?.trim()).toBe('Auto');
   });
 
   it('confirms logout exactly once and closes the dialog', () => {
@@ -338,7 +375,7 @@ describe('AppTopbar', () => {
   it('cancels logout when the backdrop is clicked', () => {
     const auth = openDesktopLogout();
 
-    (fixture.nativeElement.querySelector('div.fixed.inset-0.z-50') as HTMLElement)
+    (dialog()!.parentElement as HTMLElement)
       .dispatchEvent(new MouseEvent('click', { bubbles: true }));
     fixture.detectChanges();
 
@@ -353,5 +390,188 @@ describe('AppTopbar', () => {
     expect(fixture.nativeElement.querySelector('#mobile-menu')).toBeNull();
     expect(auth.logout).not.toHaveBeenCalled();
   });
-});
 
+  describe('profile dropdown', () => {
+    const openMenu = () => { authenticate(); profileTrigger().click(); fixture.detectChanges(); };
+
+    it('is a menu of menuitems and only references aria-controls while open', () => {
+      authenticate();
+      expect(profileTrigger().getAttribute('aria-controls')).toBeNull();
+      profileTrigger().click();
+      fixture.detectChanges();
+
+      const menu = fixture.nativeElement.querySelector('[role="menu"]') as HTMLElement;
+      expect(menu).not.toBeNull();
+      expect(profileTrigger().getAttribute('aria-controls')).toBe(menu.id);
+      expect(menu.querySelectorAll('[role="menuitem"]').length).toBeGreaterThanOrEqual(3);
+    });
+
+    it('moves focus into the menu on open', async () => {
+      openMenu();
+      await settle();
+      const first = fixture.nativeElement.querySelector('[role="menuitem"]') as HTMLElement;
+      expect(document.activeElement).toBe(first);
+    });
+
+    it('closes on Escape and returns focus to the trigger', async () => {
+      openMenu();
+      await settle();
+      pressEscape();
+      await settle();
+
+      expect(fixture.nativeElement.querySelector('[role="menu"]')).toBeNull();
+      expect(document.activeElement).toBe(profileTrigger());
+    });
+
+    it('closes on a click anywhere outside, but not on a click inside the menu', () => {
+      openMenu();
+      (fixture.nativeElement.querySelector('[role="menu"]') as HTMLElement)
+        .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('[role="menu"]')).not.toBeNull();
+
+      document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('[role="menu"]')).toBeNull();
+      expect(profileTrigger().getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('closes when the route changes', async () => {
+      openMenu();
+      await router.navigateByUrl('/pricing');
+      await settle();
+      expect(fixture.nativeElement.querySelector('[role="menu"]')).toBeNull();
+    });
+
+    it('moves between items with the arrow keys', async () => {
+      openMenu();
+      await settle();
+      const items = Array.from(fixture.nativeElement.querySelectorAll('[role="menuitem"]')) as HTMLElement[];
+      (fixture.nativeElement.querySelector('[role="menu"]') as HTMLElement)
+        .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      expect(document.activeElement).toBe(items[1]);
+      (fixture.nativeElement.querySelector('[role="menu"]') as HTMLElement)
+        .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+      expect(document.activeElement).toBe(items[0]);
+    });
+  });
+
+  describe('mobile menu', () => {
+    it('only references aria-controls while the menu exists', () => {
+      expect(mobileToggle().getAttribute('aria-controls')).toBeNull();
+      mobileToggle().click();
+      fixture.detectChanges();
+      expect(mobileToggle().getAttribute('aria-controls')).toBe('mobile-menu');
+      expect(mobileMenu()).not.toBeNull();
+    });
+
+    it('does not overlay the header: it is anchored below it inside the topbar host', () => {
+      mobileToggle().click();
+      fixture.detectChanges();
+      const header = fixture.nativeElement.querySelector('header') as HTMLElement;
+      expect(header.contains(mobileMenu())).toBe(false);
+      expect(mobileMenu()!.parentElement).toBe(fixture.nativeElement);
+      expect(mobileMenu()!.style.position).not.toBe('fixed');
+    });
+
+    it('moves focus in on open and returns it to the toggle on Escape', async () => {
+      mobileToggle().click();
+      await settle();
+      expect(mobileMenu()!.contains(document.activeElement)).toBe(true);
+
+      pressEscape();
+      await settle();
+      expect(mobileMenu()).toBeNull();
+      expect(document.activeElement).toBe(mobileToggle());
+    });
+
+    it('locks body scroll while open and restores it on close', () => {
+      document.body.style.overflow = 'auto';
+      mobileToggle().click();
+      fixture.detectChanges();
+      TestBed.tick();
+      expect(document.body.style.overflow).toBe('hidden');
+
+      mobileToggle().click();
+      fixture.detectChanges();
+      TestBed.tick();
+      expect(document.body.style.overflow).toBe('auto');
+    });
+
+    it('restores body scroll when destroyed while open', () => {
+      mobileToggle().click();
+      fixture.detectChanges();
+      TestBed.tick();
+      expect(document.body.style.overflow).toBe('hidden');
+
+      fixture.destroy();
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('closes on route change', async () => {
+      mobileToggle().click();
+      fixture.detectChanges();
+      await router.navigateByUrl('/pricing');
+      await settle();
+      expect(mobileMenu()).toBeNull();
+    });
+
+    it('closes when the viewport grows to md or wider, and stays open below it', () => {
+      const descriptor = Object.getOwnPropertyDescriptor(window, 'innerWidth');
+      try {
+        mobileToggle().click();
+        fixture.detectChanges();
+
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: 500 });
+        window.dispatchEvent(new Event('resize'));
+        fixture.detectChanges();
+        expect(mobileMenu()).not.toBeNull();
+
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+        window.dispatchEvent(new Event('resize'));
+        fixture.detectChanges();
+        expect(mobileMenu()).toBeNull();
+      } finally {
+        if (descriptor) Object.defineProperty(window, 'innerWidth', descriptor);
+      }
+    });
+  });
+
+  describe('logout dialog focus management', () => {
+    it('returns focus to the profile trigger after Escape', async () => {
+      openDesktopLogout();
+      await settle();
+      pressEscape();
+      await settle();
+
+      expect(dialog()).toBeNull();
+      expect(document.activeElement).toBe(profileTrigger());
+    });
+
+    it('traps Tab and Shift+Tab inside the dialog', async () => {
+      openDesktopLogout();
+      await settle();
+      const [cancel, confirm] = Array.from(dialog()!.querySelectorAll('button')) as HTMLButtonElement[];
+
+      confirm.focus();
+      const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+      confirm.dispatchEvent(tab);
+      expect(tab.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(cancel);
+
+      const shiftTab = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+      cancel.dispatchEvent(shiftTab);
+      expect(shiftTab.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(confirm);
+    });
+
+    it('returns focus to the hamburger after cancelling a mobile-menu logout', async () => {
+      openMobileLogout();
+      await settle();
+      (dialog()!.querySelector('button') as HTMLButtonElement).click();
+      await settle();
+
+      expect(document.activeElement).toBe(mobileToggle());
+    });
+  });
+});

@@ -13,6 +13,21 @@ import {
 } from '@/features/experts/data/expert.data';
 
 export const EXPERT_FILTER_STORAGE_KEY = 'calmi.therapy.filters.v1';
+/** Local calendar day the filters were saved on; "Available today" is only valid that day. */
+export const EXPERT_FILTER_DAY_KEY = `${EXPERT_FILTER_STORAGE_KEY}:day`;
+
+/** Local YYYY-MM-DD, so "today" follows the member's own midnight. */
+function localDayKey(date = new Date()): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+/** Swaps an inverted price range so min never exceeds max. */
+function orderedPrices(criteria: ExpertFilterCriteria): ExpertFilterCriteria {
+  const { priceMin, priceMax } = criteria;
+  return priceMin !== null && priceMax !== null && priceMin > priceMax
+    ? { ...criteria, priceMin: priceMax, priceMax: priceMin }
+    : criteria;
+}
 
 const availabilityValues = new Set(AVAILABILITY_OPTIONS.map((option) => option.value));
 const genderValues = new Set(GENDER_OPTIONS.map((option) => option.value));
@@ -28,23 +43,26 @@ export class ExpertFilterStore {
 
   readonly criteria = this.store.asReadonly();
 
-  set(criteria: ExpertFilterCriteria): void {
+  /** Returns false (and keeps the current filters) when the input is not a valid criteria set. */
+  set(criteria: ExpertFilterCriteria): boolean {
     // Prices are clamped on the write path so an out-of-range entry narrows the
     // range instead of dropping the whole update; everything else must be a known
     // option value, which only a corrupt caller could violate.
-    const clamped = {
+    if (typeof criteria !== 'object' || criteria === null) return false;
+    const clamped = orderedPrices({
       ...criteria,
       priceMin: clampPrice(criteria.priceMin),
       priceMax: clampPrice(criteria.priceMax),
-    };
-    if (!isExpertFilterCriteria(clamped)) return;
+    });
+    if (!isExpertFilterCriteria(clamped)) return false;
     const next = cloneCriteria(clamped);
     this.store.set(next);
     this.persist(next);
+    return true;
   }
 
-  update(change: Partial<ExpertFilterCriteria>): void {
-    this.set({ ...this.store(), ...change });
+  update(change: Partial<ExpertFilterCriteria>): boolean {
+    return this.set({ ...this.store(), ...change });
   }
 
   clear(): void {
@@ -53,6 +71,7 @@ export class ExpertFilterStore {
     if (!storage) return;
     try {
       storage.removeItem(EXPERT_FILTER_STORAGE_KEY);
+      storage.removeItem(EXPERT_FILTER_DAY_KEY);
     } catch {
       // Blocked site data or private mode: cleared state remains in memory.
     }
@@ -78,7 +97,13 @@ export class ExpertFilterStore {
     if (!raw) return cloneCriteria(DEFAULT_FILTER_CRITERIA);
     try {
       const parsed: unknown = JSON.parse(raw);
-      return isExpertFilterCriteria(parsed) ? cloneCriteria(parsed) : cloneCriteria(DEFAULT_FILTER_CRITERIA);
+      if (!isExpertFilterCriteria(parsed)) return cloneCriteria(DEFAULT_FILTER_CRITERIA);
+      const restored = cloneCriteria(orderedPrices(parsed));
+      // "Available today" saved on another day (or with no date) would filter on a stale day.
+      if (restored.availability === 'today' && this.storage()?.getItem(EXPERT_FILTER_DAY_KEY) !== localDayKey()) {
+        restored.availability = DEFAULT_FILTER_CRITERIA.availability;
+      }
+      return restored;
     } catch {
       return cloneCriteria(DEFAULT_FILTER_CRITERIA);
     }
@@ -89,6 +114,7 @@ export class ExpertFilterStore {
     if (!storage) return;
     try {
       storage.setItem(EXPERT_FILTER_STORAGE_KEY, JSON.stringify(criteria));
+      storage.setItem(EXPERT_FILTER_DAY_KEY, localDayKey());
     } catch {
       // Quota or private-mode failure: criteria stay in memory for this session.
     }

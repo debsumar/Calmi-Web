@@ -103,7 +103,23 @@ export class ExpertsComponent {
     afterNextRender(() => this.checkShadows(), { injector: this.injector });
   }
 
-  readonly slideDots = computed(() => this.visiblePsychologists().map((_, index) => index));
+  /** Measured carousel geometry; null until the first layout read (and under jsdom). */
+  private readonly carouselMetrics = signal<{ scrollWidth: number; clientWidth: number; stride: number } | null>(null);
+  /**
+   * One dot per reachable scroll position, not per card: when several cards fit on
+   * screen the last cards can never be the leftmost one, so they get no dot. Falls
+   * back to one dot per card until the carousel has been measured.
+   */
+  readonly slideDots = computed(() => {
+    const count = this.visiblePsychologists().length;
+    const metrics = this.carouselMetrics();
+    let positions = count;
+    if (metrics && metrics.clientWidth > 0 && metrics.stride > 0 && count > 0) {
+      const maxScroll = Math.max(0, metrics.scrollWidth - metrics.clientWidth);
+      positions = Math.min(count, Math.ceil(maxScroll / metrics.stride - 0.05) + 1);
+    }
+    return Array.from({ length: Math.max(positions, 0) }, (_, index) => index);
+  });
   readonly availableExpertIds = computed(() => new Set(
     this.psychologists().filter((expert) => firstAvailableDay(expert) !== undefined).map((expert) => expert.id),
   ));
@@ -346,6 +362,14 @@ export class ExpertsComponent {
     this.showLeftShadow.set(scrollLeft > 10);
     this.showRightShadow.set(maxScrollLeft > 10 && scrollLeft < maxScrollLeft - 10);
     const stride = element.firstElementChild instanceof HTMLElement ? element.firstElementChild.offsetWidth + 24 : CARD_STRIDE;
-    this.activeSlide.set(Math.min(Math.max(this.slideDots().length - 1, 0), Math.round(scrollLeft / stride)));
+    const previous = this.carouselMetrics();
+    if (!previous || previous.scrollWidth !== element.scrollWidth || previous.clientWidth !== element.clientWidth || previous.stride !== stride) {
+      this.carouselMetrics.set({ scrollWidth: element.scrollWidth, clientWidth: element.clientWidth, stride });
+    }
+    const last = Math.max(this.slideDots().length - 1, 0);
+    // At the far end the final dot is the one in view, even when the last scroll
+    // step is shorter than a full card.
+    const atEnd = element.clientWidth > 0 && maxScrollLeft > 0 && scrollLeft >= maxScrollLeft - 1;
+    this.activeSlide.set(atEnd ? last : Math.min(last, Math.round(scrollLeft / stride)));
   }
 }

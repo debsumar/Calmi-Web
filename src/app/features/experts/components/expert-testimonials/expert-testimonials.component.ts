@@ -5,6 +5,7 @@ import {
   afterRenderEffect,
   computed,
   input,
+  linkedSignal,
   signal,
   viewChild,
 } from '@angular/core';
@@ -17,6 +18,7 @@ import { ExpertTestimonial } from '@/features/experts/data/expert.data';
   imports: [LucideStar, LucideArrowRight, LucideArrowLeft, LucideMessageSquareQuote, AnimateOnScrollDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    @if (hasTestimonials()) {
     <section class="min-w-0 pt-10 md:pt-14" aria-labelledby="testimonials-heading">
       <div class="flex items-center gap-3">
         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-deep text-on-brand-deep" aria-hidden="true">
@@ -38,17 +40,19 @@ import { ExpertTestimonial } from '@/features/experts/data/expert.data';
           <div class="pointer-events-none absolute inset-x-1.5 -bottom-1 h-full rounded-2xl border border-hairline bg-surface opacity-80" aria-hidden="true"></div>
         }
 
-        @for (item of [testimonial()]; track index()) {
+        @for (item of current(); track index()) {
           <div #card
                class="testimonial-card relative flex min-h-72 min-w-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface p-5 shadow-card md:p-6"
                [attr.data-index]="index()"
                [attr.data-direction]="direction()">
-            <div class="flex items-center gap-1" [attr.aria-label]="'Rating ' + item.rating + ' out of 5'">
-              @for (star of stars; track star) {
-                <svg lucideStar [size]="16" aria-hidden="true"
-                     [class]="star <= item.rating ? 'fill-current text-accent-gold' : 'text-ink-muted'"></svg>
-              }
-              <span class="ml-2 text-xs font-semibold text-ink-soft">{{ item.rating }}/5</span>
+            <div class="flex items-center gap-1">
+              <span class="flex items-center gap-1" role="img" [attr.aria-label]="'Rating ' + item.rating + ' out of 5'">
+                @for (star of stars; track star) {
+                  <svg lucideStar [size]="16" aria-hidden="true"
+                       [class]="star <= roundedRating() ? 'fill-current text-accent-gold' : 'text-ink-muted'"></svg>
+                }
+              </span>
+              <span class="ml-2 text-xs font-semibold text-ink-soft" aria-hidden="true">{{ item.rating }}/5</span>
             </div>
             <blockquote #quote id="testimonial-quote" class="mt-4 pr-12 text-base leading-relaxed text-ink-soft"
                         [class.line-clamp-4]="!expanded()">“{{ item.quote }}”</blockquote>
@@ -86,9 +90,10 @@ import { ExpertTestimonial } from '@/features/experts/data/expert.data';
       </div>
 
       <p class="sr-only" aria-live="polite">
-        Testimonial {{ index() + 1 }} of {{ testimonials().length }}: {{ testimonial().author }}
+        Testimonial {{ index() + 1 }} of {{ testimonials().length }}: {{ testimonial()?.author }}
       </p>
     </section>
+    }
   `,
   styles: `
     /* Height is a floor, not a cap (min-h-72 in the template): every collapsed
@@ -102,9 +107,10 @@ import { ExpertTestimonial } from '@/features/experts/data/expert.data';
 })
 export class ExpertTestimonialsComponent {
   readonly testimonials = input.required<ExpertTestimonial[]>();
-  readonly index = signal(0);
+  /** A new testimonials list starts again from the first card, collapsed. */
+  readonly index = linkedSignal<ExpertTestimonial[], number>({ source: this.testimonials, computation: () => 0 });
   readonly direction = signal<'next' | 'prev'>('next');
-  readonly expanded = signal(false);
+  readonly expanded = linkedSignal<ExpertTestimonial[], boolean>({ source: this.testimonials, computation: () => false });
   /**
    * True only while the clamp is really truncating the quote. Measured from the
    * DOM (scrollHeight vs clientHeight) so short quotes never show a pointless
@@ -112,7 +118,15 @@ export class ExpertTestimonialsComponent {
    */
   readonly quoteOverflows = signal(false);
   readonly stars = [1, 2, 3, 4, 5];
-  readonly testimonial = computed(() => this.testimonials()[this.index() % Math.max(this.testimonials().length, 1)]);
+  readonly hasTestimonials = computed(() => this.testimonials().length > 0);
+  readonly testimonial = computed<ExpertTestimonial | undefined>(() => this.testimonials()[this.index() % Math.max(this.testimonials().length, 1)]);
+  /** Single-element list for the keyed `@for`, empty when there is nothing to show. */
+  readonly current = computed(() => {
+    const item = this.testimonial();
+    return item ? [item] : [];
+  });
+  /** Whole stars filled: 4.8 shows 5, 4.4 shows 4; the exact value is printed beside them. */
+  readonly roundedRating = computed(() => Math.min(5, Math.max(0, Math.round(this.testimonial()?.rating ?? 0))));
   readonly showToggle = computed(() => this.quoteOverflows() || this.expanded());
 
   private readonly quoteEl = viewChild<ElementRef<HTMLElement>>('quote');

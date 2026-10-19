@@ -7,7 +7,7 @@ import { ButtonModule } from 'primeng/button';
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="flex flex-col items-center justify-center p-8 text-center">
-      <i class="pi pi-exclamation-triangle mb-4 text-4xl text-danger"></i>
+      <i aria-hidden="true" class="pi pi-exclamation-triangle mb-4 text-4xl text-danger"></i>
       <h3 class="text-lg font-bold text-ink">{{ title() }}</h3>
       <p class="mt-2 text-base text-ink-soft">{{ message() }}</p>
       <p-button label="Retry" icon="pi pi-refresh" class="mt-4" (onClick)="retry.emit()" />

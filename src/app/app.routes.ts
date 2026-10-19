@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LegalPageComponent } from './pages/legal/legal-page.component';
+import { journalCanDeactivate } from '@/features/journal/journal.guards';
 
 export const appRoutes: Routes = [
   { path: 'terms', component: LegalPageComponent, data: { title: 'Terms of Service' } },
@@ -23,6 +24,7 @@ export const appRoutes: Routes = [
       {
         path: 'journal',
         title: 'Journal | Calmi',
+        canDeactivate: [journalCanDeactivate],
         loadComponent: () => import('@/features/journal/pages/journal/journal.component').then((m) => m.JournalComponent),
       },
       {

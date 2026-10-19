@@ -4,6 +4,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { StudentVerificationResult } from '../../models/student-verification.model';
 import { VerificationResultStepComponent } from './verification-result-step.component';
 
+function buttonByText(root: HTMLElement, text: string): HTMLButtonElement {
+  const match = Array.from(root.querySelectorAll('button')).find((button) => button.textContent?.trim() === text);
+  if (!match) throw new Error(`No button with text "${text}"`);
+  return match;
+}
+
 describe('VerificationResultStepComponent', () => {
   let fixture: ComponentFixture<VerificationResultStepComponent>;
 
@@ -36,16 +42,15 @@ describe('VerificationResultStepComponent', () => {
     component.changeMethod.subscribe(() => changeMethods++);
     component.retry.subscribe(() => retries++);
     component.escalate.subscribe(() => escalations++);
-    const buttons = fixture.nativeElement.querySelectorAll('button');
-    buttons[0].click();
-    buttons[1].click();
+    buttonByText(fixture.nativeElement, 'Try another method').click();
+    buttonByText(fixture.nativeElement, 'Request manual review').click();
     expect(fixture.nativeElement.textContent).toContain("couldn't verify");
     expect(changeMethods).toBe(1);
     expect(retries).toBe(0);
     expect(escalations).toBe(1);
 
     render('error', null);
-    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    buttonByText(fixture.nativeElement, 'Try again').click();
     expect(retries).toBe(1);
   });
 
@@ -58,7 +63,7 @@ describe('VerificationResultStepComponent', () => {
     const component = fixture.componentInstance;
     let continued = 0;
     component.continued.subscribe(() => continued++);
-    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    buttonByText(fixture.nativeElement, 'Continue to checkout').click();
     expect(continued).toBe(1);
   });
 
