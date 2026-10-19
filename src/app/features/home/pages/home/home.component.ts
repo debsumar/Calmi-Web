@@ -7,6 +7,7 @@ import { CardComponent } from '@/shared/components/cards/card.component';
 import { SoundCardComponent } from '@/shared/components/cards/sound-card.component';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { WaitlistCardComponent } from '@/shared/components/waitlist-card/waitlist-card.component';
+import { ResetPlayerComponent } from '@/features/home/components/reset-player/reset-player.component';
 import { PlayerService } from '@/core/services/player.service';
 import { AuthService } from '@/core/services/auth.service';
 
@@ -20,7 +21,7 @@ interface NeedCard {
 
 @Component({
   selector: 'app-home',
-  imports: [LucideDynamicIcon, PrimaryButtonComponent, CardComponent, RouterLink, SoundCardComponent, AnimateOnScrollDirective, WaitlistCardComponent, NgTemplateOutlet],
+  imports: [LucideDynamicIcon, PrimaryButtonComponent, CardComponent, RouterLink, SoundCardComponent, AnimateOnScrollDirective, WaitlistCardComponent, NgTemplateOutlet, ResetPlayerComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './home.component.html',
 })
