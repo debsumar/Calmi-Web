@@ -1,4 +1,4 @@
-import { definePreset, palette } from '@primeuix/themes';
+import { definePreset, palette, type Preset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 
 /** Seed color for the whole app palette. Lavender. */
@@ -29,7 +29,9 @@ export const SEED_ACCENTS = {
  * `--p-gold-*` and `--p-pink-*`. Surfaces are not enumerated here: they are
  * derived from the primary palette in `src/tailwind.css` via `color-mix`.
  */
-export const CalmiPreset = definePreset(Aura, {
+// @primeuix/themes v3 types Aura's `primitive` strictly; custom accent palettes
+// are valid at runtime, so the extension is typed loosely and cast at the call.
+const calmiExtension: Preset = {
   primitive: {
     coral: palette(SEED_ACCENTS.coral),
     gold: palette(SEED_ACCENTS.gold),
@@ -40,4 +42,6 @@ export const CalmiPreset = definePreset(Aura, {
   semantic: {
     primary: palette(SEED_PRIMARY),
   },
-});
+};
+
+export const CalmiPreset = definePreset(Aura, calmiExtension as Parameters<typeof definePreset<typeof Aura>>[1]);

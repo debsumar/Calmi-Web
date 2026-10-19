@@ -180,7 +180,10 @@ describe('RumiAiComponent', () => {
     expect(root.textContent).toContain('Hi there, I’m Rumi.');
     const preview = root.querySelector('app-rumi-chat-preview') as HTMLElement | null;
     expect(preview).not.toBeNull();
-    expect(getComputedStyle(preview!).getPropertyValue('min-block-size')).toBe('40rem');
+    // jsdom >= 30 resolves rem to px in computed values (16px root font-size: 40rem = 640px).
+    expect(['40rem', '640px']).toContain(
+      getComputedStyle(preview!).getPropertyValue('min-block-size'),
+    );
     expect(root.querySelector('figure.rumi-conversation-figure')).not.toBeNull();
     expect(root.textContent).toContain('Private & Secure');
     expect(root.textContent).toContain('Backed by Science');
