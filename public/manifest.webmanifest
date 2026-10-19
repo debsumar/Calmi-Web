@@ -1,0 +1,24 @@
+{
+  "name": "Calmi",
+  "short_name": "Calmi",
+  "description": "Ease anxiety and sleep better with guided sessions, calming sounds and expert support.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf8fc",
+  "theme_color": "#967bb6",
+  "icons": [
+    {
+      "src": "/assets/logos/logo-email.png",
+      "sizes": "360x360",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/logos/logo.avif",
+      "sizes": "any",
+      "type": "image/avif",
+      "purpose": "any"
+    }
+  ]
+}

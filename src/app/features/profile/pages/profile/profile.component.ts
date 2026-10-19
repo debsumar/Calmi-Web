@@ -4,6 +4,7 @@ import {
   ElementRef,
   computed,
   inject,
+  linkedSignal,
   signal,
 } from '@angular/core';
 import { NgClass } from '@angular/common';
@@ -25,7 +26,8 @@ import { RouterLink } from '@angular/router';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { DrawOnScrollDirective } from '@/shared/directives/draw-on-scroll.directive';
 import { AuthService } from '@/core/services/auth.service';
-import { resolveHttpsAvatarUrl } from '@/core/identity/avatar-url';
+import { resolveUserAvatarUrl } from '@/core/identity/avatar-url';
+import { JournalService } from '@/features/journal/services/journal.service';
 import { ProfileDashboardService } from '../../services/profile-dashboard.service';
 
 /** A booked session prepared for display: date parts plus the booking details. */
@@ -120,6 +122,8 @@ export class ProfileComponent {
   private readonly authService = inject(AuthService);
   private readonly dashboardService = inject(ProfileDashboardService);
   private readonly host = inject(ElementRef<HTMLElement>);
+  /** Ticks at local midnight, so day-relative labels never go stale on a long-open tab. */
+  private readonly today = inject(JournalService).now;
 
   readonly dashboard = this.dashboardService.dashboard;
   /** Real journal figures from this device, shown beside the preview tiles. */
@@ -133,7 +137,7 @@ export class ProfileComponent {
     if (!Number.isFinite(parsed)) return null;
 
     const entryDay = new Date(parsed);
-    const today = new Date();
+    const today = this.today();
     const days = Math.round(
       (new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
         - new Date(entryDay.getFullYear(), entryDay.getMonth(), entryDay.getDate()).getTime())
@@ -150,7 +154,11 @@ export class ProfileComponent {
   readonly closureRequested = signal(false);
   readonly closureConfirmation = signal('');
   readonly closureStatus = signal('');
-  readonly avatarFailed = signal(false);
+  /** A failed image is forgotten as soon as the avatar URL (or user) changes. */
+  readonly avatarFailed = linkedSignal<string | null, boolean>({
+    source: () => this.avatarUrl(),
+    computation: () => false,
+  });
 
   /** Display name from the signed-in identity, falling back through provider fields. */
   readonly displayName = computed(() => {
@@ -179,9 +187,7 @@ export class ProfileComponent {
   readonly email = computed(() => this.user()?.email ?? 'Email unavailable');
 
   /** Google/Apple avatar from the signed-in identity. Only https URLs are accepted. */
-  readonly avatarUrl = computed(() =>
-    resolveHttpsAvatarUrl(this.user()?.user_metadata as Record<string, unknown> | undefined),
-  );
+  readonly avatarUrl = computed(() => resolveUserAvatarUrl(this.user()));
 
   readonly showAvatarImage = computed(() => this.avatarUrl() !== null && !this.avatarFailed());
 
@@ -236,9 +242,10 @@ export class ProfileComponent {
       { stroke: 'stroke-brand-light dark:stroke-brand-light', swatch: 'bg-brand-light' },
     ];
 
+    const shares = this.wholePercentShares(tracks.map((track) => track.minutes), total);
     let cumulative = 0;
     const segments = tracks.map((track, index) => {
-      const share = total > 0 ? Math.round((track.minutes / total) * 100) : 0;
+      const share = shares[index];
       const dash = Math.round(this.ringCircumference * (share / 100) * 100) / 100;
       const rotation = Math.round((-90 + cumulative * 3.6) * 100) / 100;
       cumulative += share;
@@ -258,6 +265,26 @@ export class ProfileComponent {
       label: segments.map((segment) => `${segment.title} ${segment.share} percent`).join(', '),
     };
   });
+
+  /**
+   * Whole-number percentages that always add up to 100 (largest-remainder method),
+   * so per-slice rounding can never leave the donut at 99 or 101.
+   */
+  private wholePercentShares(values: readonly number[], total: number): number[] {
+    if (total <= 0) return values.map(() => 0);
+    const exact = values.map((value) => (Math.max(0, value) / total) * 100);
+    const shares = exact.map(Math.floor);
+    let remaining = 100 - shares.reduce((sum, share) => sum + share, 0);
+    const byRemainder = exact
+      .map((value, index) => ({ index, remainder: value - Math.floor(value) }))
+      .sort((a, b) => b.remainder - a.remainder || a.index - b.index);
+    for (const { index } of byRemainder) {
+      if (remaining <= 0) break;
+      shares[index] += 1;
+      remaining -= 1;
+    }
+    return shares;
+  }
 
   /** Sign-in method taken from the authenticated identity, not from preview data. */
   readonly signInProvider = computed(() => {
@@ -315,7 +342,8 @@ export class ProfileComponent {
     return 'holding steady';
   }
 
-  readonly closureIsValid = computed(() => this.closureConfirmation().trim().toUpperCase() === 'CLOSE');
+  /** The phrase is case-sensitive on purpose: only the exact word confirms. */
+  readonly closureIsValid = computed(() => this.closureConfirmation().trim() === 'CLOSE');
 
   /**
    * Upcoming sessions the member has booked, soonest first and capped so the tile
@@ -323,7 +351,7 @@ export class ProfileComponent {
    * empty state rather than borrowing expert availability data.
    */
   readonly bookedSessions = computed<readonly BookedSessionView[]>(() => {
-    const now = new Date();
+    const now = this.today();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     return this.dashboard().sessions

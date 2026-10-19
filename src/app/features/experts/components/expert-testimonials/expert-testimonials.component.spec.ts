@@ -86,4 +86,51 @@ describe('ExpertTestimonialsComponent', () => {
     expect(quote().classList.contains('line-clamp-4')).toBe(true);
     expect(toggle()).toBeNull();
   });
+
+  it('renders nothing, without throwing, when there are no testimonials', () => {
+    fixture.componentRef.setInput('testimonials', []);
+    expect(() => fixture.detectChanges()).not.toThrow();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('section')).toBeNull();
+    expect(root.querySelector('blockquote')).toBeNull();
+    expect(fixture.componentInstance.testimonial()).toBeUndefined();
+  });
+
+  it('restarts at the first card, collapsed, when the testimonials change', () => {
+    const component = fixture.componentInstance;
+    component.next();
+    component.toggleExpanded();
+    expect(component.index()).toBe(1);
+
+    fixture.componentRef.setInput('testimonials', [...EXPERTS[1].testimonials]);
+    fixture.detectChanges();
+
+    expect(component.index()).toBe(0);
+    expect(component.expanded()).toBe(false);
+  });
+
+  it('recovers when an empty list is replaced by real testimonials', () => {
+    fixture.componentRef.setInput('testimonials', []);
+    fixture.detectChanges();
+    fixture.componentRef.setInput('testimonials', EXPERTS[0].testimonials);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('blockquote')).not.toBeNull();
+  });
+
+  it('exposes the rating as an image with a label and rounds fractional ratings to whole stars', () => {
+    const base = EXPERTS[0].testimonials[0];
+    fixture.componentRef.setInput('testimonials', [{ ...base, rating: 4.8 }]);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const stars = root.querySelector('[role="img"][aria-label^="Rating"]');
+    expect(stars?.getAttribute('aria-label')).toBe('Rating 4.8 out of 5');
+    expect(stars?.querySelectorAll('svg.fill-current')).toHaveLength(5);
+    expect(root.textContent).toContain('4.8/5');
+
+    fixture.componentRef.setInput('testimonials', [{ ...base, rating: 4.4 }]);
+    fixture.detectChanges();
+    expect(root.querySelectorAll('[role="img"][aria-label^="Rating"] svg.fill-current')).toHaveLength(4);
+  });
 });

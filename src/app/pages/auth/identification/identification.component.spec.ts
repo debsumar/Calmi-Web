@@ -45,6 +45,21 @@ describe('IdentificationComponent', () => {
     expect(navigate).toHaveBeenCalledWith(['/auth/login'], { queryParams: { returnUrl: '/home?from=auth' } });
   });
 
+  it.each(['/auth/login?returnUrl=%2Fhome', '//evil.example', 'https://evil.example', '/auth/identify'])(
+    'does not forward the unsafe or looping returnUrl %s to login',
+    async (returnUrl) => {
+      const route = TestBed.inject(ActivatedRoute);
+      (route.snapshot.queryParamMap as unknown as { get: () => string | null }).get = () => returnUrl;
+      (fixture.nativeElement.querySelector('[role="radio"]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+      ([...fixture.nativeElement.querySelectorAll('button[type="button"]')]
+        .find((button) => button.textContent.includes('Proceed')) as HTMLButtonElement).click();
+      await fixture.whenStable();
+      expect(navigate).toHaveBeenCalledWith(['/auth/login'], undefined);
+    },
+  );
+
   it('moves selection with arrow keys', () => {
     const first = fixture.nativeElement.querySelector('[role="radio"]') as HTMLButtonElement;
     first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));

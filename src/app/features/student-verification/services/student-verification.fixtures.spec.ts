@@ -49,6 +49,25 @@ describe('student verification fixtures', () => {
     ]));
   });
 
+  it('lists each domain once within an institution', () => {
+    for (const institution of STUDENT_VERIFICATION_INSTITUTIONS) {
+      expect(new Set(institution.domains).size, `${institution.id} has duplicate domains`).toBe(institution.domains.length);
+    }
+  });
+
+  it('never allows a bare public suffix as an institutional domain', () => {
+    const publicSuffixes = new Set([
+      'in', 'edu', 'edu.in', 'ac.in', 'res.in', 'nic.in', 'gov.in', 'org.in', 'co.in', 'net.in',
+      'ac.uk', 'ac.nz', 'ac.za', 'ac.jp', 'ac.kr', 'edu.au', 'edu.sg', 'edu.cn', 'co.uk',
+    ]);
+    for (const institution of STUDENT_VERIFICATION_INSTITUTIONS) {
+      for (const domain of institution.domains) {
+        expect(publicSuffixes.has(domain), `${institution.id} lists public suffix ${domain}`).toBe(false);
+        expect(domain.split('.').length, `${institution.id} domain ${domain} has no registrable label`).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
+
   it('validates supported document MIME types and the three MB limit', () => {
     expect(ALLOWED_DOCUMENT_MIME_TYPES).toEqual(['image/jpeg', 'image/png', 'application/pdf']);
     expect(isAllowedDocumentMimeType('IMAGE/PNG')).toBe(true);

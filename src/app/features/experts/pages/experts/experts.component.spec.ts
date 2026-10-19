@@ -280,7 +280,7 @@ describe('ExpertsComponent', () => {
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     fixture.detectChanges();
-    await Promise.resolve();
+    await fixture.whenStable();
 
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(trigger);
@@ -296,7 +296,7 @@ describe('ExpertsComponent', () => {
     fixture.detectChanges();
     component.selectAvailability('week');
     fixture.detectChanges();
-    await Promise.resolve();
+    await fixture.whenStable();
     expect(component.criteria().availability).toBe('week');
     expect(component.psychologists().map((expert) => expert.id)).toEqual(
       filterExperts(EXPERTS, { ...DEFAULT_FILTER_CRITERIA, availability: 'week' }).map((expert) => expert.id).sort(),
@@ -412,5 +412,47 @@ describe('ExpertsComponent', () => {
     expect(rendered).toMatch(/bg-surface/);
     expect(rendered).toMatch(/focus-visible:ring-2/);
     expect(rendered).not.toMatch(/#[0-9a-f]{3,8}|rgba?\(|hsl\(|(?:bg|text|border)-\[[^\]]+\]|(?:bg|text|border)-(?:gray|white|black)(?:-|[\"'\s])/i);
+  });
+
+  it('shows one dot per reachable scroll position and marks the right one current', () => {
+    const component = fixture.componentInstance;
+    const carousel = component.carouselRef!.nativeElement;
+    // 6 cards of 200px + 24px gaps; 600px viewport: the last 2 cards can never lead the view.
+    Object.defineProperty(carousel, 'scrollWidth', { value: 1000, configurable: true });
+    Object.defineProperty(carousel, 'clientWidth', { value: 600, configurable: true });
+    Object.defineProperty(carousel.firstElementChild!, 'offsetWidth', { value: 200, configurable: true });
+    const setScroll = (value: number) => {
+      Object.defineProperty(carousel, 'scrollLeft', { value, configurable: true, writable: true });
+      component.checkShadows();
+      fixture.detectChanges();
+    };
+    const dots = () => Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('[aria-label^="Go to slide"]'));
+    const current = () => dots().findIndex((dot) => dot.getAttribute('aria-current') === 'true');
+
+    setScroll(0);
+    expect(component.psychologists().length).toBeGreaterThan(3);
+    expect(dots()).toHaveLength(3);
+    expect(current()).toBe(0);
+
+    setScroll(224);
+    expect(current()).toBe(1);
+
+    // Far end: the final dot is current even though the last step is shorter than a card.
+    setScroll(400);
+    expect(current()).toBe(2);
+    expect(dots().filter((dot) => dot.hasAttribute('aria-current'))).toHaveLength(1);
+  });
+
+  it('shows a single dot when every card already fits', () => {
+    const component = fixture.componentInstance;
+    const carousel = component.carouselRef!.nativeElement;
+    Object.defineProperty(carousel, 'scrollWidth', { value: 600, configurable: true });
+    Object.defineProperty(carousel, 'clientWidth', { value: 600, configurable: true });
+    Object.defineProperty(carousel.firstElementChild!, 'offsetWidth', { value: 200, configurable: true });
+    Object.defineProperty(carousel, 'scrollLeft', { value: 0, configurable: true, writable: true });
+    component.checkShadows();
+    fixture.detectChanges();
+
+    expect(component.slideDots()).toEqual([0]);
   });
 });

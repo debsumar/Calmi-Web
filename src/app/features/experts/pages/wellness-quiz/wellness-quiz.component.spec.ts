@@ -19,9 +19,68 @@ describe('WellnessQuizComponent', () => {
     fixture.detectChanges();
   });
 
-  it('creates and renders four radiogroups', () => {
-    expect(fixture.componentInstance).toBeTruthy();
-    expect((fixture.nativeElement as HTMLElement).querySelectorAll('[role="radiogroup"]')).toHaveLength(4);
+  it('renders one labelled radiogroup per question, none pre-selected, one tab stop each', () => {
+    const groups = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('[role="radiogroup"]'));
+    expect(groups).toHaveLength(fixture.componentInstance.questions.length);
+
+    groups.forEach((group) => {
+      const radios = Array.from(group.querySelectorAll<HTMLElement>('[role="radio"]'));
+      expect(radios).toHaveLength(4);
+      expect(radios.every((radio) => radio.getAttribute('aria-checked') === 'false')).toBe(true);
+      expect(radios.map((radio) => radio.getAttribute('tabindex'))).toEqual(['0', '-1', '-1', '-1']);
+      expect(document.getElementById(group.getAttribute('aria-labelledby') ?? '')?.textContent?.trim()).not.toBe('');
+    });
+  });
+
+  it('selects an answer on click and moves the single tab stop to it', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const group = root.querySelector<HTMLElement>('[role="radiogroup"]')!;
+    const radios = Array.from(group.querySelectorAll<HTMLElement>('[role="radio"]'));
+
+    radios[2].click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.answers().concern).toBe(fixture.componentInstance.questions[0].options[2]);
+    expect(radios.map((radio) => radio.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true', 'false']);
+    expect(radios.map((radio) => radio.getAttribute('tabindex'))).toEqual(['-1', '-1', '0', '-1']);
+  });
+
+  it('moves selection and focus with arrow keys, wrapping, and Home/End', async () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const radios = Array.from(root.querySelector<HTMLElement>('[role="radiogroup"]')!.querySelectorAll<HTMLElement>('[role="radio"]'));
+    const press = async (key: string) => {
+      radios[0].dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      fixture.detectChanges();
+      await Promise.resolve();
+    };
+    const checked = () => radios.map((radio) => radio.getAttribute('aria-checked')).indexOf('true');
+
+    await press('ArrowDown');
+    expect(checked()).toBe(1);
+    expect(document.activeElement).toBe(radios[1]);
+
+    await press('End');
+    expect(checked()).toBe(3);
+    await press('ArrowRight');
+    expect(checked()).toBe(0);
+    await press('ArrowUp');
+    expect(checked()).toBe(3);
+    await press('Home');
+    expect(checked()).toBe(0);
+  });
+
+  it('ignores unrelated keys', () => {
+    const radio = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[role="radio"]')!;
+    const event = new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true });
+    radio.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(fixture.componentInstance.answers().concern).toBeNull();
+  });
+
+  it('does not navigate while a question is unanswered', () => {
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    fixture.componentInstance.findSupport();
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('keeps CTA disabled until every question has an answer', () => {

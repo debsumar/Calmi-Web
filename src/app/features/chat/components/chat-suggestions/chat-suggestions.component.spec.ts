@@ -53,4 +53,28 @@ describe('ChatSuggestionsComponent', () => {
     expect(send).toHaveBeenCalledOnce();
     store.cancelPendingReply();
   });
+
+  it('does not overwrite the typed draft when a reply is already streaming', () => {
+    store.setDraft('first');
+    store.send();
+    store.setDraft('my unfinished thought');
+    const button = [...fixture.nativeElement.querySelectorAll('button')][0] as HTMLButtonElement;
+
+    button.click();
+
+    expect(store.draft()).toBe('my unfinished thought');
+    expect(store.messages()).toHaveLength(1);
+    store.cancelPendingReply();
+  });
+
+  it('preserves an in-progress draft after sending a chip', () => {
+    store.setDraft('still typing');
+    const button = [...fixture.nativeElement.querySelectorAll('button')][0] as HTMLButtonElement;
+
+    button.click();
+
+    expect(store.messages()).toHaveLength(1);
+    expect(store.draft()).toBe('still typing');
+    store.cancelPendingReply();
+  });
 });

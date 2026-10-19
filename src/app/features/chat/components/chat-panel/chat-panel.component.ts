@@ -79,6 +79,11 @@ export class ChatPanelComponent implements AfterViewInit, OnDestroy, OnInit {
   onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       event.preventDefault();
+      if (this.voice.isActive() && this.voice.surface() === 'floating-panel') {
+        this.voice.end();
+        afterNextRender({ write: () => this.voice.restoreFocus() }, { injector: this.injector });
+        return;
+      }
       this.closePanel();
       return;
     }

@@ -1,4 +1,4 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementRef, effect, inject, Injector, input, signal, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, effect, inject, Injector, input, signal, viewChild } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { VoiceSessionService } from '../../services/voice-session.service';
 import { ChatConversationSurface } from '../../services/voice-session.model';
@@ -38,15 +38,16 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
           </div>
         </div>
 
-        <p [id]="surfaceId() + '-caption'" class="voice__caption min-h-11 max-w-[280px] text-center text-base leading-relaxed text-ink-muted">
+        <p [id]="surfaceId() + '-caption'" aria-live="polite"
+           class="voice__caption min-h-11 max-w-[280px] break-words text-center text-base leading-relaxed text-ink-muted [overflow-wrap:anywhere]">
           {{ voice.transcript() }}
         </p>
 
         @if (voice.error(); as error) {
           <div role="alert" class="flex max-w-[320px] flex-col items-center gap-3 rounded-2xl border border-hairline bg-surface px-4 py-3 text-center text-base text-ink">
             <svg [lucideIcon]="'circle-alert'" [size]="20" aria-hidden="true"></svg>
-            <p>{{ error.message }}</p>
-            <button type="button"
+            <p class="break-words [overflow-wrap:anywhere]">{{ error.message }}</p>
+            <button #retryButton type="button"
                     (click)="retrySession()"
                     class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand bg-surface px-4 text-xs font-bold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                     aria-label="Retry microphone access">
@@ -60,10 +61,10 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
             <button type="button"
                     (click)="voice.toggleMuted()"
                     [attr.aria-pressed]="voice.isMuted()"
-                    [attr.aria-label]="voice.isMuted() ? 'Unmute microphone' : 'Mute microphone'"
+                    aria-label="Mute microphone"
                     class="inline-flex h-11 min-w-11 items-center gap-2 rounded-full border border-hairline bg-surface px-4 text-xs font-bold text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-              <svg [lucideIcon]="'volume-2'" [size]="17" aria-hidden="true"></svg>
-              {{ voice.isMuted() ? 'Unmute' : 'Mute' }}
+              <svg [lucideIcon]="voice.isMuted() ? 'mic-off' : 'mic'" [size]="17" aria-hidden="true"></svg>
+              Mute
             </button>
           }
           <button #endButton type="button"
@@ -197,18 +198,39 @@ export class VoiceSessionOverlayComponent {
   readonly surface = input<ChatConversationSurface>('floating-panel');
   readonly surfaceId = computed(() => this.surface().replace('-', '-').replace('floating-panel', 'floating').replace('rumi-embedded', 'embedded'));
   private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly endButton = viewChild<ElementRef<HTMLButtonElement>>('endButton');
-  readonly prefersReducedMotion = signal(
+  private readonly retryButton = viewChild<ElementRef<HTMLButtonElement>>('retryButton');
+  private readonly reducedMotionQuery =
     typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      : false,
-  );
+      ? window.matchMedia('(prefers-reduced-motion: reduce)')
+      : undefined;
+  readonly prefersReducedMotion = signal(this.reducedMotionQuery?.matches ?? false);
 
   constructor() {
+    const query = this.reducedMotionQuery;
+    if (query && typeof query.addEventListener === 'function') {
+      const onChange = (event: MediaQueryListEvent): void => this.prefersReducedMotion.set(event.matches);
+      query.addEventListener('change', onChange);
+      this.destroyRef.onDestroy(() => query.removeEventListener('change', onChange));
+    }
+
+    // Retry replaces the mute button when an error appears; keep keyboard focus inside the overlay.
+    effect(() => {
+      if (!this.voice.error()) return;
+      afterNextRender({ write: () => this.focusPrimaryControl() }, { injector: this.injector });
+    });
+
     effect(() => {
       if (!this.voice.isActive() || this.voice.surface() !== this.surface()) return;
-      afterNextRender({ write: () => this.endButton()?.nativeElement.focus({ preventScroll: true }) }, { injector: this.injector });
+      afterNextRender({ write: () => this.focusPrimaryControl() }, { injector: this.injector });
     });
+  }
+
+  /** Retry takes focus while an error is shown (End otherwise) so focus never falls back to body. */
+  private focusPrimaryControl(): void {
+    const target = this.voice.error() ? this.retryButton() ?? this.endButton() : this.endButton();
+    target?.nativeElement.focus({ preventScroll: true });
   }
 
   endSession(): void {

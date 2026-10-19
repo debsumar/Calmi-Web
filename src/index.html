@@ -6,11 +6,20 @@
   <title>Calmi</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Calmi helps you ease anxiety and sleep better with guided sessions, calming sounds and support from experts.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#faf8fc" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b090d" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <!-- Pre-paint theme: mirrors ThemeService (key `calmi-theme`; `auto` = dark 20:00-06:00 local)
+       so the first frame already has the right class. Keep in sync with core/services/theme.service.ts.
+       vercel.json CSP carries this script's sha256; update both if you edit it. -->
+  <script>(function(){try{var m=null;try{m=localStorage.getItem('calmi-theme')}catch(e){}var d;if(m==='dark'){d=true}else if(m==='light'){d=false}else{var h=new Date().getHours();d=h<6||h>=20}if(d){document.documentElement.classList.add('app-dark')}}catch(e){}})();</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" type="image/avif" href="assets/logos/logo.avif">
-  <link rel="apple-touch-icon" sizes="192x192" href="assets/logos/logo.avif">
+  <link rel="apple-touch-icon" sizes="360x360" href="assets/logos/logo-email.png">
 </head>
 
 <body>

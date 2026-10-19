@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, QueryList, ViewChildren
 import { ActivatedRoute, Router } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { AuthRole, AuthService } from '@/core/services/auth.service';
+import { safeReturnUrl } from '@/core/routing/safe-return-url';
 import { AuthSplitCardComponent } from '@/shared/components/auth-split-card/auth-split-card.component';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 
@@ -110,7 +111,7 @@ export class IdentificationComponent {
     const role = this.selectedRole();
     if (!role) return;
     this.authService.selectedRole.set(role);
-    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    const returnUrl = safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
     void this.router.navigate(['/auth/login'], returnUrl ? { queryParams: { returnUrl } } : undefined);
   }
 }

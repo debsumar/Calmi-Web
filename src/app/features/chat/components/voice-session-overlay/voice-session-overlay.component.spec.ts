@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideLucideIcons, LucideCircleAlert, LucideVolume2, LucideX } from '@lucide/angular';
+import { provideLucideIcons, LucideCircleAlert, LucideMic, LucideMicOff, LucideVolume2, LucideX } from '@lucide/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { VoiceSessionOverlayComponent } from './voice-session-overlay.component';
 import { VoiceSessionService } from '../../services/voice-session.service';
@@ -19,15 +19,29 @@ describe('VoiceSessionOverlayComponent', () => {
     disconnect: ReturnType<typeof vi.fn>;
   };
 
+  let mediaListeners: Array<(event: MediaQueryListEvent) => void>;
+  let triggers: HTMLButtonElement[];
+
+  const createTrigger = (): HTMLButtonElement => {
+    const trigger = document.createElement('button');
+    document.body.append(trigger);
+    triggers.push(trigger);
+    return trigger;
+  };
+
   beforeEach(async () => {
+    mediaListeners = [];
+    triggers = [];
     vi.stubGlobal('matchMedia', (query: string) => ({
       matches: query.includes('prefers-reduced-motion'),
       media: query,
       onchange: null,
       addListener: () => undefined,
       removeListener: () => undefined,
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined,
+      addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => { mediaListeners.push(listener); },
+      removeEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => {
+        mediaListeners = mediaListeners.filter((candidate) => candidate !== listener);
+      },
       dispatchEvent: () => false,
     }));
     const connected = signal(false);
@@ -43,7 +57,7 @@ describe('VoiceSessionOverlayComponent', () => {
     };
     await TestBed.configureTestingModule({
       imports: [VoiceSessionOverlayComponent],
-      providers: [{ provide: LivekitRoomService, useValue: room }, provideLucideIcons(LucideCircleAlert, LucideVolume2, LucideX)],
+      providers: [{ provide: LivekitRoomService, useValue: room }, provideLucideIcons(LucideCircleAlert, LucideMic, LucideMicOff, LucideVolume2, LucideX)],
     }).compileComponents();
     fixture = TestBed.createComponent(VoiceSessionOverlayComponent);
     voice = TestBed.inject(VoiceSessionService);
@@ -53,12 +67,14 @@ describe('VoiceSessionOverlayComponent', () => {
   // The builder runs Vitest with `isolate: false`, so spec files share a worker
   // global. Without this the reduced-motion stub above leaks into later files.
   afterEach(() => {
+    voice.end();
+    fixture.destroy();
+    for (const trigger of triggers) trigger.remove();
     vi.unstubAllGlobals();
   });
 
   it('opens as a non-modal dialog and moves focus into End', async () => {
-    const trigger = document.createElement('button');
-    document.body.append(trigger);
+    const trigger = createTrigger();
     trigger.focus();
     voice.start(trigger);
     fixture.detectChanges();
@@ -84,8 +100,7 @@ describe('VoiceSessionOverlayComponent', () => {
   });
 
   it('ends from the explicit End control and restores focus to the trigger', async () => {
-    const trigger = document.createElement('button');
-    document.body.append(trigger);
+    const trigger = createTrigger();
     trigger.focus();
     voice.start(trigger);
     fixture.detectChanges();
@@ -100,8 +115,7 @@ describe('VoiceSessionOverlayComponent', () => {
   });
 
   it('ends on Escape and restores focus to the trigger', async () => {
-    const trigger = document.createElement('button');
-    document.body.append(trigger);
+    const trigger = createTrigger();
     voice.start(trigger);
     fixture.detectChanges();
     const overlay = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
@@ -131,8 +145,7 @@ describe('VoiceSessionOverlayComponent', () => {
     room.connect.mockRejectedValueOnce(new VoiceRoomServiceError('device-error', 'Microphone access was blocked. Allow microphone access, then try again.'));
 
     voice.start();
-    await Promise.resolve();
-    await Promise.resolve();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     const overlay = fixture.nativeElement.querySelector('.voice') as HTMLElement;
@@ -180,5 +193,60 @@ describe('VoiceSessionOverlayComponent', () => {
     expect(orb.classList).toContain('orb--a');
     expect(orb.querySelectorAll('.layer')).toHaveLength(3);
     expect(orb.querySelector('.core')).not.toBeNull();
+  });
+
+  it('keeps a fixed Mute microphone label, reflects muted via aria-pressed and swaps mic icons', () => {
+    voice.start();
+    fixture.detectChanges();
+    const mute = fixture.nativeElement.querySelector('button[aria-label="Mute microphone"]') as HTMLButtonElement;
+    expect(mute.getAttribute('aria-pressed')).toBe('false');
+    expect(mute.querySelector('svg')?.outerHTML).not.toContain('mic-off');
+    const micMarkup = mute.querySelector('svg')?.innerHTML;
+
+    mute.click();
+    fixture.detectChanges();
+
+    expect(mute.getAttribute('aria-label')).toBe('Mute microphone');
+    expect(mute.getAttribute('aria-pressed')).toBe('true');
+    expect(mute.querySelector('svg')?.innerHTML).not.toBe(micMarkup);
+  });
+
+  it('announces the transcript caption politely and wraps long words', () => {
+    voice.start();
+    fixture.detectChanges();
+    const caption = fixture.nativeElement.querySelector('.voice__caption') as HTMLElement;
+
+    expect(caption.getAttribute('aria-live')).toBe('polite');
+    expect(caption.classList).toContain('break-words');
+    expect(caption.className).toContain('[overflow-wrap:anywhere]');
+  });
+
+  it('moves focus to Retry when a microphone error appears', async () => {
+    room.connect.mockRejectedValueOnce(new VoiceRoomServiceError('device-error', 'Microphone access was blocked.'));
+    voice.start();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const retry = fixture.nativeElement.querySelector('button[aria-label="Retry microphone access"]') as HTMLButtonElement;
+    expect(retry).not.toBeNull();
+    expect(document.activeElement).toBe(retry);
+  });
+
+  it('follows prefers-reduced-motion changes and removes its listener on destroy', () => {
+    voice.start();
+    fixture.detectChanges();
+    expect(mediaListeners).toHaveLength(1);
+
+    mediaListeners[0]?.({ matches: false } as MediaQueryListEvent);
+    fixture.detectChanges();
+    expect((fixture.nativeElement.querySelector('.voice') as HTMLElement).classList.contains('reduce-motion')).toBe(false);
+
+    mediaListeners[0]?.({ matches: true } as MediaQueryListEvent);
+    fixture.detectChanges();
+    expect((fixture.nativeElement.querySelector('.voice') as HTMLElement).classList.contains('reduce-motion')).toBe(true);
+
+    fixture.destroy();
+    expect(mediaListeners).toHaveLength(0);
   });
 });

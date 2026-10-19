@@ -532,8 +532,8 @@
                 Confirm account closure
               </h4>
               <p id="closure-instructions" class="mt-2 text-base text-ink-soft">
-                Type CLOSE to continue. Your profile, sessions, and listening history are removed, and this cannot be
-                undone.
+                Type CLOSE in capital letters to continue. Account closure is not connected to the account service yet,
+                so nothing is removed from your account today.
               </p>
               <label for="closure-confirmation" class="mt-4 block text-xs font-semibold text-ink-soft">
                 Confirmation text
@@ -545,7 +545,7 @@
                 class="mt-2 min-h-11 w-full max-w-sm rounded-xl border border-hairline bg-sunken px-4 py-2 text-base text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 [value]="closureConfirmation()"
                 [attr.aria-describedby]="'closure-instructions closure-error'"
-                [attr.aria-invalid]="closureStatus() && !closureIsValid()"
+                [attr.aria-invalid]="!!closureStatus() && !closureIsValid() ? 'true' : 'false'"
                 (input)="updateClosureConfirmation($any($event.target).value)" />
               <p id="closure-error" class="mt-2 text-xs text-ink-soft" aria-live="polite">{{ closureStatus() }}</p>
               <div class="mt-4 flex flex-wrap gap-3">

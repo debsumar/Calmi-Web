@@ -1,7 +1,15 @@
 {
   "redirects": [
-    { "source": "/therapy", "destination": "/experts", "permanent": true },
-    { "source": "/therapy/:path*", "destination": "/experts/:path*", "permanent": true }
+    {
+      "source": "/therapy",
+      "destination": "/experts",
+      "permanent": true
+    },
+    {
+      "source": "/therapy/:path*",
+      "destination": "/experts/:path*",
+      "permanent": true
+    }
   ],
   "rewrites": [
     {
@@ -9,8 +17,39 @@
       "destination": "https://calmi-voice-demo-production-c29f.up.railway.app/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!assets/|.*\\.(?:[aA][vV][iI][fF]|[pP][nN][gG]|[jJ][pP][eE]?[gG]|[gG][iI][fF]|[sS][vV][gG]|[wW][eE][bB][pP]|[iI][cC][oO]|[cC][sS][sS]|[jJ][sS]|[mM][jJ][sS]|[mM][aA][pP]|[jJ][sS][oO][nN]|[wW][eE][bB][mM][aA][nN][iI][fF][eE][sS][tT]|[tT][xX][tT]|[xX][mM][lL]|[wW][oO][fF][fF]2?|[tT][tT][fF]|[oO][tT][fF]|[mM][pP]3|[mM][pP]4|[wW][eE][bB][mM]|[wW][aA][sS][mM])$).*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "microphone=(self), camera=(), geolocation=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains"
+        },
+        {
+          "key": "Content-Security-Policy-Report-Only",
+          "value": "default-src 'self'; script-src 'self' 'sha256-dhNxgtlMKAnMp89pyUIvosrAy6RaYJhIXVqdHs8JVvY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://lh3.googleusercontent.com https://yguztxepfnjccbvwzttj.supabase.co; media-src 'self' blob: data:; connect-src 'self' https://yguztxepfnjccbvwzttj.supabase.co wss://yguztxepfnjccbvwzttj.supabase.co https://calmi-backend.vercel.app https://calmi-voice-demo-production-c29f.up.railway.app https://*.livekit.cloud wss://*.livekit.cloud; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        }
+      ]
     }
   ]
 }

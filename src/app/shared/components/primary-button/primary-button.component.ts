@@ -7,7 +7,7 @@ import { LucideDynamicIcon } from '@lucide/angular';
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (variant() === 'outline') {
-      <button (click)="clicked.emit()"
+      <button [attr.type]="type()" (click)="onClick()"
               [disabled]="disabled()"
               [attr.aria-disabled]="disabled() ? 'true' : null"
               [class.w-full]="fullWidth()"
@@ -21,7 +21,7 @@ import { LucideDynamicIcon } from '@lucide/angular';
         }
       </button>
     } @else {
-      <button (click)="clicked.emit()"
+      <button [attr.type]="type()" (click)="onClick()"
               [disabled]="disabled()"
               [attr.aria-disabled]="disabled() ? 'true' : null"
               [class.w-full]="fullWidth()"
@@ -43,5 +43,12 @@ export class PrimaryButtonComponent {
   variant = input<'solid' | 'outline'>('solid');
   disabled = input(false);
   fullWidth = input(false);
+  /** Defaults to `button` so a button inside a form never submits it by accident. */
+  type = input<'button' | 'submit' | 'reset'>('button');
   clicked = output();
+
+  onClick(): void {
+    if (this.disabled()) return;
+    this.clicked.emit();
+  }
 }

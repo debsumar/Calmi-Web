@@ -23,12 +23,14 @@ const INITIAL_STAGGER_LIMIT = 6;
   imports: [ChatMessageComponent, ChatTypingComponent, LucideDynamicIcon],
   host: { class: 'flex min-h-0 flex-1 flex-col' },
   template: `
+    <div class="relative flex min-h-0 flex-1 flex-col">
     <div #messageLog
-         class="relative flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3"
+         class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3"
          [attr.role]="announce() ? 'log' : 'region'"
          [attr.aria-live]="announce() ? 'polite' : 'off'" aria-atomic="false"
          [attr.aria-label]="conversationLabel()"
-         (scroll)="onScroll()">
+         (scroll)="onScroll()"
+         (scrollend)="onScrollEnd()">
       @if (!store.hasMessages()) {
         <div class="flex flex-1 flex-col items-center justify-center gap-3 text-center text-base text-ink-soft">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-sunken-alt" aria-hidden="true"></span>
@@ -45,15 +47,17 @@ const INITIAL_STAGGER_LIMIT = 6;
           <app-chat-typing [announce]="announce()" />
         }
       }
+    </div>
 
-      @if (showScrollToBottom()) {
-        <button type="button" (click)="scrollToBottom()"
-                class="sticky bottom-2 left-1/2 z-10 inline-flex min-h-11 -translate-x-1/2 items-center gap-2 self-center rounded-full border border-hairline bg-elevated px-3 py-2 text-xs font-semibold text-ink shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-                aria-label="Scroll to bottom">
-          <svg [lucideIcon]="'arrow-down'" [size]="16" aria-hidden="true"></svg>
-          <span>Scroll to bottom</span>
-        </button>
-      }
+    <!-- Outside the role=log live region so the control is not announced as a log entry. -->
+    @if (showScrollToBottom()) {
+      <button type="button" (click)="scrollToBottom()"
+              class="absolute bottom-2 left-1/2 z-10 inline-flex min-h-11 -translate-x-1/2 items-center gap-2 rounded-full border border-hairline bg-elevated px-3 py-2 text-xs font-semibold text-ink shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+              aria-label="Scroll to bottom">
+        <svg [lucideIcon]="'arrow-down'" [size]="16" aria-hidden="true"></svg>
+        <span>Scroll to bottom</span>
+      </button>
+    }
     </div>
   `,
 })
@@ -69,6 +73,10 @@ export class ChatMessageListComponent implements OnDestroy {
   private animationObserver?: IntersectionObserver;
   private animationSessionStarted = false;
   private lastRenderedMessageId?: string;
+  /** True while the user is near the bottom; tracked from scroll events, never measured after a render. */
+  private pinned = true;
+  private smoothScrolling = false;
+  private smoothTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     afterNextRender({
@@ -78,28 +86,24 @@ export class ChatMessageListComponent implements OnDestroy {
     effect(() => {
       const messages = this.store.messages();
       this.store.isTyping();
-      const lastMessageId = messages.at(-1)?.id;
+      const last = messages.at(-1);
+      const lastMessageId = last?.id;
       const hasNewMessage = lastMessageId !== undefined && lastMessageId !== this.lastRenderedMessageId;
       this.lastRenderedMessageId = lastMessageId;
+      // Own new message always follows to bottom; otherwise only if pinned before this render.
+      const follow = this.pinned || (hasNewMessage && last?.role === 'user');
 
       afterNextRender({
-        earlyRead: () => {
+        write: () => {
           const element = this.messageLog()?.nativeElement;
-          return element ? { element, distance: this.distanceFromBottom(element), hasNewMessage } : null;
-        },
-        write: (state) => {
-          if (!state) return;
-          if (state.hasNewMessage) {
-            state.element.scrollTop = state.element.scrollHeight;
+          if (!element) return;
+          if (follow) {
+            this.pinned = true;
+            element.scrollTop = element.scrollHeight;
             this.showScrollToBottom.set(false);
             return;
           }
-          if (state.distance > 100) {
-            this.showScrollToBottom.set(true);
-            return;
-          }
-          state.element.scrollTop = state.element.scrollHeight;
-          this.showScrollToBottom.set(false);
+          if (!this.smoothScrolling) this.showScrollToBottom.set(true);
         },
       }, { injector: this.injector });
     });
@@ -107,24 +111,56 @@ export class ChatMessageListComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.animationObserver?.disconnect();
+    if (this.smoothTimer !== undefined) clearTimeout(this.smoothTimer);
   }
 
   onScroll(): void {
     const element = this.messageLog()?.nativeElement;
     if (!element) return;
-    this.showScrollToBottom.set(this.distanceFromBottom(element) > 100);
+    const nearBottom = this.distanceFromBottom(element) <= 100;
+    if (this.smoothScrolling) {
+      // Programmatic scroll in flight: keep the pill hidden until it lands.
+      if (this.distanceFromBottom(element) <= 1) this.finishSmoothScroll();
+      return;
+    }
+    this.pinned = nearBottom;
+    this.showScrollToBottom.set(!nearBottom);
+  }
+
+  onScrollEnd(): void {
+    if (this.smoothScrolling) this.finishSmoothScroll();
   }
 
   scrollToBottom(): void {
     const element = this.messageLog()?.nativeElement;
     if (!element) return;
 
+    this.pinned = true;
+    this.smoothScrolling = true;
+    this.showScrollToBottom.set(false);
+    if (this.smoothTimer !== undefined) clearTimeout(this.smoothTimer);
+    // Fallback for browsers without `scrollend`, or when no scroll is needed.
+    this.smoothTimer = setTimeout(() => this.finishSmoothScroll(), 800);
+
     afterNextRender({
       write: () => {
-        element.scrollTo({ top: element.scrollHeight, behavior: 'smooth' });
-        this.showScrollToBottom.set(false);
+        if (typeof element.scrollTo === 'function') element.scrollTo({ top: element.scrollHeight, behavior: 'smooth' });
+        else element.scrollTop = element.scrollHeight;
       },
     }, { injector: this.injector });
+  }
+
+  private finishSmoothScroll(): void {
+    this.smoothScrolling = false;
+    if (this.smoothTimer !== undefined) {
+      clearTimeout(this.smoothTimer);
+      this.smoothTimer = undefined;
+    }
+    const element = this.messageLog()?.nativeElement;
+    if (element) {
+      this.pinned = this.distanceFromBottom(element) <= 100;
+      this.showScrollToBottom.set(!this.pinned);
+    }
   }
 
   messageEntranceIndex(messageId: string): number {

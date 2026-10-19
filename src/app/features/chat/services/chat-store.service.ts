@@ -46,6 +46,8 @@ export class ChatStoreService implements OnDestroy {
   private activeHandle: ChatStreamHandle | null = null;
   private activeRagController: AbortController | null = null;
   private activeGeneration = 0;
+  private activeUserMessageId: string | null = null;
+  private activeAssistantMessageId: string | null = null;
   private closeTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
@@ -112,7 +114,7 @@ export class ChatStoreService implements OnDestroy {
       id: 'rumi-welcome',
       role: 'ai',
       text: 'Hi there, I’m Rumi. How are you feeling today?',
-      timestamp: new Date(0),
+      timestamp: new Date(),
       status: 'sent',
     }]);
   }
@@ -209,7 +211,31 @@ export class ChatStoreService implements OnDestroy {
     this.stopGeneration();
   }
 
+  /** Cancels in-flight reply and finalises message states so nothing stays streaming/sending. */
   stopGeneration(): void {
+    const userMessageId = this.activeUserMessageId;
+    const assistantMessageId = this.activeAssistantMessageId;
+    this.activeUserMessageId = null;
+    this.activeAssistantMessageId = null;
+    this.cancelActive();
+    if (!userMessageId) return;
+
+    this._messages.update((messages) => messages
+      .filter((message) => !(
+        message.id === assistantMessageId && message.status === 'streaming' && message.text.length === 0
+      ))
+      .map((message) => {
+        if (message.id === assistantMessageId && message.status === 'streaming') {
+          return { ...message, status: 'sent' as const };
+        }
+        if (message.id === userMessageId && message.status === 'sending') {
+          return { ...message, status: 'error' as const };
+        }
+        return message;
+      }));
+  }
+
+  private cancelActive(): void {
     this.activeGeneration += 1;
     this.activeRagController?.abort();
     this.activeRagController = null;
@@ -222,6 +248,8 @@ export class ChatStoreService implements OnDestroy {
   private startGeneration(userMessageId: string, text: string): void {
     this.stopGeneration();
     const generation = ++this.activeGeneration;
+    this.activeUserMessageId = userMessageId;
+    this.activeAssistantMessageId = null;
     const ragController = new AbortController();
     this.activeRagController = ragController;
     this._isStreaming.set(true);
@@ -250,7 +278,9 @@ export class ChatStoreService implements OnDestroy {
       enabled_tools: environment.chat.enabledTools,
     };
 
-    void this.runGeneration(generation, userMessageId, ragRequest, request, ragController);
+    this.runGeneration(generation, userMessageId, ragRequest, request, ragController).catch(() => {
+      this.failGeneration(generation, userMessageId, this.activeAssistantMessageId);
+    });
   }
 
   private async runGeneration(
@@ -274,11 +304,11 @@ export class ChatStoreService implements OnDestroy {
     this.activeRagController = null;
 
     let assistantMessageId: string | null = null;
-    const handle = this.streamService.stream(request, (event) => {
-      if (generation !== this.activeGeneration) return;
+    const handleStreamEvent = (event: ChatStreamEvent): void => {
       if (event.type === 'delta') {
         if (!assistantMessageId) {
           assistantMessageId = crypto.randomUUID();
+          this.activeAssistantMessageId = assistantMessageId;
           this._messages.update((messages) => [...messages, {
             id: assistantMessageId as string,
             role: 'ai',
@@ -303,13 +333,24 @@ export class ChatStoreService implements OnDestroy {
         return;
       }
       this.failGeneration(generation, userMessageId, assistantMessageId);
+    };
+
+    const handle = this.streamService.stream(request, (event) => {
+      if (generation !== this.activeGeneration) return;
+      try {
+        handleStreamEvent(event);
+      } catch {
+        this.failGeneration(generation, userMessageId, assistantMessageId);
+      }
     });
 
     this.activeHandle = handle;
-    void handle.completed.then(() => {
+    handle.completed.then(() => {
       if (generation === this.activeGeneration && this.activeHandle === handle) {
         this.activeHandle = null;
       }
+    }).catch(() => {
+      this.failGeneration(generation, userMessageId, this.activeAssistantMessageId);
     });
   }
 
@@ -341,6 +382,8 @@ export class ChatStoreService implements OnDestroy {
     this._isStreaming.set(false);
     this._isTyping.set(false);
     this.activeHandle = null;
+    this.activeUserMessageId = null;
+    this.activeAssistantMessageId = null;
     if (!this.isConversationVisible()) this._unreadCount.update((count) => count + 1);
   }
 
@@ -352,6 +395,8 @@ export class ChatStoreService implements OnDestroy {
     this._isStreaming.set(false);
     this._isTyping.set(false);
     this.activeHandle = null;
+    this.activeUserMessageId = null;
+    this.activeAssistantMessageId = null;
   }
 
   private errorMessage(error: unknown): string {

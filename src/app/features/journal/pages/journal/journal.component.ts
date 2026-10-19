@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DOCUMENT, ElementRef, inject, Injector, SecurityContext, signal, viewChild, afterNextRender } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, DOCUMENT, effect, ElementRef, inject, Injector, SecurityContext, signal, untracked, viewChild, afterNextRender } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
@@ -6,13 +6,18 @@ import { LucideDynamicIcon } from '@lucide/angular';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { BreadcrumbComponent } from '@/shared/components/breadcrumb/breadcrumb.component';
 import { AuthService } from '@/core/services/auth.service';
-import { countWords, JOURNAL_PROMPTS, JOURNAL_TAGS, JournalEntry, JournalEntryStatus, plainTextFrom, previewOf, toEditorHtml } from '../../models/journal-entry.model';
+import { JOURNAL_PROMPTS, JOURNAL_TAGS, JOURNAL_TITLE_MAX_LENGTH, JournalContentFormat, JournalEntry, JournalEntryStatus, plainTextFrom, previewOf, toEditorHtml, wordsIn } from '../../models/journal-entry.model';
 import { JournalService } from '../../services/journal.service';
 
 type InlineFormat = 'bold' | 'italic' | 'underline';
 
 /** Carries an unsaved entry across the sign-in round trip, for this tab only. */
 const PENDING_ENTRY_KEY = 'calmi.journal.pending-entry.v1';
+
+/** Quiet time after the last edit before a draft is written to the device. */
+export const AUTOSAVE_DELAY_MS = 1500;
+
+const UNSAVED_LEAVE_MESSAGE = 'You have unsaved changes in your journal. Leave without saving?';
 
 /** How many writing prompts show at once; `Refresh` pages through the pool. */
 const VISIBLE_PROMPTS = 3;
@@ -56,6 +61,17 @@ export class JournalComponent {
   private readonly editor = viewChild<ElementRef<HTMLElement>>('editor');
   private readonly deleteConfirmButton = viewChild<ElementRef<HTMLButtonElement>>('deleteConfirmButton');
   private readonly signInPromptButton = viewChild<ElementRef<HTMLElement>>('signInPromptButton');
+  private readonly discardKeepButton = viewChild<ElementRef<HTMLButtonElement>>('discardKeepButton');
+  private readonly destroyRef = inject(DestroyRef);
+  private discardReturnFocus: HTMLElement | null = null;
+  /** True once the draft is stashed for the sign-in round trip, so destroy keeps it. */
+  private handedOffToSignIn = false;
+  /** True once this page wrote the sign-in stash; only then does it clean one up. */
+  private stashWritten = false;
+  /** Set while navigating to sign-in, so the leave guard does not block it. */
+  private leavingForSignIn = false;
+  /** Account whose journal the editor currently belongs to. */
+  private editorOwnerId: string | null = this.authService.currentUser()?.id ?? null;
   /** Element to hand focus back to after the delete prompt closes. */
   private deleteReturnFocus: HTMLElement | null = null;
   private signInReturnFocus: HTMLElement | null = null;
@@ -64,15 +80,85 @@ export class JournalComponent {
   /** Open when a save was attempted without an account. */
   readonly signInPromptOpen = signal(false);
 
+  /** Background content goes inert while either modal is open. */
+  readonly modalOpen = computed(() => this.signInPromptOpen() || this.pendingSwitch() !== null);
+  readonly titleMaxLength = JOURNAL_TITLE_MAX_LENGTH;
+  /** Set when the last delete could not be written to storage. */
+  readonly deleteFailed = signal(false);
+
   constructor() {
     afterNextRender({ write: () => this.restorePendingEntry() });
+
+    // Another account (or sign-out) must never see the previous writer's text.
+    effect(() => {
+      const id = this.authService.currentUser()?.id ?? null;
+      untracked(() => {
+        // Guest → account keeps what the guest typed; only a real switch clears.
+        if (this.editorOwnerId !== null && id !== this.editorOwnerId) this.resetForUserChange();
+        this.editorOwnerId = id;
+      });
+    });
+
+    // Browser-level guard against closing the tab with unsaved work.
+    effect((onCleanup) => {
+      if (!this.isDirty()) return;
+      const view = this.document.defaultView;
+      if (!view) return;
+      const handler = (event: BeforeUnloadEvent) => {
+        event.preventDefault();
+        event.returnValue = '';
+      };
+      view.addEventListener('beforeunload', handler);
+      onCleanup(() => view.removeEventListener('beforeunload', handler));
+    });
+
+    // Debounced autosave: restarts on every edit, so it fires once typing pauses.
+    effect((onCleanup) => {
+      this.title();
+      this.content();
+      this.selectedTags();
+      if (!this.canAutosave()) return;
+      const timer = setTimeout(() => untracked(() => this.autosave()), AUTOSAVE_DELAY_MS);
+      onCleanup(() => clearTimeout(timer));
+    });
+
+    this.destroyRef.onDestroy(() => {
+      this.autosave();
+      if (this.stashWritten && !this.handedOffToSignIn) this.removePendingEntry();
+    });
+  }
+
+  /** Whether a draft write would be safe and useful right now. */
+  private canAutosave(): boolean {
+    if (!this.isDirty() || !this.hasContent() || this.signInPromptOpen()) return false;
+    const user = this.authService.currentUser();
+    if (!user || user.id !== this.editorOwnerId) return false;
+    // Saved entries are only rewritten by an explicit Save; autosave covers drafts.
+    const existing = this.journal.byId(this.selectedId());
+    return !existing || existing.status === 'draft';
+  }
+
+  private autosave(): void {
+    if (this.canAutosave()) this.save('draft', true);
+  }
+
+  /**
+   * Route guard hook: flushes a pending autosave, then asks only when work is still
+   * unsaved (guest text, an edited saved entry, or a failed write).
+   */
+  canLeave(): boolean {
+    if (this.leavingForSignIn) return true;
+    this.autosave();
+    if (!this.isDirty()) return true;
+    const ask = this.document.defaultView?.confirm;
+    return typeof ask === 'function' ? ask.call(this.document.defaultView, UNSAVED_LEAVE_MESSAGE) : true;
   }
 
   readonly sortOrder = this.journal.sortOrder;
   readonly storageFailed = this.journal.storageFailed;
 
   readonly rows = computed<EntryRow[]>(() =>
-    this.journal.entries().map((entry) => ({ entry, preview: previewOf(entry.content) })),
+    this.journal.entries().map((entry) => ({ entry, preview: previewOf(entry.content, 44, entry.contentFormat) })),
   );
 
   readonly selectedId = signal<string | null>(null);
@@ -112,8 +198,9 @@ export class JournalComponent {
     );
   });
 
-  readonly plainText = computed(() => plainTextFrom(this.content()));
-  readonly wordCount = computed(() => countWords(this.content()));
+  // Parsed once per change: word count and emptiness derive from the same text.
+  readonly plainText = computed(() => plainTextFrom(this.content(), 'html'));
+  readonly wordCount = computed(() => wordsIn(this.plainText()));
   readonly hasContent = computed(() => this.plainText().trim().length > 0 || this.title().trim().length > 0);
   readonly isEmptyEditor = computed(() => this.plainText().trim().length === 0);
 
@@ -197,7 +284,7 @@ export class JournalComponent {
   /** Asks before discarding unsaved work; the prompt then calls `discardAndSwitch`. */
   startNewEntry(): void {
     if (this.isDirty()) {
-      this.pendingSwitch.set({ kind: 'new' });
+      this.openDiscardPrompt({ kind: 'new' });
       return;
     }
     this.loadNewEntry();
@@ -206,15 +293,25 @@ export class JournalComponent {
   select(entry: JournalEntry): void {
     if (entry.id === this.selectedId()) return;
     if (this.isDirty()) {
-      this.pendingSwitch.set({ kind: 'entry', entry });
+      this.openDiscardPrompt({ kind: 'entry', entry });
       return;
     }
     this.loadEntry(entry);
   }
 
+  private openDiscardPrompt(pending: PendingSwitch): void {
+    const active = this.document.activeElement;
+    this.discardReturnFocus = active instanceof HTMLElement ? active : null;
+    this.pendingSwitch.set(pending);
+    afterNextRender({
+      write: () => this.discardKeepButton()?.nativeElement.focus(),
+    }, { injector: this.injector });
+  }
+
   discardAndSwitch(): void {
     const pending = this.pendingSwitch();
     this.pendingSwitch.set(null);
+    this.discardReturnFocus = null;
     if (!pending) return;
     if (pending.kind === 'new') this.loadNewEntry();
     else this.loadEntry(pending.entry);
@@ -222,9 +319,35 @@ export class JournalComponent {
 
   cancelSwitch(): void {
     this.pendingSwitch.set(null);
+    const target = this.discardReturnFocus;
+    this.discardReturnFocus = null;
+    if (target?.isConnected) target.focus();
+    else this.editor()?.nativeElement.focus();
   }
 
-  save(status: JournalEntryStatus): void {
+  /** Keeps Tab inside the open modal; the page behind it is inert. */
+  trapTab(event: KeyboardEvent): void {
+    if (event.key !== 'Tab') return;
+    const container = event.currentTarget;
+    if (!(container instanceof HTMLElement)) return;
+    const focusable = Array.from(container.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    if (focusable.length === 0) {
+      event.preventDefault();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = this.document.activeElement;
+    if (event.shiftKey && (active === first || active === container)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (active === last || !container.contains(active))) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  save(status: JournalEntryStatus, auto = false): void {
     if (!this.hasContent()) return;
 
     // Journals belong to an account. Without one there is nothing to save them
@@ -242,12 +365,18 @@ export class JournalComponent {
       tags: this.selectedTags(),
     });
     this.selectedId.set(entry.id);
-    this.title.set(entry.title);
+    // createdAt is the one date the page shows for this entry, header and list alike.
+    this.startedAt.set(new Date(entry.createdAt));
+    this.deleteFailed.set(false);
+    // Autosave must not rewrite a title the writer has not typed yet.
+    const title = auto && this.title().trim() === '' ? this.title() : entry.title;
+    if (title !== this.title()) this.title.set(title);
     this.lastSaved.set(persisted ? status : null);
     // Adopt the stored (normalized) tags, so the baseline and the chips agree and
     // a saved entry does not read dirty straight away.
-    this.selectedTags.set(entry.tags);
-    this.baseline.set({ title: entry.title, content: this.content(), tags: entry.tags });
+    if (!sameTags(this.selectedTags(), entry.tags)) this.selectedTags.set(entry.tags);
+    // A failed write keeps the baseline, so the entry still reads as unsaved.
+    if (persisted) this.baseline.set({ title, content: this.content(), tags: entry.tags });
   }
 
   private openSignInPrompt(): void {
@@ -261,6 +390,7 @@ export class JournalComponent {
 
   cancelSignIn(): void {
     this.signInPromptOpen.set(false);
+    this.removePendingEntry();
     const target = this.signInReturnFocus;
     this.signInReturnFocus = null;
     if (target?.isConnected) target.focus();
@@ -270,8 +400,24 @@ export class JournalComponent {
   /** Keeps the in-progress entry for this tab, then hands over to sign-in. */
   continueToSignIn(): void {
     this.stashPendingEntry();
+    this.handedOffToSignIn = true;
+    this.leavingForSignIn = true;
     this.signInPromptOpen.set(false);
-    void this.router.navigate(['/auth/identify'], { queryParams: { returnUrl: '/journal' } });
+    void Promise.resolve(this.router.navigate(['/auth/identify'], { queryParams: { returnUrl: '/journal' } })).then((navigated) => {
+      if (navigated) return;
+      // Navigation was refused: the writer is still here, so drop the stash.
+      this.handedOffToSignIn = false;
+      this.leavingForSignIn = false;
+      this.removePendingEntry();
+    });
+  }
+
+  private removePendingEntry(): void {
+    try {
+      globalThis.sessionStorage?.removeItem(PENDING_ENTRY_KEY);
+    } catch {
+      // Nothing to clean when session storage is unavailable.
+    }
   }
 
   private stashPendingEntry(): void {
@@ -281,6 +427,7 @@ export class JournalComponent {
         content: this.content(),
         tags: this.selectedTags(),
       }));
+      this.stashWritten = true;
     } catch {
       // Without session storage the entry simply is not carried across sign-in.
     }
@@ -303,7 +450,7 @@ export class JournalComponent {
       const pending = parsed as { title?: unknown; content?: unknown; tags?: unknown };
       if (typeof pending.title === 'string') this.title.set(pending.title);
       if (typeof pending.content === 'string') {
-        this.writeEditor(pending.content);
+        this.writeEditor(pending.content, 'html');
         const element = this.editor()?.nativeElement;
         this.content.set(element ? this.sanitize(element.innerHTML) : pending.content);
       }
@@ -334,9 +481,12 @@ export class JournalComponent {
   }
 
   confirmDelete(entry: JournalEntry): void {
-    this.journal.remove(entry.id);
+    const persisted = this.journal.remove(entry.id);
+    this.deleteFailed.set(!persisted);
     this.pendingDeleteId.set(null);
     this.deleteReturnFocus = null;
+    const pending = this.pendingSwitch();
+    if (pending?.kind === 'entry' && pending.entry.id === entry.id) this.pendingSwitch.set(null);
     if (this.selectedId() === entry.id) this.loadNewEntry();
     else this.editor()?.nativeElement.focus();
   }
@@ -518,13 +668,24 @@ export class JournalComponent {
   }
 
   /** Writes stored content into the editable region without disturbing bindings. */
-  private writeEditor(content: string): void {
+  private writeEditor(content: string, format?: JournalContentFormat): void {
     const element = this.editor()?.nativeElement;
     if (!element) return;
-    element.innerHTML = this.sanitize(toEditorHtml(content));
+    element.innerHTML = this.sanitize(toEditorHtml(content, format));
   }
 
-  private loadNewEntry(): void {
+  /** Clears the editor for a different account (or sign-out) without moving focus. */
+  private resetForUserChange(): void {
+    this.pendingSwitch.set(null);
+    this.discardReturnFocus = null;
+    this.signInPromptOpen.set(false);
+    this.deleteFailed.set(false);
+    this.removePendingEntry();
+    this.loadNewEntry(false);
+  }
+
+  private loadNewEntry(focus = true): void {
+    this.pendingSwitch.set(null);
     this.selectedId.set(null);
     this.title.set('');
     this.content.set('');
@@ -535,10 +696,11 @@ export class JournalComponent {
     this.selectedTags.set([]);
     this.writeEditor('');
     this.baseline.set({ title: '', content: '', tags: [] });
-    this.editor()?.nativeElement.focus();
+    if (focus) this.editor()?.nativeElement.focus();
   }
 
   private loadEntry(entry: JournalEntry): void {
+    this.pendingSwitch.set(null);
     this.selectedId.set(entry.id);
     this.title.set(entry.title);
     this.startedAt.set(new Date(entry.createdAt));
@@ -546,7 +708,7 @@ export class JournalComponent {
     this.pendingDeleteId.set(null);
     this.activeFormats.set([]);
     this.selectedTags.set(entry.tags);
-    this.writeEditor(entry.content);
+    this.writeEditor(entry.content, entry.contentFormat);
     // Store what the editor actually holds, so `isDirty` compares like with like.
     const element = this.editor()?.nativeElement;
     this.content.set(element ? this.sanitize(element.innerHTML) : entry.content);

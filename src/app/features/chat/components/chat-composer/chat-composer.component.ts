@@ -4,6 +4,8 @@ import { ChatStoreService } from '../../services/chat-store.service';
 import { VoiceSessionService } from '../../services/voice-session.service';
 import { ChatConversationSurface } from '../../services/voice-session.model';
 
+let nextComposerId = 0;
+
 @Component({
   selector: 'app-chat-composer',
   standalone: true,
@@ -26,6 +28,7 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
                   rows="1"
                   maxlength="1000"
                   [attr.aria-label]="composerAriaLabel()"
+                  [attr.aria-describedby]="counterId"
                   placeholder="Share what's on your mind..."
                   class="chat-composer__input max-h-32 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto bg-transparent px-1 py-2 text-base text-ink caret-brand outline-none placeholder:text-ink-muted"
         ></textarea>
@@ -33,7 +36,7 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
                 (click)="startVoice($event)"
                 [attr.aria-pressed]="voice.isActive() && voice.surface() === surface()"
                 [disabled]="voice.isActive() && voice.surface() !== surface()"
-                [attr.aria-label]="voice.isActive() && voice.surface() === surface() ? 'Voice conversation active' : 'Start voice conversation'"
+                aria-label="Start voice conversation"
                 title="Start voice conversation"
                 class="inline-flex h-11 w-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface text-ink transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
           <svg [lucideIcon]="'audio-lines'" [size]="18" aria-hidden="true"></svg>
@@ -46,15 +49,15 @@ import { ChatConversationSurface } from '../../services/voice-session.model';
           <svg [lucideIcon]="'send'" [size]="18" aria-hidden="true"></svg>
         </button>
       </div>
-      @if (store.draft().length > 900) {
-        <p class="mt-1 text-right text-xs text-ink-muted" [attr.aria-live]="announce() ? 'polite' : 'off'">
-          {{ store.draft().length }}/1000
-        </p>
-      }
+      <p class="text-right text-xs text-ink-muted"
+         [class.mt-1]="store.draft().length > 900"
+         [id]="counterId"
+         [attr.aria-live]="announce() ? 'polite' : 'off'">{{ store.draft().length > 900 ? store.draft().length + '/1000' : '' }}</p>
     </form>
   `,
 })
 export class ChatComposerComponent {
+  readonly counterId = `chat-composer-counter-${nextComposerId++}`;
   /** Named `textareaRef` (not `input`) so it does not shadow Angular's `input()` signal API. */
   private readonly textareaRef = viewChild<ElementRef<HTMLTextAreaElement>>('input');
   private readonly injector = inject(Injector);
@@ -101,12 +104,15 @@ export class ChatComposerComponent {
 
   onInput(event: Event): void {
     const textarea = event.target as HTMLTextAreaElement;
-    const value = textarea.value.slice(0, 1000);
+    let value = textarea.value.slice(0, 1000);
+    // Never leave half of a surrogate pair at the cut.
+    if (value.length === 1000 && /[\uD800-\uDBFF]/.test(value.charAt(999))) value = value.slice(0, 999);
     this.store.setDraft(value);
     this.resize(textarea);
   }
 
   onKeydown(event: KeyboardEvent): void {
+    if (event.isComposing || event.keyCode === 229) return;
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       this.send();
@@ -149,13 +155,11 @@ export class ChatComposerComponent {
 
   private resize(textarea: HTMLTextAreaElement): void {
     afterNextRender({
-      earlyRead: () => {
-        const lineHeight = Number.parseFloat(getComputedStyle(textarea).lineHeight) || 24;
-        return { textarea, lineHeight, scrollHeight: textarea.scrollHeight };
-      },
-      write: ({ textarea, lineHeight, scrollHeight }) => {
+      write: () => {
+        // Reset first so scrollHeight reflects content, letting the field shrink after delete/send.
         textarea.style.height = 'auto';
-        textarea.style.height = `${Math.min(scrollHeight, lineHeight * 5)}px`;
+        const lineHeight = Number.parseFloat(getComputedStyle(textarea).lineHeight) || 24;
+        textarea.style.height = `${Math.min(textarea.scrollHeight, lineHeight * 5)}px`;
       },
     }, { injector: this.injector });
   }

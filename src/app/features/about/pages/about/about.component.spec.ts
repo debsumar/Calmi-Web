@@ -33,9 +33,21 @@ describe('AboutComponent', () => {
     await fixture.whenStable();
   });
 
-  it('does not render a page-local Download App banner', () => {
+  it('renders the hero heading and the page sections', () => {
     const root = fixture.nativeElement as HTMLElement;
 
-    expect(root.querySelectorAll('a[aria-label="Download App"]')).toHaveLength(0);
+    const h1 = root.querySelector('h1');
+    expect(h1?.textContent?.trim().length).toBeGreaterThan(0);
+    expect(root.querySelectorAll('section').length).toBeGreaterThanOrEqual(4);
+    expect(root.textContent).toContain('Why We Built Calmi?');
+  });
+
+  it('gives every image an alt attribute and keeps h2 headings non-empty', () => {
+    const root = fixture.nativeElement as HTMLElement;
+
+    root.querySelectorAll('img').forEach((img) => expect(img.hasAttribute('alt')).toBe(true));
+    const headings = Array.from(root.querySelectorAll('h2'));
+    expect(headings.length).toBeGreaterThan(0);
+    headings.forEach((h) => expect(h.textContent?.trim()).not.toBe(''));
   });
 });

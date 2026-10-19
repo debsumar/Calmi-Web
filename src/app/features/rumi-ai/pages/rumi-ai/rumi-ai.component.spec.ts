@@ -36,7 +36,6 @@ import {
 import { ChatStoreService } from '@/features/chat/services/chat-store.service';
 import { ChatWidgetComponent } from '@/features/chat/chat-widget.component';
 import { RUMI_SUPPORT_TOPICS } from '@/features/rumi-ai/data/rumi-ai.data';
-import { ScrollPositionService } from '@/core/services/scroll-position.service';
 import { AppLayout } from '@/layout/components/app.layout';
 import { RumiAiComponent } from './rumi-ai.component';
 import { provideAuthServiceStub } from '@/core/services/testing/auth.service.stub';
@@ -275,7 +274,6 @@ describe('RumiAiComponent in the production layout', () => {
           // Pulled in by the floating chat panel header on the Rumi page.
           LucideMinus,
         ),
-        { provide: ScrollPositionService, useValue: {} },
       ],
     });
 

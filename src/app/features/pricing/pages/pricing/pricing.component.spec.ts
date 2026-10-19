@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   provideLucideIcons,
   LucideHeart, LucideCalendarDays, LucideBadgePercent,
@@ -8,7 +8,7 @@ import {
   LucideDynamicIcon,
 } from '@lucide/angular';
 
-import { PricingComponent } from './pricing.component';
+import { PricingComponent, annualSavingsPercent, parsePrice } from './pricing.component';
 import { AnimateOnScrollDirective } from '@/shared/directives/animate-on-scroll.directive';
 import { PrimaryButtonComponent } from '@/shared/components/primary-button/primary-button.component';
 import { StudentVerificationResult, StudentVerificationRequest } from '@/features/student-verification/models/student-verification.model';
@@ -154,4 +154,50 @@ describe('PricingComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Verified — Student Premium is unlocked.');
   });
 
+  describe('annual savings', () => {
+    it('parses display prices', () => {
+      expect(parsePrice('₹2,399')).toBe(2399);
+      expect(parsePrice('₹0')).toBe(0);
+      expect(parsePrice('free')).toBe(0);
+    });
+
+    it('computes the percentage from the prices, per plan', () => {
+      expect(annualSavingsPercent('₹99', '₹999')).toBe(16); // 1 - 999/1188 = 15.9%
+      expect(annualSavingsPercent('₹249', '₹2,399')).toBe(20); // 1 - 2399/2988 = 19.7%
+      expect(annualSavingsPercent('₹0', '₹0')).toBe(0);
+      expect(annualSavingsPercent('₹10', '₹200')).toBe(0); // annual dearer than 12 months: no saving
+    });
+
+    it('exposes per-plan percentages and a truthful "up to" toggle label', () => {
+      const plans = fixture.componentInstance.displayedPlans();
+      expect(plans.map((p) => p.annualSavingsPercent)).toEqual([0, 16, 20]);
+      expect(fixture.componentInstance.maxAnnualSavingsPercent()).toBe(20);
+      expect(fixture.nativeElement.textContent).toContain('Save up to 20%');
+    });
+
+    it('shows each plan its own saving badge only in annual mode', () => {
+      expect(fixture.nativeElement.textContent).not.toContain('Save 16%');
+      (fixture.nativeElement.querySelectorAll('button[aria-pressed]')[1] as HTMLButtonElement).click();
+      fixture.detectChanges();
+      const text = fixture.nativeElement.textContent as string;
+      expect(text).toContain('Save 16%');
+      expect(text).toContain('Save 20%');
+    });
+  });
+
+  describe('unavailable plan buttons', () => {
+    it('are disabled with aria-disabled, visible "Coming soon" text and aria-describedby (not title only)', () => {
+      const hosts = Array.from(fixture.nativeElement.querySelectorAll('app-primary-button')) as HTMLElement[];
+      const unavailable = hosts.filter((h) => !h.hasAttribute('aria-haspopup'));
+      expect(unavailable).toHaveLength(2);
+      for (const host of unavailable) {
+        const button = host.querySelector('button')!;
+        expect(button.disabled).toBe(true);
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+        expect(host.hasAttribute('title')).toBe(false);
+        const note = fixture.nativeElement.querySelector(`#${host.getAttribute('aria-describedby')}`) as HTMLElement;
+        expect(note.textContent).toContain('Coming soon');
+      }
+    });
+  });
 });

@@ -1,3 +1,4 @@
+import { formatRupees } from '@/features/experts/data/format-price';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import {
   LucideBriefcaseBusiness,
@@ -83,7 +84,7 @@ export class ExpertProfileHeroComponent {
   readonly profile = input.required<Expert>();
   readonly initials = computed(() => this.profile().name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join(''));
   readonly stats = computed(() => [
-    { label: 'Session Fee', value: `₹${this.profile().price}` },
+    { label: 'Session Fee', value: formatRupees(this.profile().price) },
     { label: 'Duration', value: this.profile().duration },
     { label: 'Session Mode', value: this.profile().sessionMode },
     { label: 'Language Fluency', value: this.profile().languages.join(', ') },

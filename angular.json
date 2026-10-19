@@ -73,7 +73,7 @@
           "options": {
             "watch": false,
             "isolate": true,
-            "runnerConfig": "vitest.config.ts",
+            "runnerConfig": "vitest.config.mts",
             "setupFiles": ["src/test-setup.ts"]
           }
         }

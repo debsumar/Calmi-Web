@@ -19,11 +19,11 @@ export interface AuthTestimonial {
   role: string;
 }
 
-/** Dummy copy until real testimonials are wired to the backend. */
-const PLACEHOLDER_TESTIMONIALS: readonly AuthTestimonial[] = [
-  { quote: 'Ten minutes a night and I finally sleep through.', author: 'Ananya R.', role: 'Member, 8 months' },
-  { quote: 'A therapist and daily check-ins in one place changed everything for me.', author: 'Rohit M.', role: 'Member, 1 year' },
-  { quote: 'The mood sessions meet me where I am instead of a generic plan.', author: 'Priya S.', role: 'Member, 4 months' },
+/** Generic, non-attributed copy. No numbers or claims: swap in real testimonials via the input once they exist. */
+const DEFAULT_MESSAGES: readonly AuthTestimonial[] = [
+  { quote: 'A few quiet minutes each day can make room to breathe.', author: 'Calmi', role: 'A gentle reminder' },
+  { quote: 'You can go at your own pace. There is no wrong way to start.', author: 'Calmi', role: 'A gentle reminder' },
+  { quote: 'Rest is part of the process, not a break from it.', author: 'Calmi', role: 'A gentle reminder' },
 ];
 
 const SLIDE_INTERVAL_MS = 6000;
@@ -33,7 +33,7 @@ const SLIDE_INTERVAL_MS = 6000;
   imports: [RouterLink, LucideDynamicIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="min-h-screen bg-canvas px-4 py-6 font-sans text-ink sm:px-6 md:flex md:items-center md:justify-center md:px-8 md:py-10">
+    <main class="min-h-dvh bg-canvas px-4 py-6 font-sans text-ink sm:px-6 md:flex md:items-center md:justify-center md:px-8 md:py-10">
       <section class="flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-hairline bg-surface shadow-card md:min-h-[38rem] md:flex-row" aria-label="Calmi authentication">
         <div
           [class]="imageSide() === 'left'
@@ -45,7 +45,8 @@ const SLIDE_INTERVAL_MS = 6000;
             <div
               class="flex w-full max-w-sm flex-col items-center gap-4 text-center"
               aria-roledescription="carousel"
-              aria-label="What members say"
+              aria-label="Messages from Calmi"
+              [attr.aria-live]="isAutoplaying() ? 'off' : 'polite'"
               (mouseenter)="pause()"
               (mouseleave)="resume()"
               (focusin)="pause()"
@@ -57,25 +58,33 @@ const SLIDE_INTERVAL_MS = 6000;
                 </footer>
               </blockquote>
 
-              <div class="flex items-center gap-2" role="group" aria-label="Choose testimonial">
-                @for (item of testimonials; track item.quote; let index = $index) {
+              <div class="flex items-center gap-1" role="group" aria-label="Choose testimonial">
+                @for (item of testimonials(); track item.quote; let index = $index) {
+                  <!-- 24px hit area (WCAG 2.5.8); the visible dot stays small. -->
                   <button
                     type="button"
                     (click)="showSlide(index)"
                     [attr.aria-current]="activeIndex() === index ? 'true' : null"
-                    [attr.aria-label]="'Show testimonial ' + (index + 1) + ' of ' + testimonials.length"
-                    class="h-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark"
-                    [class]="activeIndex() === index ? 'w-5 bg-brand-light' : 'w-1.5 bg-brand-light hover:bg-brand-deep'"></button>
+                    [attr.aria-label]="'Show testimonial ' + (index + 1) + ' of ' + testimonials().length"
+                    class="group flex h-6 min-w-6 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark">
+                    <span
+                      aria-hidden="true"
+                      class="block h-1.5 rounded-full bg-brand-light transition-all group-hover:bg-brand-deep"
+                      [class]="activeIndex() === index ? 'w-5' : 'w-1.5'"></span>
+                  </button>
+                }
+                @if (canAutoplay()) {
+                  <button
+                    type="button"
+                    (click)="toggleAutoplay()"
+                    [attr.aria-pressed]="userPaused()"
+                    class="ml-2 min-h-6 rounded-full px-2 text-xs font-semibold text-on-brand-deep underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark">
+                    {{ userPaused() ? 'Play' : 'Pause' }}
+                    <span class="sr-only"> automatic rotation</span>
+                  </button>
                 }
               </div>
 
-              <ul class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-on-brand-deep">
-                <li>Licensed experts</li>
-                <li aria-hidden="true">&middot;</li>
-                <li>10k+ sessions</li>
-                <li aria-hidden="true">&middot;</li>
-                <li>Private &amp; encrypted</li>
-              </ul>
             </div>
           }
         </div>
@@ -115,9 +124,17 @@ export class AuthSplitCardComponent {
   readonly showClose = input(true);
   readonly showTestimonials = input(true);
 
-  readonly testimonials = PLACEHOLDER_TESTIMONIALS;
+  readonly testimonials = input<readonly AuthTestimonial[]>(DEFAULT_MESSAGES);
   readonly activeIndex = signal(0);
-  readonly activeTestimonial = computed(() => this.testimonials[this.activeIndex()]);
+  readonly activeTestimonial = computed(() => {
+    const items = this.testimonials();
+    return items[Math.min(this.activeIndex(), items.length - 1)] ?? DEFAULT_MESSAGES[0];
+  });
+  /** True once the user explicitly paused rotation (WCAG 2.2.2). */
+  readonly userPaused = signal(false);
+  /** False under reduced motion, without matchMedia, or with a single slide. */
+  readonly canAutoplay = signal(false);
+  readonly isAutoplaying = computed(() => this.canAutoplay() && !this.userPaused());
 
   private timerId: ReturnType<typeof setInterval> | null = null;
   private autoplayAllowed = false;
@@ -126,8 +143,16 @@ export class AuthSplitCardComponent {
     inject(DestroyRef).onDestroy(() => this.pause());
 
     afterNextRender(() => {
-      if (!this.showTestimonials() || this.testimonials.length < 2) return;
-      this.autoplayAllowed = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!this.showTestimonials() || this.testimonials().length < 2) return;
+      let reduced = false;
+      try {
+        reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch {
+        // Unknown preference: stay conservative and keep the carousel manual.
+        reduced = true;
+      }
+      this.autoplayAllowed = !reduced;
+      this.canAutoplay.set(this.autoplayAllowed);
       this.resume();
     });
   }
@@ -143,9 +168,19 @@ export class AuthSplitCardComponent {
   }
 
   resume(): void {
-    if (!this.autoplayAllowed || this.timerId !== null) return;
+    if (!this.autoplayAllowed || this.userPaused() || this.timerId !== null) return;
     this.timerId = setInterval(() => {
-      this.activeIndex.update((current) => (current + 1) % this.testimonials.length);
+      this.activeIndex.update((current) => (current + 1) % this.testimonials().length);
     }, SLIDE_INTERVAL_MS);
+  }
+
+  toggleAutoplay(): void {
+    if (this.userPaused()) {
+      this.userPaused.set(false);
+      this.resume();
+    } else {
+      this.userPaused.set(true);
+      this.pause();
+    }
   }
 }

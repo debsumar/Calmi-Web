@@ -9,6 +9,16 @@ type SafeStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 const ROLE_STORAGE_KEY = 'calmi-auth-role';
 
+/** Persisted role, bound to the user id once known. `uid: null` = chosen before sign-in. */
+interface StoredRole {
+  uid: string | null;
+  role: AuthRole;
+}
+
+function isAuthRole(value: unknown): value is AuthRole {
+  return value === 'specialist' || value === 'user';
+}
+
 function createSafeStorage(): SafeStorage {
   try {
     if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
@@ -33,7 +43,15 @@ export class AuthService {
   readonly currentUser = signal<User | null>(null);
   readonly accessToken = signal<string | null>(null);
   readonly isAuthenticated = signal(false);
-  readonly selectedRole = signal<AuthRole | null>(this.readRole());
+  private readonly initialStoredRole = this.readStoredRole();
+  readonly selectedRole = signal<AuthRole | null>(
+    this.initialStoredRole && this.initialStoredRole.uid === null ? this.initialStoredRole.role : null,
+  );
+  /**
+   * A role stored for a specific user must not be rewritten/cleared before the session shows
+   * who is signed in; otherwise a reload would wipe it before it can be re-adopted.
+   */
+  private readonly roleSyncReady = signal(!this.initialStoredRole || this.initialStoredRole.uid === null);
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey, {
@@ -47,12 +65,17 @@ export class AuthService {
       },
     });
 
-    this.supabase.auth.onAuthStateChange((_event, session) => this.applySession(session));
+    this.supabase.auth.onAuthStateChange((event, session) => {
+      this.applySession(session);
+      if (event === 'SIGNED_OUT') this.clearRole();
+    });
 
     effect(() => {
+      if (!this.roleSyncReady()) return;
       const role = this.selectedRole();
-      if (role) this.storage.setItem(ROLE_STORAGE_KEY, role);
-      else this.storage.removeItem(ROLE_STORAGE_KEY);
+      const uid = this.currentUser()?.id ?? null;
+      if (role) this.writeStoredRole({ uid, role });
+      else this.removeStoredRole();
     });
   }
 
@@ -106,18 +129,64 @@ export class AuthService {
       await this.supabase.auth.signOut();
     } finally {
       this.applySession(null);
-      this.selectedRole.set(null);
+      this.clearRole();
     }
+  }
+
+  private clearRole(): void {
+    this.selectedRole.set(null);
+    this.removeStoredRole();
   }
 
   private applySession(session: Session | null): void {
     this.currentUser.set(session?.user ?? null);
     this.accessToken.set(session?.access_token ?? null);
     this.isAuthenticated.set(session?.user != null);
+
+    const uid = session?.user?.id ?? null;
+    if (uid) {
+      const stored = this.readStoredRole();
+      if (stored?.uid === uid) this.selectedRole.set(stored.role);
+      else if (stored && stored.uid !== null) this.selectedRole.set(null); // another user's role: ignore
+    }
+    this.roleSyncReady.set(true);
   }
 
-  private readRole(): AuthRole | null {
-    const role = this.storage.getItem(ROLE_STORAGE_KEY);
-    return role === 'specialist' || role === 'user' ? role : null;
+  private readStoredRole(): StoredRole | null {
+    let raw: string | null;
+    try {
+      raw = this.storage.getItem(ROLE_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+    if (!raw) return null;
+    // Legacy format: bare role string, not yet bound to a user.
+    if (isAuthRole(raw)) return { uid: null, role: raw };
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        const { uid, role } = parsed as { uid?: unknown; role?: unknown };
+        if (isAuthRole(role) && (uid === null || typeof uid === 'string')) return { uid, role };
+      }
+    } catch {
+      // Corrupt value: treat as absent.
+    }
+    return null;
+  }
+
+  private writeStoredRole(value: StoredRole): void {
+    try {
+      this.storage.setItem(ROLE_STORAGE_KEY, JSON.stringify(value));
+    } catch {
+      // Quota exceeded / storage blocked: role simply is not persisted.
+    }
+  }
+
+  private removeStoredRole(): void {
+    try {
+      this.storage.removeItem(ROLE_STORAGE_KEY);
+    } catch {
+      // Storage unavailable.
+    }
   }
 }

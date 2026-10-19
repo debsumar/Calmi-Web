@@ -5,14 +5,13 @@ import { filter, map, startWith } from 'rxjs';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { AppTopbar } from './app.topbar';
 import { ChatWidgetComponent } from '@/features/chat/chat-widget.component';
-import { ScrollPositionService } from '@/core/services/scroll-position.service';
 
 @Component({
   selector: 'app-layout',
   imports: [RouterOutlet, RouterLink, LucideDynamicIcon, AppTopbar, ChatWidgetComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <div id="calmi-app-shell" class="min-h-screen flex flex-col bg-canvas">
+    <div id="calmi-app-shell" class="min-h-dvh flex flex-col bg-canvas">
       @if (showsDownloadBanner()) {
         <a routerLink="/download"
            aria-label="Download App"
@@ -31,7 +30,6 @@ import { ScrollPositionService } from '@/core/services/scroll-position.service';
 })
 export class AppLayout {
   private readonly router = inject(Router);
-  private readonly _ = inject(ScrollPositionService);
   private readonly routeUrl = toSignal(
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),

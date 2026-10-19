@@ -5,7 +5,6 @@ export const authRoutes: Routes = [
   {
     path: '',
     canActivate: [guestGuard],
-    canActivateChild: [guestGuard],
     children: [
       {
         path: 'identify',

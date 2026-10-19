@@ -22,7 +22,11 @@ export class ChatSuggestionsComponent {
   private readonly store = inject(ChatStoreService);
 
   choose(label: string): void {
+    if (this.store.isStreaming()) return;
+    const previousDraft = this.store.draft();
     this.store.setDraft(label);
     this.store.send();
+    // Keep whatever the user was typing instead of overwriting it with the chip text.
+    if (previousDraft) this.store.setDraft(previousDraft);
   }
 }

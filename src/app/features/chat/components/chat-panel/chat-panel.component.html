@@ -27,6 +27,11 @@
       type="button"
       class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
       aria-label="Minimize Rumi AI chat"
+      [attr.aria-disabled]="voice.isActive() ? 'true' : null"
+      [attr.aria-describedby]="voice.isActive() ? 'rumi-chat-voice-hint' : null"
+      [attr.title]="voice.isActive() ? 'End the voice session first' : null"
+      [class.opacity-50]="voice.isActive()"
+      [class.cursor-not-allowed]="voice.isActive()"
       (click)="minimizePanel()">
       <svg [lucideIcon]="'minus'" [size]="18" aria-hidden="true"></svg>
     </button>
@@ -34,10 +39,16 @@
       type="button"
       class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
       aria-label="Close Rumi AI chat"
+      [attr.aria-disabled]="voice.isActive() ? 'true' : null"
+      [attr.aria-describedby]="voice.isActive() ? 'rumi-chat-voice-hint' : null"
+      [attr.title]="voice.isActive() ? 'End the voice session first' : null"
+      [class.opacity-50]="voice.isActive()"
+      [class.cursor-not-allowed]="voice.isActive()"
       (click)="closePanel()">
       <svg [lucideIcon]="'x'" [size]="18" aria-hidden="true"></svg>
     </button>
   </header>
+  <span id="rumi-chat-voice-hint" class="sr-only">@if (voice.isActive()) {End the voice session first}</span>
 
   @if (!chatStore.isMinimized()) {
     <app-chat-conversation surface="floating-panel"></app-chat-conversation>

@@ -26,7 +26,7 @@ describe('SocialAuthButtonsComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(1);
   });
 
-  it('calls Google and disables button while pending', async () => {
+  it('calls Google and keeps the button disabled while pending and after success', async () => {
     let resolveGoogle!: () => void;
     loginWithGoogle.mockReturnValueOnce(new Promise<void>((resolve) => { resolveGoogle = resolve; }));
     const googleButton = fixture.nativeElement.querySelector('img[src="/assets/logos/google.svg"]').closest('button') as HTMLButtonElement;
@@ -39,7 +39,8 @@ describe('SocialAuthButtonsComponent', () => {
     resolveGoogle();
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(googleButton.disabled).toBe(false);
+    // Success means a redirect is under way, so the button deliberately stays disabled.
+    expect(googleButton.disabled).toBe(true);
   });
 
   it('emits generic failure copy without provider details', async () => {
@@ -63,5 +64,28 @@ describe('SocialAuthButtonsComponent', () => {
     expect(fixture.nativeElement.textContent).not.toContain('OR');
     const googleButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
     expect(googleButton.disabled).toBe(true);
+  });
+
+  it('stays pending after a successful sign-in because the browser is redirecting', async () => {
+    const googleButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+    googleButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(googleButton.disabled).toBe(true);
+
+    googleButton.click();
+    expect(loginWithGoogle).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-enables the button after a failure so the user can retry', async () => {
+    loginWithGoogle.mockRejectedValueOnce(new Error('nope'));
+    const googleButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+    googleButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(googleButton.disabled).toBe(false);
   });
 });

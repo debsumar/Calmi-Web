@@ -1,9 +1,17 @@
 // @vitest-environment jsdom
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { STUDENT_VERIFICATION_INSTITUTIONS } from '../../services/student-verification.fixtures';
 import { StudentVerificationService } from '../../services/student-verification.service';
 import { VerificationMethodStepComponent } from './verification-method-step.component';
+
+const originalCreateObjectURL = URL.createObjectURL;
+const originalRevokeObjectURL = URL.revokeObjectURL;
+
+function restoreObjectUrls(): void {
+  Object.defineProperty(URL, 'createObjectURL', { configurable: true, writable: true, value: originalCreateObjectURL });
+  Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, writable: true, value: originalRevokeObjectURL });
+}
 
 function mockObjectUrls() {
   const createObjectURL = vi.fn((file: File) => `blob:${file.name}`);
@@ -11,6 +19,12 @@ function mockObjectUrls() {
   Object.defineProperty(URL, 'createObjectURL', { configurable: true, writable: true, value: createObjectURL });
   Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, writable: true, value: revokeObjectURL });
   return { createObjectURL, revokeObjectURL };
+}
+
+function buttonByText(root: HTMLElement, text: string): HTMLButtonElement {
+  const match = Array.from(root.querySelectorAll('button')).find((button) => button.textContent?.trim() === text);
+  if (!match) throw new Error(`No button with text "${text}"`);
+  return match;
 }
 
 describe('VerificationMethodStepComponent', () => {
@@ -21,6 +35,10 @@ describe('VerificationMethodStepComponent', () => {
     fixture = TestBed.createComponent(VerificationMethodStepComponent);
     fixture.componentRef.setInput('institutions', STUDENT_VERIFICATION_INSTITUTIONS);
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    restoreObjectUrls();
   });
 
   it('renders an accessible institution combobox, radio fieldset, consent, and native file input', () => {
@@ -325,7 +343,7 @@ describe('VerificationMethodStepComponent', () => {
     fixture.detectChanges();
     Object.defineProperty(input, 'value', { configurable: true, writable: true, value: 'C:\\fakepath\\student-id.png' });
 
-    (fixture.nativeElement.querySelector('button:nth-of-type(2)') as HTMLButtonElement).click();
+    buttonByText(fixture.nativeElement, 'Remove').click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.preview-card')).toBeNull();

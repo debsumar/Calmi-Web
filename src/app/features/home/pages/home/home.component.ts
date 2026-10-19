@@ -38,9 +38,9 @@ export class HomeComponent {
   getUserFirstName(): string {
     const user = this.authService.currentUser();
     if (!user) return '';
-    const fullName = user.user_metadata['full_name'] || '';
-    if (fullName) {
-      return fullName.split(' ')[0];
+    const fullName: unknown = user.user_metadata?.['full_name'];
+    if (typeof fullName === 'string' && fullName.trim()) {
+      return fullName.trim().split(/\s+/)[0];
     }
     return user.email?.split('@')[0] || '';
   }

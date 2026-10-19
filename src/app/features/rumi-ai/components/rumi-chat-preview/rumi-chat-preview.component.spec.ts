@@ -137,6 +137,23 @@ describe('RumiChatPreviewComponent', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it('stamps every scripted message at or before now, never in the future', () => {
+    const now = new Date(2026, 4, 20, 9, 30, 0);
+    vi.setSystemTime(now);
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: vi.fn().mockReturnValue({ matches: true }),
+    });
+    fixture = TestBed.createComponent(RumiChatPreviewComponent);
+    fixture.detectChanges();
+
+    const messages = fixture.componentInstance.messages();
+    expect(messages).toHaveLength(3);
+    for (const message of messages) {
+      expect(message.timestamp.getTime()).toBeLessThanOrEqual(now.getTime());
+    }
+  });
+
   it('keeps the preview inert and contains no interactive elements', () => {
     fixture = TestBed.createComponent(RumiChatPreviewComponent);
     fixture.detectChanges();

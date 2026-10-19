@@ -10,6 +10,7 @@ import {
   inject,
   Injector,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -24,10 +25,16 @@ import { resolveHttpsAvatarUrl } from '../../core/identity/avatar-url';
 const INK_DURATION_MS = 350;
 const RIPPLE_DURATION_MS = 420;
 
+/** Tailwind `md` (see tailwind.css --breakpoint-md). */
+const MD_BREAKPOINT_PX = 768;
+
+const THEME_LABELS = { light: 'Light', dark: 'Dark', auto: 'Auto' } as const;
+
 @Component({
   selector: 'app-topbar',
   imports: [RouterLink, RouterLinkActive, LucideDynamicIcon],
   changeDetection: ChangeDetectionStrategy.Eager,
+  host: { class: 'block' },
   template: `
     <header class="h-16 flex items-center justify-between px-4 md:px-8 bg-glass backdrop-blur-md border-b border-hairline">
       <a routerLink="/" class="flex items-center">
@@ -53,9 +60,10 @@ const RIPPLE_DURATION_MS = 420;
 
       <div class="flex items-center gap-3">
         <div class="hidden h-5 border-l border-hairline md:block"></div>
-        <button (click)="themeService.toggle()"
-                class="h-9 min-w-9 px-2 flex items-center justify-center rounded-full text-ink hover:bg-sunken"
-                [title]="'Theme: ' + themeService.mode()">
+        <button type="button" (click)="themeService.toggle()"
+                class="h-9 min-w-9 px-2 flex items-center justify-center rounded-full text-ink hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                [attr.aria-label]="themeLabel()"
+                [title]="themeLabel()">
           @switch (themeService.mode()) {
             @case ('light') { <svg [lucideIcon]="'moon'" [size]="20" class="text-ink"></svg> }
             @case ('dark') { <svg [lucideIcon]="'sun'" [size]="20" class="text-ink"></svg> }
@@ -64,10 +72,11 @@ const RIPPLE_DURATION_MS = 420;
         </button>
 
         @if (authService.currentUser(); as user) {
-          <div class="relative">
+          <div #profileMenuWrap class="relative">
             <!-- Profile Trigger -->
-            <button #profileTrigger (click)="dropdownOpen.set(!dropdownOpen())"
+            <button #profileTrigger type="button" (click)="toggleDropdown()"
                     aria-label="Open profile menu" aria-haspopup="menu" [attr.aria-expanded]="dropdownOpen()"
+                    [attr.aria-controls]="dropdownOpen() ? 'profile-menu' : null"
                     class="w-9 h-9 flex items-center justify-center rounded-full overflow-hidden border border-hairline hover:ring-2 hover:ring-brand transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
               @if (avatarUrl(); as avatar) {
                 <img [src]="avatar" alt="" aria-hidden="true" referrerpolicy="no-referrer" decoding="async"
@@ -81,11 +90,12 @@ const RIPPLE_DURATION_MS = 420;
 
             <!-- Dropdown Menu -->
             @if (dropdownOpen()) {
-              <!-- Click outside overlay to close -->
-              <div class="fixed inset-0 z-10" (click)="dropdownOpen.set(false)"></div>
-              
-              <div class="absolute right-0 mt-2 w-56 rounded-xl bg-elevated border border-hairline p-2 shadow-card z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div class="px-3 py-2 border-b border-hairline mb-1">
+              <!-- Outside clicks are handled by the document listener (onDocumentClick):
+                   a fixed overlay inside the backdrop-blur header would only cover the header strip. -->
+              <div #profileMenu id="profile-menu" role="menu" aria-label="Profile menu"
+                   (keydown)="onProfileMenuKeydown($event)"
+                   class="absolute right-0 mt-2 w-56 rounded-xl bg-elevated border border-hairline p-2 shadow-card z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div role="presentation" class="px-3 py-2 border-b border-hairline mb-1">
                   <p class="text-sm font-semibold text-ink truncate">
                     {{ user.user_metadata['full_name'] || 'User' }}
                   </p>
@@ -93,19 +103,19 @@ const RIPPLE_DURATION_MS = 420;
                     {{ user.email }}
                   </p>
                 </div>
-                <button type="button" (click)="viewProfile()" aria-label="View Profile"
+                <button type="button" role="menuitem" (click)="viewProfile()" aria-label="View Profile"
                         class="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-sunken rounded-lg transition-colors text-left">
                   <svg [lucideIcon]="'circle-user'" [size]="16" aria-hidden="true"></svg>
                   View Profile
                 </button>
                 @if (authService.selectedRole() !== 'specialist') {
-                  <button type="button" (click)="viewJournal()" aria-label="My Journals"
+                  <button type="button" role="menuitem" (click)="viewJournal()" aria-label="My Journals"
                           class="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-sunken rounded-lg transition-colors text-left">
                     <svg [lucideIcon]="'notebook-pen'" [size]="16" aria-hidden="true"></svg>
                     My Journals
                   </button>
                 }
-                <button type="button" (click)="requestLogout($event)"
+                <button type="button" role="menuitem" (click)="requestLogout($event)"
                         class="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-sunken rounded-lg transition-colors text-left">
                   <svg [lucideIcon]="'log-out'" [size]="16" aria-hidden="true"></svg>
                   Logout
@@ -122,11 +132,11 @@ const RIPPLE_DURATION_MS = 420;
         }
 
         <!-- Mobile hamburger -->
-        <button #mobileMenuToggle (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+        <button #mobileMenuToggle id="mobile-menu-toggle" type="button" (click)="toggleMobileMenu()"
                 [attr.aria-label]="mobileMenuOpen() ? 'Close navigation menu' : 'Open navigation menu'"
                 [attr.aria-expanded]="mobileMenuOpen()"
-                aria-controls="mobile-menu"
-                class="md:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-sunken">
+                [attr.aria-controls]="mobileMenuOpen() ? 'mobile-menu' : null"
+                class="md:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
           <svg [lucideIcon]="mobileMenuOpen() ? 'x' : 'menu'" [size]="22" class="text-ink"></svg>
         </button>
       </div>
@@ -134,10 +144,12 @@ const RIPPLE_DURATION_MS = 420;
 
     <!-- Mobile menu overlay -->
     @if (mobileMenuOpen()) {
-      <div id="mobile-menu" class="md:hidden fixed inset-0 top-16 z-40 bg-canvas p-6 flex flex-col gap-4 stagger-enter" style="--index:0">
+      <!-- Anchored to the sticky host (not the viewport) so it always starts at the header's
+           bottom edge, even when the Download banner pushes the topbar down. -->
+      <div #mobileMenu id="mobile-menu" class="md:hidden absolute inset-x-0 top-full z-40 h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain bg-canvas p-6 flex flex-col gap-4 stagger-enter" style="--index:0">
         @for (link of navLinks(); track link.path; let i = $index) {
           <a [routerLink]="link.path" routerLinkActive="text-brand font-bold"
-             (click)="mobileMenuOpen.set(false)"
+             (click)="closeMobileMenu()"
              class="stagger-enter text-lg font-semibold text-ink hover:text-brand py-2 border-b border-hairline"
              [style.--index]="i + 1">
             {{ link.label }}
@@ -151,7 +163,7 @@ const RIPPLE_DURATION_MS = 420;
             Logout
           </button>
         } @else {
-          <a routerLink="/auth/identify" (click)="mobileMenuOpen.set(false)"
+          <a routerLink="/auth/identify" (click)="closeMobileMenu()"
              class="stagger-enter mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-transparent bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand-deep hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
              [style.--index]="navLinks().length + 1">
             <svg [lucideIcon]="'user'" [size]="18" aria-hidden="true"></svg>
@@ -164,7 +176,7 @@ const RIPPLE_DURATION_MS = 420;
     @if (logoutConfirmOpen()) {
       <div class="fixed inset-0 z-50 grid place-items-center bg-scrim p-4" (click)="cancelLogout()">
         <div role="dialog" aria-modal="true" aria-labelledby="logout-confirm-title"
-             tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="cancelLogout()"
+             tabindex="-1" (click)="$event.stopPropagation()" (keydown.tab)="trapDialogTab($event)" (keydown.shift.tab)="trapDialogTab($event)"
              class="w-full max-w-sm overflow-hidden rounded-2xl border border-hairline bg-elevated p-8 shadow-card">
           <h3 id="logout-confirm-title" class="dialog-stagger-item text-center font-sans text-lg font-bold text-ink" style="--index: 0">
             Log out?
@@ -177,7 +189,7 @@ const RIPPLE_DURATION_MS = 420;
                     class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-hairline bg-sunken px-4 py-3 text-base font-semibold text-ink transition-colors hover:bg-sunken-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
               Cancel
             </button>
-            <button type="button" (click)="confirmLogout()"
+            <button #logoutConfirmButton type="button" (click)="confirmLogout()"
                     class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-brand-deep px-4 py-3 text-base font-semibold text-on-brand-deep transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
               Yes, log out
             </button>
@@ -221,6 +233,10 @@ export class AppTopbar {
   private readonly profileTrigger = viewChild<ElementRef<HTMLButtonElement>>('profileTrigger');
   private readonly mobileMenuToggle = viewChild<ElementRef<HTMLButtonElement>>('mobileMenuToggle');
   private readonly logoutConfirmCancelButton = viewChild<ElementRef<HTMLButtonElement>>('logoutConfirmCancelButton');
+  private readonly logoutConfirmButton = viewChild<ElementRef<HTMLButtonElement>>('logoutConfirmButton');
+  private readonly profileMenuWrap = viewChild<ElementRef<HTMLElement>>('profileMenuWrap');
+  private readonly profileMenu = viewChild<ElementRef<HTMLElement>>('profileMenu');
+  private readonly mobileMenu = viewChild<ElementRef<HTMLElement>>('mobileMenu');
   private logoutTrigger: HTMLElement | null = null;
   private logoutFallback: HTMLElement | null = null;
 
@@ -248,10 +264,35 @@ export class AppTopbar {
     { path: '/pricing', label: 'Pricing' },
   ]);
 
+  /** Accessible name states the current mode and the action, not just the mode. */
+  readonly themeLabel = computed(() => {
+    const mode = this.themeService.mode();
+    const next = mode === 'light' ? 'dark' : mode === 'dark' ? 'auto' : 'light';
+    return `Theme: ${THEME_LABELS[mode]}. Switch to ${THEME_LABELS[next]}`;
+  });
+
   constructor() {
     effect(() => {
       this.currentPath();
       afterNextRender({ write: () => this.moveIndicator() }, { injector: this.injector });
+    });
+
+    // Navigating anywhere dismisses transient UI; the menu must not outlive the page it linked to.
+    effect(() => {
+      this.currentPath();
+      untracked(() => {
+        this.dropdownOpen.set(false);
+        this.mobileMenuOpen.set(false);
+      });
+    });
+
+    // Lock page scroll behind the open mobile menu; always restore, including on destroy.
+    effect((onCleanup) => {
+      if (!this.mobileMenuOpen()) return;
+      const body = this.document.body;
+      const previous = body.style.overflow;
+      body.style.overflow = 'hidden';
+      onCleanup(() => { body.style.overflow = previous; });
     });
 
     afterNextRender({
@@ -266,6 +307,86 @@ export class AppTopbar {
   @HostListener('window:resize')
   onWindowResize(): void {
     this.moveIndicator(true);
+    // The hamburger is hidden from md up, so an open menu would be orphaned.
+    const width = this.document.defaultView?.innerWidth ?? 0;
+    if (width >= MD_BREAKPOINT_PX && this.mobileMenuOpen()) this.mobileMenuOpen.set(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    if (!this.dropdownOpen()) return;
+    const wrap = this.profileMenuWrap()?.nativeElement;
+    if (wrap && event.target instanceof Node && wrap.contains(event.target)) return;
+    this.dropdownOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.logoutConfirmOpen()) {
+      this.cancelLogout();
+    } else if (this.dropdownOpen()) {
+      this.closeDropdown(true);
+    } else if (this.mobileMenuOpen()) {
+      this.closeMobileMenu(true);
+    }
+  }
+
+  toggleDropdown(): void {
+    if (this.dropdownOpen()) {
+      this.closeDropdown();
+      return;
+    }
+    this.dropdownOpen.set(true);
+    this.focusAfterRender(() => this.profileMenu()?.nativeElement.querySelector<HTMLElement>('[role="menuitem"]'));
+  }
+
+  closeDropdown(returnFocus = false): void {
+    this.dropdownOpen.set(false);
+    if (returnFocus) this.focusAfterRender(() => this.profileTrigger()?.nativeElement);
+  }
+
+  toggleMobileMenu(): void {
+    if (this.mobileMenuOpen()) {
+      this.closeMobileMenu();
+      return;
+    }
+    this.mobileMenuOpen.set(true);
+    this.focusAfterRender(() => this.mobileMenu()?.nativeElement.querySelector<HTMLElement>('a, button'));
+  }
+
+  closeMobileMenu(returnFocus = false): void {
+    this.mobileMenuOpen.set(false);
+    if (returnFocus) this.focusAfterRender(() => this.mobileMenuToggle()?.nativeElement);
+  }
+
+  onProfileMenuKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    const items = Array.from(this.profileMenu()?.nativeElement.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
+    if (items.length === 0) return;
+    event.preventDefault();
+    const current = items.indexOf(this.document.activeElement as HTMLElement);
+    const step = event.key === 'ArrowDown' ? 1 : -1;
+    items[(current + step + items.length) % items.length].focus();
+  }
+
+  /** Keeps Tab / Shift+Tab inside the modal logout dialog. */
+  trapDialogTab(event: Event): void {
+    const first = this.logoutConfirmCancelButton()?.nativeElement;
+    const last = this.logoutConfirmButton()?.nativeElement;
+    if (!first || !last) return;
+    const shift = (event as KeyboardEvent).shiftKey;
+    const active = this.document.activeElement;
+    if (shift && (active === first || !first.parentElement?.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!shift && (active === last || !first.parentElement?.contains(active))) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  private focusAfterRender(resolve: () => HTMLElement | null | undefined): void {
+    afterNextRender({ write: () => resolve()?.focus() }, { injector: this.injector });
   }
 
   viewProfile(): void {

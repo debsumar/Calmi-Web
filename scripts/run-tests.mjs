@@ -38,7 +38,9 @@ const args = [cliEntry, 'test', '--watch=false', ...passthrough];
 
 console.log(`[run-tests] ng test --watch=false ${passthrough.join(' ')} (hard limit ${timeoutSeconds}s)`);
 
-const child = spawn(command, args, { stdio: 'inherit', shell: false });
+// POSIX: own process group (detached) so killTree can signal the whole group with
+// `process.kill(-pid)`. stdio stays inherited, so output is still live.
+const child = spawn(command, args, { stdio: 'inherit', shell: false, detached: !isWindows });
 
 let timedOut = false;
 
@@ -54,6 +56,15 @@ function killTree() {
   } catch {
     child.kill('SIGKILL');
   }
+}
+
+// A detached child no longer shares the terminal's process group, so Ctrl-C /
+// SIGTERM on the wrapper would not reach it. Forward by killing the group.
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.on(signal, () => {
+    killTree();
+    process.exit(signal === 'SIGINT' ? 130 : 143);
+  });
 }
 
 const watchdog = setTimeout(() => {

@@ -1,7 +1,7 @@
 ﻿@import "tailwindcss";
 @import "../node_modules/tailwindcss-primeui/v4/index.css";
 
-@variant dark (&:where([class*="app-dark"], [class*="app-dark"] *));
+@variant dark (&:where(.app-dark, .app-dark *));
 
 /* Every role below is derived from the live theme palette. The only literals are
    `white`, `black` and `transparent`, which are anchors, not brand decisions.
@@ -11,6 +11,10 @@
    `color-mix()` needs no fallback: Tailwind 4 already requires Chrome 111+ /
    Safari 16.4+ / Firefox 128+, which all support it. */
 @layer base {
+  /* Native form controls and scrollbars follow the app theme, not only the OS. */
+  :root { color-scheme: light; }
+  :root.app-dark { color-scheme: dark; }
+
   :root {
     --calmi-canvas: color-mix(in srgb, var(--color-brand) 5%, white);
     --calmi-surface: white;
@@ -46,8 +50,8 @@
     --calmi-on-media: white;
     --calmi-shadow-aurora: 0 12px 34px color-mix(in srgb, var(--color-brand) 42%, transparent);
     --calmi-on-coral: white;
-    --calmi-success: var(--p-success-700);
-    --calmi-danger: var(--p-danger-700);
+    --calmi-success: var(--p-success-700, #1f5a23);
+    --calmi-danger: var(--p-danger-700, #8a1b1b);
     /* Dark ink keeps normal CTA labels contrast-safe on the lavender brand fill. */
     --calmi-on-brand: color-mix(in srgb, var(--color-brand) 12%, black);
     /* `brand-deep` (primary-600) is too dark to reuse `on-brand`: that dark ink
@@ -74,7 +78,7 @@
     /* Warning status text, same light/dark stop strategy as success/danger:
        a dark stop on light surfaces, a light stop on dark ones. The decorative
        `accent-gold` fill is NOT a substitute - it fails as body text on canvas. */
-    --calmi-warning: var(--p-gold-700);
+    --calmi-warning: var(--p-gold-700, #8a6408);
     /* Player chrome. Deliberately opaque: the players sit over hero art and
        canvas, and a translucent panel there would need its own reduced
        transparency fallback to stay readable. */
@@ -90,8 +94,8 @@
   }
 
   /* Must out-specify :root (0,1,0) or the dark values never apply.
-     .app-dark is toggled on <html>, so :root[class*="app-dark"] is (0,2,0). */
-  :root[class*="app-dark"] {
+     .app-dark is toggled on <html>, so :root.app-dark is (0,2,0). */
+  :root.app-dark {
     --calmi-canvas: color-mix(in srgb, var(--color-brand) 7%, black);
     --calmi-surface: color-mix(in srgb, var(--color-brand) 32%, black);
     --calmi-elevated: color-mix(in srgb, var(--color-brand) 13%, black);
@@ -112,8 +116,8 @@
     --calmi-on-voice-end: white;
     --calmi-aurora-composite: normal;
     --calmi-shadow-aurora: 0 12px 34px color-mix(in srgb, var(--color-brand) 42%, transparent);
-    --calmi-success: var(--p-success-300);
-    --calmi-danger: var(--p-danger-300);
+    --calmi-success: var(--p-success-300, #7fc482);
+    --calmi-danger: var(--p-danger-300, #e58a8a);
     --calmi-on-brand: color-mix(in srgb, var(--color-brand) 12%, black);
     --calmi-on-brand-deep: white;
     --calmi-ink: color-mix(in srgb, var(--color-brand) 6%, white);
@@ -121,7 +125,7 @@
     --calmi-ink-muted: color-mix(in srgb, var(--color-brand) 34%, white);
     --calmi-on-hero: white;
     --calmi-selected: color-mix(in srgb, var(--color-brand) 16%, var(--calmi-surface));
-    --calmi-warning: var(--p-gold-300);
+    --calmi-warning: var(--p-gold-300, #f9d37a);
     --calmi-player-surface: color-mix(in srgb, var(--color-brand) 24%, black);
 
     --calmi-shadow-card: 0 4px 4px 0 rgb(0 0 0 / 0.5);
@@ -138,7 +142,7 @@
       --calmi-composer-trace: none;
       --calmi-composer-glow: transparent;
     }
-    :root[class*="app-dark"] {
+    :root.app-dark {
       --calmi-glass: var(--calmi-elevated);
       --calmi-voice-scrim: var(--calmi-elevated);
       --calmi-composer-trace: none;
@@ -383,6 +387,8 @@
   .verification-dialog, .verification-pane { opacity: 1; transform: none; }
   .checking-indicator { opacity: 1; transform: none; }
   .strike::after { transform: scaleX(1); }
+  /* Base rule starts at opacity:0 and relies on an animation to reveal it. */
+  .dialog-stagger-item { opacity: 1 !important; transform: none !important; }
 }
 
 :root.reduce-motion *,
@@ -391,4 +397,8 @@
   animation: none !important;
   transition-duration: var(--dur-instant) !important;
   scroll-behavior: auto !important;
+}
+:root.reduce-motion .dialog-stagger-item {
+  opacity: 1 !important;
+  transform: none !important;
 }

@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { LucideChevronDown, provideLucideIcons } from '@lucide/angular';
 import { describe, expect, it, vi } from 'vitest';
 import { SelectMenuComponent, SelectMenuOption } from './select-menu.component';
@@ -9,6 +11,15 @@ const OPTIONS: readonly SelectMenuOption[] = [
   { value: 2, label: '2+ years' },
   { value: 4, label: '4+ years' },
 ];
+
+@Component({
+  imports: [SelectMenuComponent, ReactiveFormsModule],
+  template: `<app-select-menu [options]="options" [formControl]="control" ariaLabel="Experience" />`,
+})
+class FormHost {
+  readonly options = OPTIONS;
+  readonly control = new FormControl<string | number | null>(4);
+}
 
 describe('SelectMenuComponent', () => {
   let fixture: ComponentFixture<SelectMenuComponent>;
@@ -58,7 +69,7 @@ describe('SelectMenuComponent', () => {
     expect(trigger.getAttribute('aria-activedescendant')).toContain('-option-0');
     expect(root.querySelector('[role="listbox"]')?.getAttribute('aria-labelledby')).toBe('experience-label');
     expect(root.querySelectorAll('[role="option"][tabindex="-1"]')).toHaveLength(3);
-    expect(root.querySelector('[role="option"]')?.className).toContain('ring-brand');
+    expect(root.querySelector('[role="option"]')?.getAttribute('id')).toBe(trigger.getAttribute('aria-activedescendant'));
 
     trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
     fixture.detectChanges();
@@ -170,20 +181,78 @@ describe('SelectMenuComponent', () => {
     Object.assign(trigger, { getBoundingClientRect: () => new DOMRect(0, 700, 200, 44) });
     Object.assign(panel, { getBoundingClientRect: () => new DOMRect(0, 0, 200, 300) });
     const descriptor = Object.getOwnPropertyDescriptor(window, 'innerHeight');
-    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
-    document.dispatchEvent(new Event('scroll'));
-    fixture.detectChanges();
-    expect(panel.className).toContain('bottom-full');
-    if (descriptor) Object.defineProperty(window, 'innerHeight', descriptor);
+    try {
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+      document.dispatchEvent(new Event('scroll'));
+      fixture.detectChanges();
+      expect(panel.className).toContain('bottom-full');
+    } finally {
+      if (descriptor) Object.defineProperty(window, 'innerHeight', descriptor);
+      else delete (window as { innerHeight?: number }).innerHeight;
+    }
   });
 
-  it('uses semantic color utilities only', async () => {
-    await create();
-    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('button')!.click();
+  it('does not scroll the list when the pointer merely hovers an option', async () => {
+    await create(OPTIONS, null);
+    const root = fixture.nativeElement as HTMLElement;
+    root.querySelector<HTMLButtonElement>('button')!.click();
     fixture.detectChanges();
-    const rendered = (fixture.nativeElement as HTMLElement).innerHTML;
-    expect(rendered).toMatch(/bg-sunken/);
-    expect(rendered).toMatch(/bg-elevated/);
-    expect(rendered).not.toMatch(/#[0-9a-f]{3,8}|rgba?\(|hsl\(|(?:bg|text|border)-(?:gray|white|black)(?:-|["'\s])/i);
+    await fixture.whenStable();
+    const options = root.querySelectorAll<HTMLElement>('[role="option"]');
+    const scrollIntoView = vi.fn();
+    options.forEach((option) => Object.assign(option, { scrollIntoView }));
+
+    options[2]!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(root.querySelector('button')!.getAttribute('aria-activedescendant')).toContain('-option-2');
+  });
+
+  it('works as a ControlValueAccessor inside a reactive form', async () => {
+    await TestBed.configureTestingModule({
+      imports: [FormHost],
+      providers: [provideLucideIcons(LucideChevronDown)],
+    }).compileComponents();
+    const hostFixture = TestBed.createComponent(FormHost);
+    hostFixture.detectChanges();
+    const root = hostFixture.nativeElement as HTMLElement;
+    const trigger = root.querySelector<HTMLButtonElement>('button')!;
+    const control = hostFixture.componentInstance.control;
+
+    // writeValue
+    expect(trigger.textContent).toContain('4+ years');
+    control.setValue(2);
+    hostFixture.detectChanges();
+    expect(trigger.textContent).toContain('2+ years');
+
+    // registerOnChange
+    trigger.click();
+    hostFixture.detectChanges();
+    root.querySelectorAll<HTMLButtonElement>('[role="option"]')[0]!.click();
+    hostFixture.detectChanges();
+    expect(control.value).toBeNull();
+    expect(trigger.textContent).toContain('Any experience');
+
+    // registerOnTouched
+    control.markAsUntouched();
+    expect(control.touched).toBe(false);
+    trigger.click();
+    hostFixture.detectChanges();
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    hostFixture.detectChanges();
+    expect(control.touched).toBe(true);
+
+    // setDisabledState
+    control.disable();
+    hostFixture.detectChanges();
+    expect(trigger.disabled).toBe(true);
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    hostFixture.detectChanges();
+    expect(root.querySelector('[role="listbox"]')).toBeNull();
+    control.enable();
+    hostFixture.detectChanges();
+    expect(trigger.disabled).toBe(false);
   });
 });

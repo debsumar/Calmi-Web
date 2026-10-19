@@ -32,6 +32,9 @@ export function safeReturnUrl(value: unknown): string | null {
   if (decodedPath.split('/').some((segment) => segment === '..')) return null;
   if (/^[a-z][a-z\d+.-]*:/i.test(decodedPath)) return null;
 
+  // Auth entry points as a return target would nest or loop (login -> identify -> login ...).
+  if (/^\/auth\/(identify|login)(\/|$)/i.test(decodedPath)) return null;
+
   const normalizedPath = parsed.pathname;
   if (!normalizedPath.startsWith('/') || normalizedPath.startsWith('//')) return null;
   return normalizedPath + parsed.search + parsed.hash;

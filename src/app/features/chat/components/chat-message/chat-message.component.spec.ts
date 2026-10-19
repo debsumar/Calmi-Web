@@ -183,4 +183,17 @@ describe('ChatMessageComponent', () => {
     button.click();
     expect(retry).toHaveBeenCalledWith('message-1');
   });
+
+  it('wraps long words and marks text containers dir="auto" for AI and user messages', () => {
+    const ai = render(message({ role: 'ai', text: 'x'.repeat(200) }));
+    const bubble = ai.querySelector('.bg-elevated') as HTMLElement;
+    expect(bubble.classList).toContain('break-words');
+    expect(bubble.className).toContain('[overflow-wrap:anywhere]');
+    expect(bubble.getAttribute('dir')).toBe('auto');
+
+    const user = render(message({ role: 'user', text: 'مرحبا' }));
+    const text = user.querySelector('p') as HTMLElement;
+    expect(text.getAttribute('dir')).toBe('auto');
+    expect(text.className).toContain('[overflow-wrap:anywhere]');
+  });
 });

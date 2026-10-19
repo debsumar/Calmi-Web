@@ -36,7 +36,7 @@ describe('ExpertProfileComponent', () => {
     expect(root.textContent).toContain('Hear from Clients!');
     expect(root.textContent).toContain('Book a Session');
     expect(root.textContent).toContain('Before Your First Session');
-    expect(root.textContent).toContain('₹2000');
+    expect(root.textContent).toContain('₹2,000');
     expect(root.querySelectorAll('app-faq-accordion button[aria-controls]')).toHaveLength(3);
     expect(root.querySelector<HTMLImageElement>('img[alt="Portrait of Gargi Yadav"]')?.getAttribute('src')).toBe('assets/users/gargi.avif');
     expect(root.querySelector('nav[aria-label="Breadcrumb"] [aria-current="page"]')?.textContent).toContain('Expert Profile');

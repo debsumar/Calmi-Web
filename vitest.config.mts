@@ -13,8 +13,9 @@ import { defineConfig } from 'vitest/config';
  *   auto-refresh timers) load inside jsdom specs. `isolate` is re-enabled in angular.json.
  * - Isolation spawns one worker per spec file. Windows fork startup is slow enough to hit
  *   `[vitest-pool]: Timeout starting forks runner`, so use the threads pool instead:
- *   same isolation guarantee, much cheaper start-up. Worker count is capped because
- *   booting Angular + jsdom in every worker at once also times out pool start-up.
+ *   same isolation guarantee, much cheaper start-up. Worker count is capped
+ *   (`maxWorkers`) because booting Angular + jsdom in every worker at once also times
+ *   out pool start-up.
  * - A worker cannot exit while a timer is still pending, and this app schedules long
  *   ones (`OTP_TTL_SECONDS` is 10 minutes). `teardownTimeout` bounds shutdown so a
  *   straggler surfaces as an error instead of an apparent freeze; `src/test-setup.ts`
@@ -34,7 +35,6 @@ export default defineConfig({
     pool: 'threads',
     isolate: true,
     maxWorkers: 4,
-    minWorkers: 1,
     teardownTimeout: 5_000,
   },
 });

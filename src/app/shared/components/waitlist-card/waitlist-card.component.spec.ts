@@ -30,8 +30,7 @@ describe('WaitlistCardComponent', () => {
   const submit = async () => {
     const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
     form.dispatchEvent(new Event('submit', { cancelable: true }));
-    await Promise.resolve();
-    await Promise.resolve();
+    await fixture.whenStable();
     fixture.detectChanges();
   };
 
@@ -184,5 +183,33 @@ describe('WaitlistCardComponent', () => {
     typeEmail('good@example.com');
     expect(fixture.componentInstance.status()).toBe('idle');
     expect(fixture.componentInstance.errorMessage()).toBe('');
+  });
+
+  describe('honeypot and error semantics', () => {
+    it('keeps the server-contract field name but hides it from autofill, focus and assistive tech', () => {
+      const field = fixture.nativeElement.querySelector('input[name="website"]') as HTMLInputElement;
+      expect(field).not.toBeNull();
+      expect(field.getAttribute('tabindex')).toBe('-1');
+      expect(field.getAttribute('autocomplete')).toBe('new-password');
+      const wrapper = field.parentElement as HTMLElement;
+      expect(wrapper.hasAttribute('inert')).toBe(true);
+      expect(wrapper.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('announces an invalid email through exactly one mechanism', async () => {
+      typeEmail('not-an-email');
+      let error = fixture.nativeElement.querySelector('#waitlist-error') as HTMLElement;
+      expect(error.getAttribute('role')).toBeNull();
+      expect(error.getAttribute('aria-live')).toBe('polite');
+
+      await submit();
+      error = fixture.nativeElement.querySelector('#waitlist-error') as HTMLElement;
+      expect(error.getAttribute('role')).toBe('alert');
+      expect(error.getAttribute('aria-live')).toBeNull();
+    });
+
+    it('does not force the intro copy onto one line', () => {
+      expect(fixture.nativeElement.querySelector('.sm\\:whitespace-nowrap')).toBeNull();
+    });
   });
 });

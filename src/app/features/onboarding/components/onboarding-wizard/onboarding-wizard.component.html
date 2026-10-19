@@ -1,4 +1,10 @@
-<div class="fixed inset-0 z-[100] flex flex-col overflow-hidden bg-canvas text-ink transition-all duration-500">
+<div class="fixed inset-0 z-[100] flex flex-col overflow-hidden bg-canvas text-ink transition-all duration-500"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="onboarding-title"
+     tabindex="-1"
+     (keydown)="onDialogKeydown($event)">
+  <h1 id="onboarding-title" class="sr-only">Set up Calmi</h1>
   <div class="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden opacity-50">
     <div class="animate-pulse-soft absolute -left-40 -top-40 h-[40rem] w-[40rem] rounded-full bg-brand opacity-20 blur-[100px]"></div>
     <div class="animate-pulse-soft absolute -bottom-10 -right-20 h-[30rem] w-[30rem] rounded-full bg-accent-coral/10 blur-[80px]" style="animation-delay: 1.5s;"></div>
@@ -13,7 +19,13 @@
         <div class="h-full rounded-full bg-brand transition-all duration-700 ease-out" [style.width]="onboardingService.progress() + '%'"></div>
       </div>
     </div>
-    <div class="w-10" aria-hidden="true"></div>
+    @if (onboardingService.currentStep() > 1 && onboardingService.currentStep() < 4) {
+      <button type="button" (click)="onboardingService.prevStep()" aria-label="Back" class="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
+        <svg [lucideIcon]="'arrow-left'" [size]="24" aria-hidden="true"></svg>
+      </button>
+    } @else {
+      <div class="w-10" aria-hidden="true"></div>
+    }
   </div>
 
   <div class="scrollbar-hide relative z-10 flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 pb-20">
@@ -123,8 +135,8 @@
     @if (onboardingService.currentStep() === 4) {
       <div class="animate-slide-up flex w-full max-w-lg flex-col items-center text-center">
         <div class="relative mb-8 flex h-32 w-32 items-center justify-center">
-          <div class="absolute inset-0 animate-ping rounded-full bg-brand opacity-20" style="animation-duration: 2s;"></div>
-          <div class="absolute inset-2 animate-ping rounded-full bg-brand opacity-40" style="animation-duration: 2s; animation-delay: 0.5s;"></div>
+          <div class="absolute inset-0 animate-ping motion-reduce:animate-none rounded-full bg-brand opacity-20" style="animation-duration: 2s;"></div>
+          <div class="absolute inset-2 animate-ping motion-reduce:animate-none rounded-full bg-brand opacity-40" style="animation-duration: 2s; animation-delay: 0.5s;"></div>
           <div class="relative flex h-20 w-20 items-center justify-center rounded-full bg-brand text-on-brand shadow-card">
             <svg [lucideIcon]="'sparkles'" [size]="40" aria-hidden="true"></svg>
           </div>

@@ -40,7 +40,8 @@ describe('PsychologistCardComponent', () => {
     const profileLink = fixture.nativeElement.querySelector('a[aria-label="View Gargi Yadav profile"]') as HTMLAnchorElement;
     expect(profileLink).not.toBeNull();
     expect(profileLink.getAttribute('href')).toBe('/experts/gargi-yadav');
-    expect(fixture.nativeElement.querySelector('[aria-hidden="true"]').textContent).toContain('GY');
+    const hidden = Array.from(fixture.nativeElement.querySelectorAll('[aria-hidden="true"]')) as HTMLElement[];
+    expect(hidden.some((el) => el.textContent?.includes('GY'))).toBe(true);
   });
 
   it('exposes the whole card and the Book Session control as profile links', () => {
